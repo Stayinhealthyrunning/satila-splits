@@ -31,7 +31,14 @@ The geometry separates very clearly into two groups.
 - 97.50% of bidirectional 20 m-sampled geometry lies within 25 m of the other trace.
 - 98.53% lies within 50 m.
 
-This is strong evidence that the two years used the same basic race-day course corridor. Small local deviations remain and should be checked against organizer/ITRA material before declaring exact identity.
+This is strong evidence that the two years used the same basic race-day course corridor.
+
+Two 2022 deviations have now been manually confirmed from map review as participant wrong turns rather than course changes:
+
+- around **6.9 km** in the raw 2022 track: a short excursion reaching roughly **72 m** from the shared corridor;
+- around **22.0 km**: a clear out-and-back excursion adding roughly **0.66 km** of raw GPS distance and reaching about **348 m** from the shared corridor.
+
+The raw 2022 GPX must remain unchanged as source evidence. For canonical route construction, only these excursions should be excluded/replaced by the shared race corridor. 2022 should therefore be retained as corroborating evidence rather than discarded.
 
 ### 2023–2025
 2023 versus 2024:
@@ -51,6 +58,24 @@ The principal divergence begins at roughly 6.5–6.8 km from the participant sta
 
 This is a genuine course redesign signal, not ordinary GPS drift: parts of the two alternatives are more than 3 km apart geographically.
 
+## Canonical route strategy
+
+Preserve all five original participant GPX files as evidence, but do not use raw GPS polylines directly as canonical course geometry.
+
+For the early family:
+- use **2021** as the primary route-shape source;
+- use **2022** as corroboration after excluding the two known wrong-turn excursions.
+
+For the later family:
+- derive a consensus/centerline geometry from **2023, 2024 and 2025**;
+- use conservative smoothing so GPS jitter is reduced without straightening true trail bends.
+
+The result should be two clean comparison-route candidates:
+- `trail43-2021-2022`
+- `trail43-2023-2025`
+
+They remain candidates until cross-checked against organizer and/or ITRA/Trace de Trail geometry.
+
 ## Current model
 
 Do not yet call the groups exact canonical course versions. Use:
@@ -62,7 +87,7 @@ Promotion to exact course versions requires comparison with organizer GPX, ITRA/
 
 ## Next checks
 
-1. Match the 2021–2025 participant traces against ITRA/Trace de Trail where a 43 km homologated route exists.
-2. Recover organizer GPX files for the same years where possible.
-3. Identify canonical checkpoint coordinates and project them onto each year's geometry.
-4. Determine whether the short within-group deviations are GPS noise, participant error, or genuine race-day variants.
+1. Build sanitized, smoothed route-only candidates for the two comparison groups.
+2. Match the participant traces against ITRA/Trace de Trail where a 43 km homologated route exists.
+3. Recover organizer GPX files for the same years where possible.
+4. Identify canonical checkpoint coordinates and project them onto each year's geometry.
