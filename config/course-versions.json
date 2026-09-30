@@ -4,7 +4,26 @@
   "status": "participant_geometry_first_pass",
   "year_candidates": {
     "2021": { "comparison_group": "trail43-2021-2022", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
-    "2022": { "comparison_group": "trail43-2021-2022", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
+    "2022": {
+      "comparison_group": "trail43-2021-2022",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high_with_known_wrong_turns",
+      "known_anomalies": [
+        {
+          "type": "participant_wrong_turn",
+          "approx_raw_chainage_km": 6.9,
+          "max_distance_from_other_year_corridor_m": 72,
+          "handling": "exclude from canonical centerline; reconstruct from shared corridor evidence"
+        },
+        {
+          "type": "participant_wrong_turn",
+          "approx_raw_chainage_km": 22.0,
+          "extra_raw_distance_m": 660,
+          "max_distance_from_other_year_corridor_m": 348,
+          "handling": "exclude out-and-back excursion from canonical centerline"
+        }
+      ]
+    },
     "2023": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
     "2024": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
     "2025": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" }
@@ -13,7 +32,7 @@
     "2021_vs_2022": {
       "bidirectional_points_within_25m_fraction": 0.974962,
       "bidirectional_points_within_50m_fraction": 0.985284,
-      "interpretation": "same course family; small local deviations require source cross-check"
+      "interpretation": "same course family; residual mismatch is partly explained by two confirmed 2022 participant wrong turns"
     },
     "2023_vs_2024": {
       "bidirectional_points_within_25m_fraction": 0.991343,
@@ -30,6 +49,13 @@
       "bidirectional_points_within_50m_fraction": 0.755581,
       "interpretation": "major course change between 2022 and 2023"
     }
+  },
+  "canonicalization_policy": {
+    "raw_participant_tracks": "preserve unchanged as evidence",
+    "wrong_turns": "flag and exclude from canonical route construction; never delete from raw source",
+    "gps_noise": "reduce through conservative smoothing or multi-track centerline construction without cutting real trail bends",
+    "preferred_2021_2022_geometry": "use 2021 as primary centerline evidence and corrected 2022 as corroboration",
+    "preferred_2023_2025_geometry": "derive a consensus centerline from 2023, 2024 and 2025"
   },
   "rule": "comparison_group is not yet an assertion of exact official course identity; organizer/ITRA geometry should be used to promote candidates to canonical course versions"
 }
