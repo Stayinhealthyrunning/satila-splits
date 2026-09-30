@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "race_family": "trail43",
+  "status": "participant_geometry_first_pass",
+  "year_candidates": {
+    "2021": { "comparison_group": "trail43-2021-2022", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
+    "2022": { "comparison_group": "trail43-2021-2022", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
+    "2023": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
+    "2024": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
+    "2025": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" }
+  },
+  "evidence": {
+    "2021_vs_2022": {
+      "bidirectional_points_within_25m_fraction": 0.974962,
+      "bidirectional_points_within_50m_fraction": 0.985284,
+      "interpretation": "same course family; small local deviations require source cross-check"
+    },
+    "2023_vs_2024": {
+      "bidirectional_points_within_25m_fraction": 0.991343,
+      "bidirectional_points_within_50m_fraction": 0.999064,
+      "interpretation": "near-identical race-day corridor"
+    },
+    "2024_vs_2025": {
+      "bidirectional_points_within_25m_fraction": 0.990141,
+      "bidirectional_points_within_50m_fraction": 0.996479,
+      "interpretation": "near-identical race-day corridor with one short local deviation"
+    },
+    "2022_vs_2023": {
+      "bidirectional_points_within_25m_fraction": 0.744307,
+      "bidirectional_points_within_50m_fraction": 0.755581,
+      "interpretation": "major course change between 2022 and 2023"
+    }
+  },
+  "rule": "comparison_group is not yet an assertion of exact official course identity; organizer/ITRA geometry should be used to promote candidates to canonical course versions"
+}
