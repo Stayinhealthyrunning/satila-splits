@@ -13,11 +13,51 @@
   },
   "participant_gpx": {
     "trail43": {
-      "2021": { "provider": "Suunto/Sports Tracker", "status": "link supplied; not yet committed" },
-      "2022": { "provider": "Suunto/Sports Tracker", "status": "link supplied; not yet committed" },
-      "2023": { "provider": "Suunto/Sports Tracker", "status": "link supplied; not yet committed" },
-      "2024": { "provider": "Suunto/Sports Tracker", "status": "link supplied; not yet committed" },
-      "2025": { "provider": "Suunto/Sports Tracker", "status": "link supplied; not yet committed" }
+      "2021": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2021-11-13",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "d07051fda67d4343ccf9ff49ec7ee8788b923965f14b127e5d7ffaac91a0c9d6",
+        "point_count": 14507,
+        "raw_polyline_length_m": 45235.5
+      },
+      "2022": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2022-11-12",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "b7bd4710327fae74d0478db5dbb1df80c3bb7f84c9d316fd9c2a86028486479c",
+        "point_count": 15246,
+        "raw_polyline_length_m": 45812.2
+      },
+      "2023": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2023-11-11",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "60b5f920d6f4e652db1760120f6d22bd1fcdea722edee46c83dc7d6f0c1e04da",
+        "point_count": 14146,
+        "raw_polyline_length_m": 42863.6
+      },
+      "2024": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2024-11-09",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "d83bfad962e94a69ed0ea53a0c063679478234cccd3a780d714900ae7640c4b4",
+        "point_count": 13810,
+        "raw_polyline_length_m": 42597.9
+      },
+      "2025": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2025-11-08",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "f090e7d461e0ae53e06561c340b1a87bab30f10454e49ebaface2cd19468502b",
+        "point_count": 13260,
+        "raw_polyline_length_m": 42599.0
+      }
     }
   }
 }
