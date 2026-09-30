@@ -33,12 +33,23 @@ The geometry separates very clearly into two groups.
 
 This is strong evidence that the two years used the same basic race-day course corridor.
 
-Two 2022 deviations have now been manually confirmed from map review as participant wrong turns rather than course changes:
+Manual review by the participant has identified the following wrong turns:
 
-- around **6.9 km** in the raw 2022 track: a short excursion reaching roughly **72 m** from the shared corridor;
-- around **22.0 km**: a clear out-and-back excursion adding roughly **0.66 km** of raw GPS distance and reaching about **348 m** from the shared corridor.
+#### 2021
+- around **21 km** in the raw track: confirmed wrong turn. Geometry comparison suggests roughly **0.24 km** of extra raw distance, reaching about **115 m** from the 2022 corridor;
+- around **30 km**: confirmed wrong turn. Geometry comparison suggests roughly **0.31 km** of extra raw distance, reaching about **120 m** from the 2022 corridor.
 
-The raw 2022 GPX must remain unchanged as source evidence. For canonical route construction, only these excursions should be excluded/replaced by the shared race corridor. 2022 should therefore be retained as corroborating evidence rather than discarded.
+#### 2022
+- around **22 km**: confirmed wrong turn, a clear out-and-back excursion adding roughly **0.66 km** of raw GPS distance and reaching about **348 m** from the 2021 corridor;
+- the section around **6.9 km**, previously suspected as an anomaly, is **confirmed correct course** and must not be removed.
+
+The raw GPX files must remain unchanged as source evidence.
+
+For a clean 2021–2022 course candidate, neither participant file should be selected wholesale as the sole reference. Instead:
+- use the **2022 corridor** through the two known 2021 wrong-turn locations;
+- use the **2021 corridor** through the known 2022 wrong-turn location;
+- retain the 2022 line around 6.9 km;
+- cross-check the resulting composite against organizer/ITRA geometry before promoting it to canonical status.
 
 ### 2023–2025
 2023 versus 2024:
@@ -63,8 +74,10 @@ This is a genuine course redesign signal, not ordinary GPS drift: parts of the t
 Preserve all five original participant GPX files as evidence, but do not use raw GPS polylines directly as canonical course geometry.
 
 For the early family:
-- use **2021** as the primary route-shape source;
-- use **2022** as corroboration after excluding the two known wrong-turn excursions.
+- construct a corrected composite of **2021 + 2022**;
+- remove only the three manually confirmed participant wrong turns;
+- use the unaffected year's geometry to bridge each wrong-turn section;
+- smooth GPS jitter conservatively after correction, not before.
 
 For the later family:
 - derive a consensus/centerline geometry from **2023, 2024 and 2025**;
@@ -87,7 +100,7 @@ Promotion to exact course versions requires comparison with organizer GPX, ITRA/
 
 ## Next checks
 
-1. Build sanitized, smoothed route-only candidates for the two comparison groups.
-2. Match the participant traces against ITRA/Trace de Trail where a 43 km homologated route exists.
-3. Recover organizer GPX files for the same years where possible.
-4. Identify canonical checkpoint coordinates and project them onto each year's geometry.
+1. Build a corrected and sanitized 2021–2022 composite route.
+2. Build a smoothed 2023–2025 consensus route.
+3. Match both candidates against ITRA/Trace de Trail and organizer GPX where available.
+4. Identify canonical checkpoint coordinates and project them onto each course version.
