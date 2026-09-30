@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "source": "Sätila Trail official results page",
+  "provider": "EQ Timing",
+  "events": [
+    {
+      "year": 2021,
+      "event_id": 57767,
+      "date": "2021-11-13",
+      "url": "https://live.eqtiming.com/57767"
+    },
+    {
+      "year": 2022,
+      "event_id": 62409,
+      "date": "2022-11-12",
+      "url": "https://live.eqtiming.com/62409"
+    },
+    {
+      "year": 2023,
+      "event_id": 67695,
+      "date": "2023-11-11",
+      "url": "https://live.eqtiming.com/67695"
+    },
+    {
+      "year": 2024,
+      "event_id": 72918,
+      "date": "2024-11-09",
+      "url": "https://live.eqtiming.com/72918"
+    },
+    {
+      "year": 2025,
+      "event_id": 77864,
+      "date": "2025-11-08",
+      "url": "https://live.eqtiming.com/77864"
+    }
+  ],
+  "expected_distances_km": [
+    5,
+    10,
+    22,
+    43,
+    85
+  ]
+}
