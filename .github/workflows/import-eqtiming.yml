@@ -1,0 +1,44 @@
+name: Import EQ Timing results
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Optional single year (2021-2025); blank imports all"
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-eqtiming.yml"
+      - "tools/fetch_eqtiming_archive.py"
+      - "tools/inspect_eqtiming_archive.py"
+      - "config/eqtiming-events.json"
+permissions:
+  contents: read
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright
+      - run: python -m playwright install --with-deps chromium
+      - name: Capture public EQ Timing result traffic
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.year }}" ]; then
+            python tools/fetch_eqtiming_archive.py --year "${{ inputs.year }}"
+          else
+            python tools/fetch_eqtiming_archive.py
+          fi
+      - name: Inspect captured payloads
+        run: python tools/inspect_eqtiming_archive.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: satila-eqtiming-raw-${{ github.run_id }}
+          path: data/work/eqtiming/
+          if-no-files-found: error
+          retention-days: 30
