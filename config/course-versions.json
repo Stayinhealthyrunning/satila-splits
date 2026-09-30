@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "race_family": "trail43",
-  "status": "participant_geometry_first_pass",
+  "status": "normalized_route_candidates_built",
   "year_candidates": {
     "2021": {
       "comparison_group": "trail43-2021-2022",
@@ -13,14 +13,14 @@
           "approx_raw_chainage_km": 21.0,
           "approx_extra_raw_distance_m": 236,
           "max_distance_from_2022_corridor_m": 115,
-          "handling": "exclude from canonical centerline; use corroborating corridor from 2022/official geometry"
+          "handling": "excluded by using cleaned 2022 as normalized base route"
         },
         {
           "type": "participant_wrong_turn",
           "approx_raw_chainage_km": 30.0,
           "approx_extra_raw_distance_m": 315,
           "max_distance_from_2022_corridor_m": 120,
-          "handling": "exclude from canonical centerline; use corroborating corridor from 2022/official geometry"
+          "handling": "excluded by using cleaned 2022 as normalized base route"
         }
       ]
     },
@@ -32,15 +32,15 @@
         {
           "type": "participant_wrong_turn",
           "approx_raw_chainage_km": 22.0,
-          "extra_raw_distance_m": 660,
-          "max_distance_from_2021_corridor_m": 348,
-          "handling": "exclude out-and-back excursion from canonical centerline; use 2021/official corridor"
+          "raw_excursion_removed_m": 760,
+          "rejoin_gap_m": 1.5,
+          "handling": "out-and-back excursion removed before normalization"
         }
       ],
       "confirmed_correct_sections": [
         {
           "approx_raw_chainage_km": 6.9,
-          "note": "previously suspected deviation; manually confirmed as correct course and must be retained"
+          "note": "manually confirmed as correct course and retained"
         }
       ]
     },
@@ -48,11 +48,29 @@
     "2024": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" },
     "2025": { "comparison_group": "trail43-2023-2025", "source": "VERIFIED_PARTICIPANT", "confidence": "high" }
   },
+  "normalized_route_candidates": {
+    "trail43-2021-2022": {
+      "filename": "Satila_Trail_43km_2021-2022_NORMALISERAD.gpx",
+      "construction": "2022 participant track used as primary geometry; confirmed out-and-back wrong turn around 22 km removed; 3 m Douglas-Peucker simplification",
+      "geometry_length_km": 44.415,
+      "point_count": 1091,
+      "sha256": "21752f9d5aafe13cb40c72845f6c1e96e416fb785180f87b3c920fb8178b874c",
+      "status": "candidate_pending_official_ITRA_crosscheck"
+    },
+    "trail43-2023-2025": {
+      "filename": "Satila_Trail_43km_2023-2025_NORMALISERAD.gpx",
+      "construction": "2023/2024/2025 participant tracks mildly simplified and DTW-aligned to 2024; robust medoid consensus selected at approximately 10 m spacing; final 3 m simplification",
+      "geometry_length_km": 41.595,
+      "point_count": 944,
+      "sha256": "e0fb4b648b48cd396f8922146e9ce27a20093b397d8c9413b4697b02bec45111",
+      "status": "candidate_pending_official_ITRA_crosscheck"
+    }
+  },
   "evidence": {
     "2021_vs_2022": {
       "bidirectional_points_within_25m_fraction": 0.974962,
       "bidirectional_points_within_50m_fraction": 0.985284,
-      "interpretation": "same course family; residual mismatch is substantially explained by known participant wrong turns in both years"
+      "interpretation": "same course family; residual mismatch substantially explained by known participant wrong turns"
     },
     "2023_vs_2024": {
       "bidirectional_points_within_25m_fraction": 0.991343,
@@ -72,10 +90,9 @@
   },
   "canonicalization_policy": {
     "raw_participant_tracks": "preserve unchanged as evidence",
-    "wrong_turns": "flag and exclude from canonical route construction; never delete from raw source",
-    "gps_noise": "reduce through conservative smoothing or multi-track centerline construction without cutting real trail bends",
-    "preferred_2021_2022_geometry": "construct a corrected composite from both years: use 2022 to replace the two known 2021 wrong-turn sections and use 2021 to replace the known 2022 wrong-turn section; retain the 2022 section near raw chainage 6.9 km as valid",
-    "preferred_2023_2025_geometry": "derive a consensus centerline from 2023, 2024 and 2025"
+    "wrong_turns": "flag and exclude from normalized route construction; never delete from raw source",
+    "gps_noise": "reduce conservatively without straightening real trail bends",
+    "normalized_routes": "remain candidates until organizer and/or ITRA geometry cross-check is complete"
   },
-  "rule": "comparison_group is not yet an assertion of exact official course identity; organizer/ITRA geometry should be used to promote candidates to canonical course versions"
+  "rule": "normalized route candidates are analysis artifacts, not yet asserted as exact official course geometry"
 }
