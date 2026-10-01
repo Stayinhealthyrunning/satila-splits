@@ -32,7 +32,7 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | D24 | Delvis | `renderHistory`, `#history-chart` | Skilj startande/resultat och visa källstatus/DNF per år. |
 | D25 | Gated | `renderHistoryPerformance`, `#history-performance` | Separata årsmedianer visas; ingen godkänd flerårig whole-course-grupp är dokumenterad för en prestationslinje. |
 | D26 | Delvis | `renderFingerprint`, `#history-fingerprint` | Årsöversikt finns; jämförbart rekord/prestationsindex saknar källstöd. |
-| D27 | Delvis | `renderSexHistory`, `#history-sex` | Inför 80 % källtäckningsgrind och tydligare denominator. |
+| D27 | Implementerad | `renderSexHistory`, `#history-sex` | Separat kvinna/man/okänt och 80 % källtäckningsgrind per upplaga. |
 
 ## Tabeller T01–T10
 
@@ -47,7 +47,7 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | T07 | Delvis | `renderProvenance`, `#course-provenance` | Fil/checksum, verifieringsgrad och olösta konflikter saknas. |
 | T08 | Delvis | `renderHistory`, `#history-table` | Banjämförbarhet/route-status och alla statusar saknas i årstabellen. |
 | T09 | Delvis | `renderGroupTable`, `#group-table` | Ålder/klubb och paginering saknas. |
-| T10 | Delvis | `renderCoverage`, `#coverage-table` | Status-, köns- och ålderstäckning samt maskinläsbar export saknas. |
+| T10 | Implementerad | `renderCoverage`, `#coverage-table`, `docs/data/coverage.json` | Status-, köns-, ålders-, klass- och klubbtäckning med aktuell ruttstatus och reproducerbar JSON-export. |
 
 ## Kartlägen K01–K06 och P0
 
