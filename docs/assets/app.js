@@ -215,7 +215,34 @@ function renderHistory(){
   $$('[data-edition]',$('#history-table')).forEach(button=>button.addEventListener('click',()=>{S.year=+button.dataset.edition;loadRace().then(()=>$('#race-context').scrollIntoView())}));
 }
 
-function resultRows(){let q=S.q.toLocaleLowerCase('sv');let list=S.filtered.filter(r=>!q||[r.name,r.bib,r.club,r.class_name,r.status].some(v=>String(v||'').toLocaleLowerCase('sv').includes(q)));switch(S.sort){case 'name':list.sort((a,b)=>a.name.localeCompare(b.name,'sv'));break;case 'time':list.sort((a,b)=>(a.finish_seconds??Infinity)-(b.finish_seconds??Infinity));break;case 'bib':list.sort((a,b)=>Number(a.bib||Infinity)-Number(b.bib||Infinity));break;default:list.sort((a,b)=>(a.place??Infinity)-(b.place??Infinity)||a.name.localeCompare(b.name,'sv'));}return list}
+function resultRows(){
+  const q=S.q.toLocaleLowerCase('sv');
+  const list=S.filtered.filter(r=>!q||[r.name,r.bib,r.club,r.class_name,r.status].some(v=>String(v||'').toLocaleLowerCase('sv').includes(q)));
+  // Missing values remain last in both directions. Stable source/placing ties
+  // make pagination deterministic; edition year and race family are constant here.
+  const cmpText=(x,y)=>{const a=String(x??'').trim(),b=String(y??'').trim();if(!a||!b)return a? -1:b?1:0;return a.localeCompare(b,'sv',{numeric:true,sensitivity:'base'})};
+  const cmpNum=(a,b,sign=1)=>num(a)&&num(b)?sign*(a-b):num(a)?-1:num(b)?1:0;
+  const sourceTie=(a,b)=>cmpNum(a.place,b.place)||cmpText(a.bib,b.bib)||cmpText(a.name,b.name)||cmpText(a.id,b.id);
+  const statusOrder={FINISHED:0,DNF:1,DNS:2,DSQ:3,UNKNOWN:4};
+  list.sort((a,b)=>{
+    let cmp=0;
+    switch(S.sort){
+      case 'place_desc':cmp=cmpNum(a.place,b.place,-1);break;
+      case 'name':cmp=cmpText(a.name,b.name);break;
+      case 'name_desc':cmp=-cmpText(a.name,b.name);break;
+      case 'time':cmp=cmpNum(a.finish_seconds,b.finish_seconds);break;
+      case 'time_desc':cmp=cmpNum(a.finish_seconds,b.finish_seconds,-1);break;
+      case 'bib':cmp=cmpText(a.bib,b.bib);break;
+      case 'sex':cmp=cmpText(a.sex,b.sex);break;
+      case 'class':cmp=cmpText(a.class_name,b.class_name);break;
+      case 'club':cmp=cmpText(a.club,b.club);break;
+      case 'status':cmp=(statusOrder[a.status]??9)-(statusOrder[b.status]??9);break;
+      default:cmp=cmpNum(a.place,b.place);
+    }
+    return cmp||sourceTie(a,b);
+  });
+  return list;
+}
 function renderResults(){let list=resultRows(),per=35,pages=Math.max(1,Math.ceil(list.length/per));S.page=Math.min(S.page,pages-1);$('#results-count').textContent=`${format(list.length)} träffar`;
 $('#results-table tbody').innerHTML=list.slice(S.page*per,(S.page+1)*per).map(r=>`<tr><td>${S.year}</td><td>${html(S.race.label)} · ${fmtKm(S.race.nominal_km)} km</td><td>${r.place??'—'}</td><td>${html(r.bib)}</td><td><strong>${html(r.name)}</strong></td><td>${r.sex==='F'?'Kvinna':r.sex==='M'?'Man':'—'}</td><td>${html(r.class_name)}</td><td>${html(r.club)}</td><td>${html(r.status)}</td><td>${time(r.finish_seconds)}</td><td><button type="button" data-open="${html(r.id)}" aria-label="Öppna profilen för ${html(r.name)}">Öppna ↗</button></td></tr>`).join('');$('#page-number').textContent=`Sida ${S.page+1} / ${pages}`;$('#page-prev').disabled=S.page<=0;$('#page-next').disabled=S.page>=pages-1;bindResultLinks($('#results-table'));}
 function findRecord(id){return records().find(r=>r.id===id)}
