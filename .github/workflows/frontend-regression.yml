@@ -2,7 +2,7 @@ name: Sätila independent frontend regression
 on:
   workflow_dispatch:
   push:
-    branches: [build/saetila-first-draft]
+    branches: [build/full-first-draft-2026-10-01]
     paths:
       - ".github/workflows/frontend-regression.yml"
       - "docs/index.html"
@@ -31,7 +31,7 @@ jobs:
           SATILA_SITE: docs
           SATILA_QA_OUTPUT: reports/qa-screenshots
         run: |
-          node --check docs/assets/app.js
+          for f in docs/assets/app-{1..8}.js; do node --check "$f"; done
           python tests/browser_smoke.py
       - name: Upload screenshots
         if: always()
