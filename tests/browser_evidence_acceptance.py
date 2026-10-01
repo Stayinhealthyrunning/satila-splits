@@ -98,6 +98,13 @@ async def main():
             segment_name=await seg.nth(3).locator('td').first.inner_text()
             assert 'Vald delsträcka: '+segment_name in await intel.inner_text()
             assert await page.locator('#course-map .segment-route-overlay').count()==1
+            # Segment selection seeks map AND elevation to the same approximate
+            # display-route midpoint; it must never invent a precise station GPS.
+            map_d=float(await page.locator('#course-map [data-map-hit]').get_attribute('aria-valuenow'))
+            elev_d=float(await page.locator('#course-elevation [data-elev-hit]').get_attribute('aria-valuenow'))
+            assert map_d>0 and abs(map_d-elev_d)<.001,(map_d,elev_d)
+            assert 'proportionellt uppskattad' in await page.locator('#course-scrub-label').inner_text()
+            assert 'ingen verifierad kontrollprojektion' in await page.locator('#course-map .segment-route-overlay').get_attribute('aria-label')
             await page.locator('#segment-sex-extra [data-extra-segment="4"]').first.click()
             await page.wait_for_function("document.querySelector('#podium-segment')?.value==='4'")
             await page.locator('#segment-groups [data-extra-segment="5"]').first.focus()
