@@ -99,3 +99,48 @@ jobs:
           if [ "$COPY" -ne 0 ] || [ "$NAV" -ne 0 ] || [ "$UX" -ne 0 ] || [ "$PACE" -ne 0 ]; then
             exit 1
           fi
+
+  review-package:
+    needs: [source-and-method, browser-core, release-gates]
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Recheck distributable manifest, privacy and delivery budget
+        run: |
+          python -m unittest discover -s tests -p test_review_package_contract.py -v
+          python tests/test_publication_privacy.py
+          python tests/test_accessibility_performance.py
+      - name: Package ONLY audited static website files from this exact passing commit
+        run: |
+          python - <<'PY'
+          import hashlib,os,pathlib,sys,zipfile
+          sys.path.insert(0,"tests")
+          from test_review_package_contract import verified_manifest
+          site=pathlib.Path("docs")
+          entries=verified_manifest()
+          output=pathlib.Path("satila-codex-integrated-review.zip")
+          with zipfile.ZipFile(output,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for relative in sorted(entries):
+                  z.write(site/relative,"site/"+relative)
+              z.writestr("README.txt",
+                  "Sätila Splits – integration review ONLY\\n"
+                  "Source commit: "+os.environ["GITHUB_SHA"]+"\\n"
+                  "Unzip, then: cd site && python -m http.server 8080\\n"
+                  "Browse http://localhost:8080/\\n"
+                  "Not published on Loppanalys.se and not approved for merge until owner review.\\n")
+          digest=hashlib.sha256(output.read_bytes()).hexdigest()
+          print("REVIEW ZIP PASS",len(entries),"static files",output.stat().st_size,"bytes",flush=True)
+          print("SOURCE COMMIT",os.environ["GITHUB_SHA"],flush=True)
+          print("ZIP SHA256",digest,flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: satila-codex-integrated-review
+          path: satila-codex-integrated-review.zip
+          if-no-files-found: error
+          retention-days: 30
