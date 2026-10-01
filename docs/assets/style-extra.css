@@ -30,3 +30,9 @@
 
 .mobile-table-hint{display:none}
 @media(max-width:700px){.mobile-table-hint{display:block;margin:3px 0 8px;font-size:12px;line-height:1.4;color:var(--muted);font-weight:650}#segment-table{min-width:1000px}}
+
+/* K03: source-supported segment diagrams and heatmap share one accessible selection. */
+[data-extra-segment]{cursor:pointer}
+svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:none}
+#segment-heatmap [data-extra-segment].selected{outline:2px solid #d4a858;outline-offset:-2px}
+#segment-heatmap [data-extra-segment]:focus-visible{outline:3px solid #23563d;outline-offset:-2px}

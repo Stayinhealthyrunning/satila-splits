@@ -80,6 +80,33 @@ async def main():
             chosen=await seg.nth(1).locator("td").first.inner_text()
             await seg.nth(1).click()
             await page.wait_for_function("(label) => document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka: '+label)",arg=chosen)
+            # K03: D14, D15, D17, D18 and D19 all share the same selected
+            # real timing segment, podium selector, table, Course Intelligence
+            # and official-route display overlay (never athlete GPS).
+            await page.locator('#podium-segment').select_option('2')
+            await page.wait_for_function("document.querySelector('#segment-chart [data-segment=\"2\"]')?.getAttribute('r')==='7'")
+            assert 'selected' in (await seg.nth(2).get_attribute('class') or '')
+            await page.locator('#segment-chart [data-segment="1"]').click()
+            assert await page.locator('#podium-segment').input_value()=='1'
+            await page.locator('#segment-q1090 [data-extra-segment="3"]').focus()
+            await page.keyboard.press('Enter')
+            await page.wait_for_function("document.querySelector('#podium-segment')?.value==='3'")
+            assert 'selected' in (await seg.nth(3).get_attribute('class') or '')
+            assert await page.locator('#segment-chart [data-segment="3"]').get_attribute('r')=='7'
+            assert await page.locator('#segment-q1090 [data-extra-segment="3"]').get_attribute('aria-pressed')=='true'
+            assert 'selected' in (await page.locator('#segment-heatmap [data-extra-segment="3"]').first.get_attribute('class') or '')
+            segment_name=await seg.nth(3).locator('td').first.inner_text()
+            assert 'Vald delsträcka: '+segment_name in await intel.inner_text()
+            assert await page.locator('#course-map .segment-route-overlay').count()==1
+            await page.locator('#segment-sex-extra [data-extra-segment="4"]').first.click()
+            await page.wait_for_function("document.querySelector('#podium-segment')?.value==='4'")
+            await page.locator('#segment-groups [data-extra-segment="5"]').first.focus()
+            await page.keyboard.press(' ')
+            await page.wait_for_function("document.querySelector('#podium-segment')?.value==='5'")
+            await page.locator('#segment-heatmap [data-extra-segment="2"]').first.click()
+            await page.wait_for_function("document.querySelector('#podium-segment')?.value==='2'")
+            assert await page.locator('#segment-chart [data-segment="2"]').get_attribute('r')=='7'
+            assert 'Vald delsträcka: '+(await seg.nth(2).locator('td').first.inner_text()) in await intel.inner_text()
             # D11: real last-segment strength is separate from last-third placing.
             await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Styrka på sista verifierade delsträckan')")
             assert "fältmedian" in await page.locator("#finish-progression").inner_text()
