@@ -145,8 +145,10 @@ def routes(out,gpxdir):
 def refresh_coverage(out):
  """Derive public field coverage from committed race bundles after course linking."""
  boot=load(out/'bootstrap.json');coverage=[]
+ inventory=load(out/'route-inventory.json') if (out/'route-inventory.json').exists() else []
  for ed in boot['editions']:
   race=load(out/'races'/f"{ed['race_key']}.json")
+  route=next((item for item in inventory if ed.get('route_file') and item['family']==ed['family'] and ed['year'] in item['edition_references']),None)
   rows=race['results'];sex_f=sum(r.get('sex')=='F' for r in rows);sex_m=sum(r.get('sex')=='M' for r in rows)
   coverage.append(ed|{
    'sex_f':sex_f,'sex_m':sex_m,'sex_known':sex_f+sex_m,
@@ -157,7 +159,12 @@ def refresh_coverage(out):
    'known_starters':sum(r.get('status') in ('FINISHED','DNF','DSQ') for r in rows),
    'route_status':ed.get('route_status','none'),
    'course_version':ed.get('course_version'),
-   'whole_course_comparison_group':ed.get('whole_course_comparison_group')
+   'whole_course_comparison_group':ed.get('whole_course_comparison_group'),
+   'route_source_type':route.get('type') if route else None,
+   'route_source_filename':route.get('source_filename') if route else None,
+   'route_sha256':route.get('source_sha256') if route else None,
+   'route_geometry_km':route.get('geometry_length_km') if route else None,
+   'route_evidence_note':route.get('evidence_note') if route else None
   })
  js(out/'coverage.json',coverage)
  return coverage

@@ -82,6 +82,9 @@ def test_coverage():
         assert row["sex_known"]==row["sex_f"]+row["sex_m"]
         for field in ("sex_known","age_known","class_known","club_known","status_known","known_starters"):
             assert 0<=row[field]<=row["results"],(row["race_key"],field)
+        if row.get("route_file"):
+            assert len(row.get("route_sha256") or "")==64,row["race_key"]
+            assert row.get("route_source_type")=="OFFICIAL_ORGANIZER",row["race_key"]
     print("PASS coverage: 27 current editions, source fields and route status agree")
 
 if __name__=="__main__":
