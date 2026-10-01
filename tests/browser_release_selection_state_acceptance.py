@@ -83,7 +83,12 @@ async def main():
                 selection=await assert_selection_consistent(page,(width,"trail43"))
                 assert len(selection["checked"])==3,(width,selection)
                 first_unchecked=page.locator("#club-chart input[data-club-choice]:not(:checked):not(:disabled)").first
-                await first_unchecked.check()
+                new_club=await first_unchecked.get_attribute("data-club-choice")
+                # The UI immediately recreates its checkbox subtree. click() is
+                # appropriate; check() would wait on the detached old element.
+                await first_unchecked.click()
+                await page.wait_for_function("""name=>[...document.querySelectorAll('#club-chart input[data-club-choice]:checked')]
+                   .some(input=>input.dataset.clubChoice===name)""",arg=new_club)
                 selection=await assert_selection_consistent(page,(width,"trail43-added"))
                 assert len(selection["checked"])==4,(width,selection)
                 await page.locator("#sex-filter").select_option("F")
