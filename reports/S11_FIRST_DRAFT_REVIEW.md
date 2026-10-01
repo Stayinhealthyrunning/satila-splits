@@ -67,6 +67,13 @@ Build branch: `build/full-first-draft-2026-10-01`. Reusable source and results a
 6. No externally scraped social-media runner portraits; initial avatars only.
 7. EQ source artifact 11142571759 from run 36818159977 is time-limited: archive and freeze reproducibility before expiry. The web bundles are already committed.
 
+## Downloadable review build
+
+- [Package action 36839244517 — SUCCESS](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36839244517); select `satila-first-draft-review` under Artifacts.
+- Package contains exactly **44 static site files**, `satila-splits-first-draft-review.zip` (814,751 bytes before Actions artifact wrapping).
+- Inner review ZIP SHA-256: `fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f`.
+- Run `cd site && python -m http.server 8080` after extracting; open `http://localhost:8080/`. Keep PR #2 in draft and unmerged until review.
+
 ## Source and privacy boundaries
 
 This static preview contains curated publicly displayed runner results only, with no auto-scraped athlete profile pictures; named portraits are deliberately out of scope. It excludes the internal SQLite file, raw EQ Timing responses and any unavailable participant-GPX files. A runner appearing in different years is **not** automatically linked as one person.
