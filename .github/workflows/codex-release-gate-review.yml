@@ -1,0 +1,38 @@
+name: Codex release-gate review
+on:
+  push:
+    branches: [review/codex-release-gates-2026-10-01]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Factual release copy
+        run: python tests/test_release_copy_acceptance.py
+
+  release-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Deep-link and Back/Forward acceptance
+        run: python tests/browser_release_navigation_acceptance.py
+      - name: Keyboard, focus, menu and visible-error acceptance
+        run: python tests/browser_release_ux_acceptance.py
+      - name: Pace-distance capability acceptance
+        run: python tests/browser_release_pace_capability_acceptance.py
