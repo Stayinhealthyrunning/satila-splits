@@ -37,8 +37,14 @@ class PublicSummaryReconciliation(unittest.TestCase):
             self.assertEqual(ed["split_observations"],len(race["splits"]))
             self.assertEqual(ed["timing_stations"],len(race["stations"]))
             for field in ("race_key","family","year","event_id","date","nominal_km",
-                          "source_url","route_status","route_file","course_version"):
+                          "source_url"):
+                self.assertIn(field,ed,(ed["race_key"],field))
+                self.assertIn(field,race,(ed["race_key"],field))
                 self.assertEqual(ed[field],race[field],(ed["race_key"],field))
+            # Older editions correctly OMIT absent optional route descriptors;
+            # do not interpret a missing property as an absent course proof.
+            for field in ("route_status","route_file","course_version"):
+                self.assertEqual(ed.get(field),race.get(field),(ed["race_key"],field))
 
     def test_every_catalogue_median_is_from_exact_finished_times(self):
         for ed in self.catalog:
