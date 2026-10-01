@@ -26,4 +26,13 @@ jobs:
       - name: Exercise actual map/elevation clicks, H2H and route gating
         env:
           SATILA_SITE: docs
+          SATILA_INTERACTION_QA: /tmp/satila-interaction-qa
         run: python tests/browser_synced_scrub_acceptance.py
+      - name: Preserve reviewable H2H screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-interaction-screenshots
+          path: /tmp/satila-interaction-qa/
+          if-no-files-found: warn
+          retention-days: 30
