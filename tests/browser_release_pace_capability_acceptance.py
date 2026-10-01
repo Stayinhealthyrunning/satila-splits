@@ -67,7 +67,49 @@ async def main():
                     f"{year} questionable timing-km segment still exposes unqualified pace/min-km",
                     target
                 )
-                print("RELEASE PACE-CAPABILITY ACCEPTANCE PASSED",year,target,flush=True)
+                # The same distance rule applies to a runner's PERSONAL segment
+                # table, not only the aggregate lab. Select an actual finisher
+                # with the two published TIME readings, through the real search UI.
+                race=fixtures[f"data/races/{year}-trail43.json"]
+                torras=next(x["uid"] for x in race["stations"] if x["name"]=="Torrås")
+                almered=next(x["uid"] for x in race["stations"] if x["name"]=="Almered")
+                actual={}
+                for observation in race["splits"]:
+                    if observation["station_uid"] in (torras,almered):
+                        actual.setdefault(observation["result_id"],{})[observation["station_uid"]]=observation["elapsed_seconds"]
+                candidates=[r for r in race["results"]
+                            if r["status"]=="FINISHED" and r.get("name") and
+                            torras in actual.get(r["id"],{}) and almered in actual.get(r["id"],{}) and
+                            actual[r["id"]][almered]>actual[r["id"]][torras]]
+                assert candidates,f"No actual {year} runner with both published anchors"
+                selected=None
+                for candidate in candidates[:30]:
+                    await page.locator("#runner-search").fill(candidate["name"])
+                    choices=page.locator("#runner-suggestions .suggestion")
+                    for index in range(await choices.count()):
+                        if await choices.nth(index).get_attribute("data-id")==str(candidate["id"]):
+                            await choices.nth(index).click()
+                            selected=candidate
+                            break
+                    if selected:break
+                assert selected,f"Cannot select a real {year} runner through UI"
+                assert await page.locator("#profile-dialog").evaluate("d=>d.open")
+                tables=page.locator("#profile-content table")
+                assert await tables.count()>=2
+                matched=None
+                for row in await tables.nth(1).locator("tbody tr").all():
+                    fields=await row.locator("td").all_text_contents()
+                    if fields and "Torrås" in fields[0] and "Almered" in fields[0]:
+                        matched=fields
+                        break
+                assert matched,f"Personal {year} suspect segment missing"
+                assert matched[2].strip() not in ("","—","-"),matched
+                assert "distans ej verifierad" in matched[3].lower(),(
+                    f"Personal {year} profile still exposes unjustified physical min/km",
+                    matched
+                )
+                await page.locator('[data-close="profile-dialog"]').click()
+                print("RELEASE PACE-CAPABILITY ACCEPTANCE PASSED",year,"aggregate and profile",flush=True)
         finally:
             await browser.close()
 
