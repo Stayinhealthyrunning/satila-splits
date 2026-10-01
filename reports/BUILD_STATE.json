@@ -3,10 +3,10 @@
   "project": "Sätila Splits",
   "blueprint": "reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md",
   "branch": "build/saetila-first-draft",
-  "sprint": "S3",
-  "status": "DATA_EXPORT_VALIDATED_FRONTEND_QA_PENDING",
+  "sprint": "S4-S10 QA checkpoint",
+  "status": "LOCAL_BROWSER_QA_GREEN_CI_PENDING",
   "base_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
-  "verified_code_head_sha": "cf87edf1e59c5297eceb8a0d542d0e24b95ec288",
+  "verified_code_head_sha": "a6a3f6c448fd3dcf8ef0705c9d793a6901cb9814",
   "done": [
     {
       "sprint": "S0",
@@ -36,13 +36,13 @@
   ],
   "checks": [
     "GitHub tree inspected; docs/index.html, docs/assets/app.js, style.css, hero.webp, design-reference.webp and tools/build_satila.py present",
-    "docs/data/ is absent on verified_code_head_sha, so web app is NOT YET RUNNABLE",
-    "Actions run 36831622132 successful: raw EQ ZIP restored, exactly 9 events, 27 selected race editions, 3272 unique results, node --check app.js and required static assets passed; 29 files committed including 27 real race bundles, SQLite and bootstrap."
+    "Actions run 36831622132 successful: raw EQ ZIP restored, exactly 9 events, 27 selected race editions, 3272 unique results, node --check app.js and required static assets passed; 29 files committed including 27 real race bundles, SQLite and bootstrap.",
+    "Offline Chromium local QA passed at 1440x900, 900x900 and 390x844: all three families, 2016/2025, 2025 route gating, profile, no JS errors, no horizontal document overflow after tablet podium fix."
   ],
   "known_limits": [
     "Original participant GPX 2021–2025 not in GitHub",
     "Five official GPX 2026 not yet repository/CI backed",
     "Source ZIP only persisted in previous session and in GitHub Actions artifact"
   ],
-  "next_action": "Run real browser visual/functional test on generated docs, then ingest official 2026 GPX files into durable repo assets and route metadata; continue incomplete S4-S11 features. This is a working data-backed draft, not READY FOR HUMAN REVIEW."
+  "next_action": "Verify independent frontend-regression workflow; then expand route interactions, source locking, and full S4-S11 features. Do not rebuild completed race bundles."
 }
