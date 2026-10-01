@@ -50,8 +50,8 @@
       "evidence": "GitHub Actions 36838917833 (SUCCESS on c7a98d4a9); includes analytics extension panels, goal-placement interaction, post-filter viewport checks, independent Chromium 1440/900/390."
     },
     "S11": {
-      "status": "review_pack_ready_pending_owner_review",
-      "evidence": "Draft PR #2; report reports/S11_FIRST_DRAFT_REVIEW.md; extended analytics CI run 36838917833."
+      "status": "review_artifact_ready_pending_owner_review",
+      "evidence": "Draft PR #2, independent extended browser run 36838917833 green; package run 36839244517 green, 44 static site files, artifact 11151105284, internal ZIP sha256 fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f"
     }
   },
   "verified_local_checkpoint": {
@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "FIRST_DRAFT_EXTENDED_ANALYTICS_QA_GREEN_PENDING_OWNER_REVIEW",
+  "status": "REVIEW_ARTIFACT_PUBLISHED_AWAITING_OWNER_REVIEW",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -83,7 +83,14 @@
     "deep_map_elevation_scrub": true,
     "extended_analytics_ci": 36838917833,
     "verified_build_head": "c7a98d4a946590691131b523bf0e8a2503833c24",
-    "module": "docs/assets/analytics-extra.js integrated inside docs/assets/app.js"
+    "module": "docs/assets/analytics-extra.js integrated inside docs/assets/app.js",
+    "review_zip": {
+      "run_id": 36839244517,
+      "artifact_id": 11151105284,
+      "inner_zip_bytes": 814751,
+      "sha256": "fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f",
+      "public_files": 44
+    }
   },
   "known_limits": [
     "Blueprint-wide feature parity remains an explicit follow-up after first-draft owner review",
@@ -92,5 +99,5 @@
     "Review draft is not yet merged or added to Loppanalys production catalogue",
     "Full 27-diagram/10-table/6-map blueprint parity needs final component-level signoff; extended first-draft regression is green."
   ],
-  "next_action": "Await owner review of Draft PR #2; do not merge/publish before explicit instruction. Continue independent blueprint parity and accessibility/performance checks in separate commits. Do not re-fetch known GPX or EQ source."
+  "next_action": "Review artefact from run 36839244517 and draft PR #2. Do not merge/publish before owner review. Once approved, complete remaining component parity/acceptance and publish through separate Loppanalys repository PR. Preserve checksum-locked source build and do not restart GPX investigation."
 }
