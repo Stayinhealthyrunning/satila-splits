@@ -18,13 +18,13 @@ Denna fil är **aktuellt tillägg** till historiska `CODEX_PARITY_AUDIT.md` (var
 |---|---|---|
 | DNF / T04 | Kolumnen `DNF sist här` visar `Okänt` när urvalets DNF helt saknar källkopplad offentlig TIME; inte en falsk numerisk nolla. | Samtliga 128 nuvarande DNF saknar sådan publicerad observation; DNF:s faktiska avbrottsplats är okänd. |
 | D06/passagetäckning | Metadata-only Tostared ligger kvar i stations-/fältflödet, men markeras `endast metadata (0 TIME)` och exkluderas från själva passagetäckningskurvan, så ingen falsk noll-dipp/återhämtning ritas. | Endast editionsbrett verifierade TIME-stationer får ingå i kurvan; grafen visar observerad täckning, aldrig DNF/överlevnad. |
-| D07/D21 | Scatter-punkters tooltip visar källklass; kontrollspridningen märker att varje kontroll har eget verkligt observerat n och kan omfatta olika fullföljare. | Klass härleds inte från ålder och saknade TIME imputeras inte. |
+| D07/D21 | Scatter-punkters tooltip visar källklass; D07 har tvåstegs zoom (P10–P90, P25–P75) och återställning med uppdaterad synlig population. Kontrollspridningen märker att varje kontroll har eget verkligt observerat n. Den långa segmenttabellen har mobil svepanvisning. | Test: D07 zoom och exakt återställning på desktop och mobil i `browser_evidence_acceptance.py`. Klass härleds inte från ålder; saknad TIME imputeras inte. |
 | D22 / K03 | Course Intelligence följer `selectedSegment` och visar n, TIME-median, Q25–Q75 när n≥10, pace när distans stöds, placeringsrörelse samt DNF-täckning. | Ingen påhittad segment-D+, exit-position eller officiell GPX-checkpointprojektion. |
 | D11 | Separat ranking av sista **verifierade positiva** TIME-segmentet mot just det segmentets fältmedian, n≥5; sista tredjedelens placeringsprogression behålls som separat mått. | Kvoten är tidsbaserad, fungerar även för time-only-distans. Sista verifierade segment behöver inte nå målet. |
 | D18/D19 | Heatmap visar samma valda klasser som klasspacingdiagrammet (max fem) och uppdateras vid kryssrutebyte; klassurval återställs vid editionsbyte. | Tom cell = n<5/saknad observation, inte nolltempo. |
 | T07 | Provenienstabellen får separata kolumner för publik sanerad displayrutt och faktisk verifieringsreservation ur `coverage.json`. | 2025/26-återanvändning är uttryckligt projektantagande, inte godkänd flerårig whole-course-prestationsgrupp. |
 
-De nya browserkraven är inlagda i `tests/browser_evidence_acceptance.py`: metadata-only Tostared som falskt retentionstapp, DNF-unknown, D07/D21, D22-selectedSegment, D11, D18↔D19 och T07. Den ursprungliga Tostared/n=8/2016-podium-testningen finns kvar. Senast rättat i testet: använd `text_content()` för lång horisontellt scrollad T07-tabell, eftersom `inner_text()` kan begränsas av viewport-klippning. Source-jobbet har även automatisk `node --check`.
+De nya browserkraven är inlagda i `tests/browser_evidence_acceptance.py`: metadata-only Tostared som falskt retentionstapp, DNF-unknown, D07 zoom/reset och D21, D22-selectedSegment, D11, D18↔D19 och T07. Den ursprungliga Tostared/n=8/2016-podium-testningen finns kvar. Senast rättat i testet: använd `text_content()` för lång horisontellt scrollad T07-tabell, eftersom `inner_text()` kan begränsas av viewport-klippning. Source-jobbet har även automatisk `node --check`.
 
 ## Vad som redan fungerar och inte ska byggas om
 
@@ -34,9 +34,9 @@ De nya browserkraven är inlagda i `tests/browser_evidence_acceptance.py`: metad
 
 ## Återstående, prioriterade begränsningar
 
-1. **Visuell slutgranskning:** riktig topp-/full-page-webbläsargranskning vid 1440/900/768/390, särskilt alla långa segment- och provenienstabeller på mobil, Hero och nytt D11/D22-block. Justera endast identifierade fel; jämför mot `docs/assets/design-reference.webp`.
-2. **D07:** scatter-/resultat-zoom/reset och tydlig källklass i punktens tooltip. Fullständigt tangentbordsprov av tabell T01.
-3. **D21/K03:** variera-n-upplysning på checkpoint-spridningen; bekräfta att alla synkbara segmentvyer byter `selectedSegment` (inte bara tabell, Course Intelligence, pacingdiagram och karta).
+1. **Visuell slutgranskning:** riktig topp-/full-page-webbläsargranskning vid 1440/900/768/390, särskilt långa segment- och provenienstabeller på mobil, Hero och nytt D07/D11/D22-block. Justera endast identifierade fel; jämför mot `docs/assets/design-reference.webp`.
+2. **T01:** komplettera tangentbordsprov och bredare sortering av resultattabellen där blueprint kräver. D07 scatter-zoom/reset/källklass är nu implementerad och får inte göras om.
+3. **K03:** verifiera att samtliga relevanta segmentvyer synkas till ett och samma `selectedSegment`. D21 upplysning om varierande verkligt n är genomförd.
 4. **K01/D23:** förbättra kartans utsnitt, tillgängliga checkpointankare och gap i höjdprofil *endast* där godkänd fysisk position/elevation faktiskt finns. Godkänd lokal SVG-fallback fungerar; eventuell Leaflet/OSM får inte bli ett driftberoende för analysen.
 5. **T06 / P0.4:** segment-D+/D− ska förbli `ej verifierat` tills godkända ban-/kontrollankare medger faktisk segmenthöjd. Planens historiska tidsandelar och n-grind är redan källkorrekta.
 6. **Gated by evidence – ingen frontendfuskfix:** K02 historisk tvåbanoverlay, D25 sammanhängande helbanetidstrend, D26 jämförbar rekordprestation och DNF-avbrottsgeografi. Ingen modern 85-km-GPX får lånas till 2025.
