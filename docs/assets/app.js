@@ -185,6 +185,7 @@ window.SatilaExtras=(()=>{
     if(!$('#extra-segments')) $('#segments').insertAdjacentHTML('beforeend',`<div id="extra-segments" class="extra-grid segment-extras">
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">FÄLTETS YTTERKANTER</p><h3>Q10–Q90 per delsträcka</h3></div><button class="info" data-help-extra="q1090">i</button></div><div id="segment-q1090"></div></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">RETENTION</p><h3>Hur mycket av fältet syns kvar?</h3></div><button class="info" data-help-extra="retention">i</button></div><div id="segment-retention"></div></article>
+      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PACINGINDEX</p><h3>Fart mot eget loppsnitt</h3></div><button class="info" data-help-extra="pacing">i</button></div><div id="segment-pacing"></div></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KVINNOR / MÄN</p><h3>Vald delsträcka</h3></div><button class="info" data-help-extra="sexpace">i</button></div><div id="segment-sex-extra"></div></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KLASSER</p><h3>Gruppjämförelse</h3></div><button class="info" data-help-extra="groups">i</button></div><div id="segment-groups"></div></article>
       <article class="panel extra-wide"><div class="panel-heading"><div><p class="eyebrow">TEMPOHEATMAP</p><h3>Var förändras gruppernas relativa tempo?</h3></div><button class="info" data-help-extra="heatmap">i</button></div><div id="segment-heatmap" class="heatmap-scroll"></div></article>
@@ -232,7 +233,30 @@ window.SatilaExtras=(()=>{
   function renderProvenance(){const h=$('#course-provenance');if(!h)return;const ed=historyEditions().slice().reverse();h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>År</th><th>CourseVersion</th><th>Rutt</th><th>Timing</th><th>Whole-course jämförelse</th></tr></thead><tbody>${ed.map(e=>`<tr><td>${e.year}</td><td>${esc(e.course_version||`${e.family}-${e.year}-unverified`)}</td><td>${esc(e.route_status||'none')}</td><td>EQ Timing · event ${e.event_id}</td><td>${String(e.course_version||'').includes('unverified')||!e.course_version?'Inte promoted':'Endast inom explicit grupp'}</td></tr>`).join('')}</tbody></table></div>`}
   function renderGroupTable(){const h=$('#group-table');if(!h)return;const rows=S.filtered,groups=[];for(const sex of ['F','M']){const rs=rows.filter(r=>r.sex===sex),fs=rs.filter(finish);groups.push({kind:'Kön',name:sex==='F'?'Kvinnor':'Män',n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}for(const cl of Object.entries(collections(rows.map(r=>r.class_name||'').filter(Boolean))).sort((a,b)=>b[1]-a[1])){const rs=rows.filter(r=>r.class_name===cl[0]),fs=rs.filter(finish);groups.push({kind:'Klass',name:cl[0],n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>Typ</th><th>Grupp</th><th>Resultat</th><th>Fullföljare</th><th>Median*</th></tr></thead><tbody>${groups.map(g=>`<tr><td>${g.kind}</td><td>${esc(g.name)}</td><td>${g.n}</td><td>${g.finish}</td><td>${time(g.med)}</td></tr>`).join('')}</tbody></table></div><p class="small muted">* Median visas först vid minst fem fullföljare.</p>`}
   function renderCoverage(){const h=$('#coverage-table');if(!h)return;const ed=historyEditions().slice().reverse();h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>År</th><th>Resultat</th><th>Fullföljare</th><th>Splitobs.</th><th>Stationer</th><th>Rutt</th></tr></thead><tbody>${ed.map(e=>`<tr><td>${e.year}</td><td>${format(e.results)}</td><td>${format(e.finishers)}</td><td>${format(e.split_observations)}</td><td>${e.timing_stations}</td><td>${e.route_status&&e.route_status!=='none'?'Ja · '+esc(e.route_status):'Nej'}</td></tr>`).join('')}</tbody></table></div>`}
-  function renderSegments(){renderQ1090();renderRetention();renderSegmentSex();renderSegmentGroups();renderHeatmap();renderCheckpointSpread();syncSegmentOverlay()}
+  extraHelp.pacing='Pacingindex = 100 × (egen sluttid / officiell timingdistans) / (egen segmenttid / kontrakterad segmentdistans). Över 100 betyder snabbare än löparens eget hel-loppssnitt. Diagrammet visar median av individuella index från minst fem fullföljare med två exakta segmentpassager.';
+  function renderPacingIndex(){
+    const host=$('#segment-pacing');
+    if(!host)return;
+    const nominal=S.race.nominal_km;
+    const rows=segmentStats(S.filtered).map(s=>{
+      const values=s.obs.filter(o=>finish(o.r)&&num(o.seconds)&&o.seconds>0&&num(s.km)&&s.km>0&&num(nominal)&&nominal>0)
+        .map(o=>100*(o.r.finish_seconds/nominal)/(o.seconds/s.km)).filter(v=>num(v)&&v>0);
+      return {...s,paceN:values.length,paceMedian:values.length>=5?median(values):null};
+    });
+    const valid=rows.filter(s=>num(s.paceMedian));
+    if(!valid.length){host.innerHTML=empty('Minst fem fullföljare med två exakta passager och kontrakterad segmentdistans krävs för pacingindex.');return}
+    const W=700,H=240,P=42,lo=Math.min(90,...valid.map(s=>s.paceMedian)),hi=Math.max(110,...valid.map(s=>s.paceMedian));
+    const y=value=>H-P-(value-lo)/Math.max(1,hi-lo)*(H-2*P),step=(W-2*P)/Math.max(1,rows.length);
+    const body=`<line class="axis" x1="${P}" x2="${W-P}" y1="${y(100)}" y2="${y(100)}"/><text x="4" y="${y(100)-5}">100</text>`+
+      rows.map((s,i)=>{const x=P+(i+.5)*step;return num(s.paceMedian)?`<circle data-pacing-segment="${s.index}" tabindex="0" role="button" aria-label="Välj ${html(s.from.name)} till ${html(s.to.name)}" cx="${x}" cy="${y(s.paceMedian)}" r="${s.index===S.selectedSegment?7:5}" fill="${s.index===S.selectedSegment?'#d4a858':'#3e5d3a'}"><title>${html(s.from.name)} → ${html(s.to.name)} · median ${s.paceMedian.toFixed(1)} · n=${s.paceN}</title></circle>`:''}).join('');
+    host.innerHTML=svg(W,H,body,'Median av löparnas individuella pacingindex per delsträcka')+`<p class="small muted">100 = eget hel-loppssnitt · över 100 = snabbare · n varierar per segment. ${valid.map(s=>`${html(s.to.name)} ${s.paceMedian.toFixed(0)} (n=${s.paceN})`).join(' · ')}</p>`;
+    $$('[data-pacing-segment]',host).forEach(node=>{
+      const select=()=>$('#segment-table [data-select-segment="'+node.dataset.pacingSegment+'"]')?.click();
+      node.addEventListener('click',select);
+      node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select()}});
+    });
+  }
+  function renderSegments(){renderQ1090();renderRetention();renderPacingIndex();renderSegmentSex();renderSegmentGroups();renderHeatmap();renderCheckpointSpread();syncSegmentOverlay()}
   function renderFiltered(){renderSexCompletion();renderGoal();renderAge();renderClub();renderPlacementGain();renderFinishProgress();renderSegments();renderCourseIntel();renderGroupTable()}
   function wire(){if(wired)return;wired=true;document.addEventListener('click',e=>{const info=e.target.closest('[data-help-extra]');if(info){$('#help-title').textContent=info.closest('.panel')?.querySelector('h3')?.textContent||'Metod';$('#help-content').textContent=extraHelp[info.dataset.helpExtra]||'';$('#help-dialog').showModal();return}if(e.target.closest('[data-segment],[data-select-segment]'))setTimeout(renderSegments,0)});document.addEventListener('change',e=>{if(e.target.matches('#podium-segment'))setTimeout(renderSegments,0)});document.addEventListener('click',e=>{if(e.target.matches('#goal-placement-run'))renderGoal()});document.addEventListener('keydown',e=>{if(e.target.matches('#goal-placement-time')&&e.key==='Enter')renderGoal()})}
   function renderAll(){ensurePanels();wire();renderFiltered();renderCourseIntel();renderMapHistory();renderHistoryPerformance();renderSexHistory();renderFingerprint();renderProvenance();renderCoverage()}
