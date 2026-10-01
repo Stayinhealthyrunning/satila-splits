@@ -91,6 +91,7 @@ async def main():
             await page.locator('#segment-q1090 [data-extra-segment="3"]').focus()
             await page.keyboard.press('Enter')
             await page.wait_for_function("document.querySelector('#podium-segment')?.value==='3'")
+            await page.wait_for_function("Array.from(document.querySelectorAll('#segment-q1090 [data-extra-segment]')).some(el=>el.dataset.extraSegment==='3'&&el.getAttribute('aria-pressed')==='true')")
             assert 'selected' in (await seg.nth(3).get_attribute('class') or '')
             assert await page.locator('#segment-chart [data-segment="3"]').get_attribute('r')=='7'
             assert await page.locator('#segment-q1090 [data-extra-segment="3"]').get_attribute('aria-pressed')=='true'
@@ -187,6 +188,8 @@ async def main():
             sources=await plan.locator('td:nth-child(9)').all_text_contents()
             assert len(sources)==7 and all('EQ Timing TIME-par' in x and 'observerad tidsandel' in x for x in sources),sources
             assert 'Ingen höjd per timingsegment' in await page.locator('#plan-table').locator('xpath=../following-sibling::p').inner_text()
+            if w<=700:
+                assert 'Svep i sidled' in await page.locator('#plan-summary + p.mobile-table-hint').inner_text()
             # Mobile heatmap must disclose horizontal overflow explicitly.
             if w<=700:
                 assert 'Svep i sidled' in await page.locator('#segment-heatmap').locator('xpath=preceding-sibling::p[1]').inner_text()
