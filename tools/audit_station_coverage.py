@@ -21,7 +21,9 @@ def matrix(root=ROOT):
         counts=collections.Counter(s["station_uid"] for s in race["splits"])
         original=[x for x in sorted(race["stations"],key=lambda s:(s["sort"],s.get("km") or 0))
                   if x["is_analysis_boundary"] and isinstance(x.get("km"),(int,float)) and x["km"]>0]
-        zero=[{"uid":s["uid"],"name":s["name"],"km":s["km"]} for s in original if not counts[s["uid"]]]
+        metadata_only=[{"uid":st["uid"],"name":st["name"],"km":st.get("km"),"is_analysis_boundary":st["is_analysis_boundary"]}
+                       for st in race["stations"] if not counts[st["uid"]]]
+        zero=[{"uid":st["uid"],"name":st["name"],"km":st["km"]} for st in original if not counts[st["uid"]]]
         active=[{"uid":"start","name":"Start","km":0}]+[s for s in original if counts[s["uid"]]]
         observed=collections.defaultdict(dict)
         for s in race["splits"]:
@@ -32,7 +34,8 @@ def matrix(root=ROOT):
             a,b=active[i-1:i+1]
             if b["km"]<=a["km"]:
                 continue
-            original_between=[o["name"] for o in original if a["km"]<o["km"]<b["km"]]
+            original_between=[o["name"] for o in race["stations"] if o["name"] in {z["name"] for z in metadata_only}
+                              and isinstance(o.get("km"),(float,int)) and a["km"]<o["km"]<b["km"]]
             n=0
             for r in finishers:
                 o=observed[r["id"]]
@@ -44,7 +47,8 @@ def matrix(root=ROOT):
                             "valid_exact_time_pairs":n,
                             "bypassed_zero_time_stations":original_between,
                             "median_eligible":n>=5,"q25_q75_eligible":n>=10,"q10_q90_eligible":n>=20})
-        result.append({"race_key":ed["race_key"],"zero_observation_analysis_stations":zero,
+        result.append({"race_key":ed["race_key"],"metadata_only_stations":metadata_only,
+                       "zero_observation_analysis_stations":zero,
                        "source_declared_boundaries":len(original),
                        "observed_only_boundaries":len(active)-1,
                        "observed_only_segments":bridges})
@@ -62,7 +66,8 @@ if __name__=="__main__":
                 print(f"  ACTUAL PAIR: {s['from']} -> {s['to']}; n={s['valid_exact_time_pairs']}; bypasses {','.join(s['bypassed_zero_time_stations'])}; median={s['median_eligible']}")
     print(f"ZERO-TIME ANALYSIS-BOUNDARY EDITIONS: {len(anomalies)} of {len(rows)}")
     target=next(r for r in rows if r["race_key"]=="2025-trail43")
-    assert any(x["name"]=="Tostared" and x["km"]==10.2 for x in target["zero_observation_analysis_stations"])
+    assert any(x["name"]=="Tostared" and x["km"]==10.2 and x["uid"]==1416266
+               for x in target["metadata_only_stations"])
     bridge=next(x for x in target["observed_only_segments"] if x["from"]=="Grind" and x["to"]=="Torrås")
     assert bridge["valid_exact_time_pairs"]>=100, bridge
     assert bridge["bypassed_zero_time_stations"]==["Tostared"], bridge
