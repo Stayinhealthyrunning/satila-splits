@@ -37,7 +37,7 @@ def test_page_structure():
     assert len(set(page.ids))==len(page.ids),"Duplicate HTML id"
     assert not page.controls,f"Unlabelled controls: {page.controls}"
     assert set(page.targets).issubset(set(page.ids)),f"Broken anchors: {set(page.targets)-set(page.ids)}"
-    assert len(page.dialogs)==3,"Expected profile, compare, method dialogs"
+    assert len(page.dialogs)==4,"Expected profile, compare, map duel, method dialogs"
     for dialog in page.dialogs:
         label=dialog.get("aria-labelledby")
         assert dialog.get("aria-label") or label in page.ids,f"Unlabelled dialog: {dialog.get('id')}"
