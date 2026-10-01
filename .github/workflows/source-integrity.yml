@@ -7,10 +7,12 @@ on:
       - "tests/test_route_geometry_integrity.py"
       - "tools/audit_segment_capabilities.py"
       - "tools/audit_station_coverage.py"
+      - "tools/audit_ui_capabilities.py"
       - ".github/workflows/source-integrity.yml"
       - "docs/data/**"
       - "tools/audit_segment_capabilities.py"
       - "tools/audit_station_coverage.py"
+      - "tools/audit_ui_capabilities.py"
   workflow_dispatch:
   push:
     branches: [audit/satila-data-method-2026-10-01]
@@ -38,6 +40,8 @@ jobs:
         run: python tools/audit_station_coverage.py
       - name: Verify all five sanitized GPX display geometries
         run: python tests/test_route_geometry_integrity.py
+      - name: Audit individual, placement and podium component readiness
+        run: python tools/audit_ui_capabilities.py --output /tmp/satila-ui-capabilities.json
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,5 +50,6 @@ jobs:
           path: |
             /tmp/satila-source-integrity.json
             /tmp/satila-segment-capabilities.json
+            /tmp/satila-ui-capabilities.json
           if-no-files-found: warn
           retention-days: 30
