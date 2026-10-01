@@ -96,6 +96,10 @@ async def main():
             assert await page.locator('#segment-chart [data-segment="3"]').get_attribute('r')=='7'
             assert await page.locator('#segment-q1090 [data-extra-segment="3"]').get_attribute('aria-pressed')=='true'
             assert 'selected' in (await page.locator('#segment-heatmap [data-extra-segment="3"]').first.get_attribute('class') or '')
+            spread_labels=page.locator('#checkpoint-spread .checkpoint-axis-label')
+            assert await spread_labels.count()==7
+            boxes=[await spread_labels.nth(i).bounding_box() for i in range(await spread_labels.count())]
+            assert all(boxes[i]['x']+boxes[i]['width']<=boxes[i+1]['x']+1 for i in range(len(boxes)-1)),boxes
             segment_name=await seg.nth(3).locator('td').first.inner_text()
             assert 'Vald delsträcka: '+segment_name in await intel.inner_text()
             assert await page.locator('#course-map .segment-route-overlay').count()==1

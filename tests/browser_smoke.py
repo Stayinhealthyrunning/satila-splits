@@ -152,6 +152,10 @@ async def main():
    assert float(await page.locator('#map-duel-clock').input_value())>0
    await page.locator('#map-duel-reset').click()
    assert float(await page.locator('#map-duel-clock').input_value())==0
+   map_duel=page.locator('#map-duel-dialog')
+   assert await map_duel.evaluate("(d)=>d.scrollWidth<=d.clientWidth+1"),(
+    width,"map duel dialog has horizontal overflow")
+   await map_duel.screenshot(path=str(OUT/("map-duel-"+str(width)+".png")),animations="disabled")
    await page.locator('[data-close="map-duel-dialog"]').click()
    await page.locator('#goal-placement-time').fill('10:00:00')
    await page.locator('#goal-placement-run').click()
@@ -182,6 +186,8 @@ async def main():
    await page.locator('#runner-search').fill('')
    await page.locator('#clear-compare').click()
    await page.locator('#clear-map-duel').click()
+   await page.evaluate("document.querySelectorAll('.table-scroll,.chart-host').forEach(el=>el.scrollLeft=0)")
+   assert await page.evaluate("Array.from(document.querySelectorAll('.table-scroll,.chart-host')).every(el=>el.scrollLeft===0)")
    await page.evaluate("window.scrollTo(0,0)")
    await page.wait_for_timeout(180)
    await page.screenshot(path=str(OUT/("satila-"+str(width)+".png")),full_page=True)
