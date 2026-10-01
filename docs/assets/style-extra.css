@@ -4,6 +4,8 @@
 .series-choices{display:flex;flex-wrap:wrap;gap:8px 14px;margin:12px 0}.series-choices label{display:inline-flex;flex-direction:row;align-items:center;gap:5px;font-size:12px;letter-spacing:0}.series-choices input{margin:0}.series-choices i{width:11px;height:11px;border-radius:50%;display:inline-block}.series-choices+svg{display:block;width:100%;height:auto;max-height:230px}
 .insight small{display:block;margin-top:7px;color:var(--muted);font-size:11px;line-height:1.4}
 .duel-insights{background:#eef3eb;border-radius:12px;padding:14px 18px;margin:14px 0 20px}.duel-insights h3{font-size:16px;margin:0 0 8px}.duel-insights ul{margin:0;padding-left:18px;font-size:13px}.duel-controls{display:grid;grid-template-columns:minmax(0,2fr) minmax(120px,1fr) auto;gap:12px;align-items:end;margin:14px 0}.duel-controls label{min-width:0}.duel-controls .btn{white-space:nowrap}@media(max-width:760px){.duel-controls{grid-template-columns:1fr 1fr}.duel-controls label:first-child{grid-column:1/-1}.duel-controls .btn{min-height:44px}}@media(max-width:440px){.duel-controls{grid-template-columns:1fr}.duel-controls label:first-child{grid-column:auto}}
+.subchart-title{font-size:13px;margin:18px 0 7px}.class-details{margin-top:16px}.class-details summary{cursor:pointer;color:var(--forest);font-weight:800;font-size:12px}.class-details .table-scroll{margin-top:9px}#percentile-chart>svg{display:block;width:100%;height:auto;max-height:200px}
+.heat-cell{align-content:center;gap:1px}.heat-cell small{font-size:9px;font-weight:600;opacity:.8}
 
 /* Historical fingerprints scroll within their card on narrow viewports. */
 #history-fingerprint{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
