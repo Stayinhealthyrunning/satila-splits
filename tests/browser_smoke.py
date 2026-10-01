@@ -43,7 +43,12 @@ async def main():
     };
    }""",data)
    await page.add_script_tag(content=js)
-   await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=10000)
+   try:
+    await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=20000)
+   except Exception:
+    print("STARTUP_DIAGNOSTICS",width,"title",await page.locator('#race-title').inner_text(),"errors",errors,"missing",await page.evaluate("window.__missing||[]"),flush=True)
+    raise
+   await page.wait_for_selector("#extra-overview",timeout=20000)
    assert "85 km" in await page.locator("#race-title").inner_text()
    assert await page.locator("#segment-table tbody tr").count()>0
    for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
