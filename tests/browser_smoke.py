@@ -101,11 +101,13 @@ async def main():
    assert await page.locator('#profile-replay-range').input_value()==replay_position
    await page.locator('#profile-replay-reset').click()
    assert float(await page.locator('#profile-replay-range').input_value())==0
+   await page.locator('#profile-add-duel').click()
    await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
    second=next(r for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r['id']!=runner['id'] and r.get('name'))
    await page.locator('#results-search').fill(second['name'])
    await page.locator('#results-table [data-open="'+second['id']+'"]').first.click()
+   await page.locator('#profile-add-duel').click()
    await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
    await page.locator('#open-compare').click()
@@ -121,6 +123,21 @@ async def main():
    assert float(await page.locator('#duel-range').input_value())>0
    await page.locator('[data-close="compare-dialog"]').click()
    await page.locator('#results-search').fill('')
+   await page.locator('#open-map-duel').click()
+   assert await page.locator('#map-duel-dialog').evaluate('e=>e.open')
+   assert await page.locator('#map-duel-map [data-runner-marker]').count()==2
+   assert await page.locator('#map-duel-leaderboard tbody tr').count()==2
+   await page.locator('#map-duel-camera').select_option('leader')
+   assert float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])<760
+   await page.locator('#map-duel-fit').click()
+   assert float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])==760
+   await page.locator('#map-duel-play').click()
+   await page.wait_for_timeout(250)
+   await page.locator('#map-duel-play').click()
+   assert float(await page.locator('#map-duel-clock').input_value())>0
+   await page.locator('#map-duel-reset').click()
+   assert float(await page.locator('#map-duel-clock').input_value())==0
+   await page.locator('[data-close="map-duel-dialog"]').click()
    await page.locator('#goal-placement-time').fill('10:00:00')
    await page.locator('#goal-placement-run').click()
    assert 'placering' in (await page.locator('#goal-placement').inner_text()).lower()
