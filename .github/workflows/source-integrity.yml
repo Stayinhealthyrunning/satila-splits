@@ -1,15 +1,20 @@
 name: Independent Sätila source integrity
 on:
-  pull_request:
-    branches: [build/full-first-draft-2026-10-01]
+  workflow_dispatch:
+  push:
+    branches:
+      - "audit/**"
+      - "build/**"
+      - "codex/**"
     paths:
       - "tests/**"
-      - "tools/audit_integration_diff.py"
       - "tools/audit_*.py"
+      - "tools/run_release_candidate_checks.py"
       - "config/course-versions.json"
+      - "config/eqtiming-events.json"
       - "docs/data/**"
       - ".github/workflows/source-integrity.yml"
-  workflow_dispatch:
+      - "qa.source.trigger"
 permissions:
   contents: read
 jobs:
