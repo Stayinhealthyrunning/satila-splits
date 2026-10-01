@@ -33,7 +33,7 @@ The original AGENTS.md previously described the source-discovery phase. That is 
 ## Next Codex pass after 16:13
 
 1. Review real desktop/mobile screenshots at 1440/900/768/390 against docs/assets/design-reference.webp and approved Hero. Confirm long tables on mobile and remove only actual visual/interaction defects.
-2. Finish genuinely remaining blueprint UX, notably T01 broader table sorting/keyboard and residual K03 full selected-segment synchronization. D07 two-step zoom/reset, D11/D18/D19/D21/D22/T07 are implemented and browser-tested; preserve them.
+2. T01 now has 11 source-aware native sort options and keyboard/ordering E2E **4/4 green at `4335672e`** (Actions 36871477578); D07 zoom/reset, D11/D18/D19/D21/D22/T07 and K04/K05 are also implemented. Do not rebuild them. Finish genuinely residual K03 full selected-segment synchronization and visual/accessible UX only where screenshot/browser evidence shows a concrete gap.
 3. K01/D23 physical checkpoint anchors, tiles and T06 segment D+/D- depend on accepted source geometry/anchor evidence. K02 historic dual-route overlay, D25 joined interyear performance and D26 comparable records remain evidence-gated. Do not invent physical anchors or borrow courses to force completion.
 4. Run the entire regression on each final candidate: python tools/run_release_candidate_checks.py --all. The integrated CI workflow is .github/workflows/integration-candidate.yml. Require source-and-method, browser-core, release-gates and dependent review-package GREEN on exactly the final code SHA. Verify no source/provenance drift.
 5. Generate new screenshot and static review ZIP on that same SHA, then wait for project owner visual approval. Never auto-merge to main or publish to Loppanalys.se.
