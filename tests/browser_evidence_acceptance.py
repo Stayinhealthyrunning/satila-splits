@@ -60,6 +60,11 @@ async def main():
             names=await seg.all_text_contents()
             assert any("Grind" in s and "Torrås" in s for s in names)
             assert all("Tostared" not in s for s in names)
+            # Metadata-only Tostared cannot create a false field-dropout dip.
+            await page.wait_for_function("document.querySelector('#segment-retention')?.textContent.includes('Stationsmetadata utan TIME')")
+            retention_titles=await page.locator('#segment-retention svg circle title').all_text_contents()
+            assert len(retention_titles)==7 and all('Tostared' not in x for x in retention_titles),retention_titles
+            assert 'Tostared · endast metadata (0 TIME)' in await page.locator('#flow-chart').inner_text()
             # All published DNF records currently lack a linked public TIME passage.
             # A numeric zero in the segment-exit column would incorrectly imply
             # that actual last checkpoints are known and none exited here.
