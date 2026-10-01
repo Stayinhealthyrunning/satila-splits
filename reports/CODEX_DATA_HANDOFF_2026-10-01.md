@@ -83,6 +83,18 @@ Könsuppdelad Top 3 **kan** visas för de observerade fyra per kön om källiden
 
 Gränser enligt blueprint: pooled median `n >= 5`, Q25–Q75 `n >= 10`, Q10–Q90 `n >= 20`, separat könsmedian `n >= 5` inom respektive grupp.
 
+## 3A. P1-UI-readiness: podium och personinsikter måste vara evidensstyrda
+
+Ny oberoende källa: `tools/audit_ui_capabilities.py`, grön i [Actions 36843652899](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36843652899). En maskinläsbar matris per edition och segment ligger i `satila-ui-capabilities.json` i workflow-artifact.
+
+**85 km 2016 har bara två registrerade kvinnliga FINISHED (F=2, M=50)**. Visa i så fall bara de två kvinnliga toppresultaten, inga låtsasbronsmedaljer. Separat kvinnlig median ska döljas (n<5). Kvinnors/mäns gemensamma top3-panel ska tillåta en ofullständig sida med tydlig n-indikering. Även de två effektiva segmenten saknar underlag för kvinnlig top3 och könsuppdelad segmentmedian.
+
+**43 km 2025** har, när Tostared korrekt behandlas som en metadata-only kontroll, **7 av 7 effektiva segment med kvinnors och mäns podium och båda könens medianer**. Denna matris baseras på tidsparen Grind → Torrås, inte på några gissade Tostared-passager.
+
+**43 km 2023** har **7 av 7 segment** där observerad top3 per kön är möjlig, men endast **5 av 7** har tillräckligt n för separata könsmedianer.
+
+Placeringarnas utveckling: räkna endast observerade publika positiva totalplaceringar, minst två per person. Skapa aldrig en imaginär startplacering. Individuell replay/segmentinsikt ska separat kräva minst två giltiga tidspar där detta används.
+
 ## 4. Personlig loppplan: exakt källgräns och normalisering
 
 För fullföljaren `r`, observerat segment `i` och sluttid `F_r`:
