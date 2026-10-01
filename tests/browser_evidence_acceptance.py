@@ -21,6 +21,10 @@ async def main():
         fixtures["data/races/"+path.name]=json.loads(path.read_text(encoding="utf-8"))
     for p in (ROOT/"data/routes").glob("*.json"):
         fixtures["data/routes/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
+    # Codex's coverage dashboard loads an additional valid public root JSON.
+    # Load ALL committed root manifests rather than hiding missing fetches.
+    for manifest in (ROOT/"data").glob("*.json"):
+        fixtures["data/"+manifest.name]=json.loads(manifest.read_text(encoding="utf-8"))
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
     markup=re.sub(r"<script[^>]*>\s*</script>","",markup)
