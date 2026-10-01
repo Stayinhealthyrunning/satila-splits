@@ -179,6 +179,17 @@ async def main():
             assert len(methods)==7 and all("Historisk" in s for s in methods),methods
             summary=await page.locator("#plan-summary").inner_text()
             assert "7/7" in summary,summary
+            # T06: expose source confidence rather than fabricating segment D+/D-.
+            plan_head=await page.locator('#plan-table thead th').all_text_contents()
+            assert plan_head[-2:]==['D+/D−*','Underlag'],plan_head
+            elevation=await plan.locator('td:nth-child(8)').all_text_contents()
+            assert len(elevation)==7 and all(x.strip()=='Ej verifierat' for x in elevation),elevation
+            sources=await plan.locator('td:nth-child(9)').all_text_contents()
+            assert len(sources)==7 and all('EQ Timing TIME-par' in x and 'observerad tidsandel' in x for x in sources),sources
+            assert 'Ingen höjd per timingsegment' in await page.locator('#plan-table').locator('xpath=../following-sibling::p').inner_text()
+            # Mobile heatmap must disclose horizontal overflow explicitly.
+            if w<=700:
+                assert 'Svep i sidled' in await page.locator('#segment-heatmap').locator('xpath=preceding-sibling::p[1]').inner_text()
             # Case 2: two sparsely observed 2023 43-km segments do not get invented quartiles.
             await page.locator("#year-select").select_option("2023")
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2023')")
