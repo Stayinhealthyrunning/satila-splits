@@ -61,7 +61,14 @@ async def main():
                   };
                 }""",data)
                 await page.add_script_tag(content=js)
-                await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+                try:
+                    await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+                except Exception:
+                    print("STARTUP_DIAGNOSTICS",width,
+                          "title",await page.locator("#race-title").inner_text(),
+                          "pageerrors",errors,
+                          "missing",await page.evaluate("window.__missing||[]"),flush=True)
+                    raise
                 await page.locator('[data-family="trail43"]').click()
                 await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km')")
                 # Clicking elevation, then keyboard-operating the map, must update both.
