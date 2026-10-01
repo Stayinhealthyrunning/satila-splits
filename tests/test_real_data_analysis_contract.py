@@ -157,7 +157,14 @@ class RealSourceContract(unittest.TestCase):
                     eligible+=1
                     self.assertGreaterEqual(j["observation_count"],2)
                     self.assertGreater(j["first_observed"][1],0)
-                    self.assertNotEqual(j["first_observed"][0],"Start")
+                    # A genuine public station can itself be named Start. Do not
+                    # forbid source observations; forbid invented positions.
+                    if j["first_observed"][0]=="Start":
+                        self.assertTrue(any(
+                            st["name"]=="Start" and st["uid"] in rs and
+                            rs[st["uid"]].get("place")==j["first_observed"][1]
+                            for st in race["stations"]
+                        ),(key,runner["id"]))
         self.assertGreater(eligible,2000)
 
 if __name__=="__main__":
