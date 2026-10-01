@@ -86,6 +86,23 @@ async def main():
             # D07/D21: public class in scatter tooltip and honest changing checkpoint n.
             scatter_titles=await page.locator('#placement-chart circle title').all_text_contents()
             assert scatter_titles and all((' · Man · ' in t or ' · Kvinna · ' in t) for t in scatter_titles),scatter_titles[:3]
+            # D07: percentile-based chart zoom reduces visible runners and reset restores
+            # the exact initial count on both desktop and mobile.
+            scatter=page.locator("#placement-chart")
+            count_full=await scatter.locator("circle[data-open]").count()
+            assert count_full>8,("D07 insufficient fixture field for zoom",count_full)
+            await scatter.locator("#placement-zoom-in").click()
+            assert "P10–P90" in await scatter.locator('[role="status"]').inner_text()
+            count_first=await scatter.locator("circle[data-open]").count()
+            assert 1<count_first<count_full,("D07 first zoom",count_first,count_full)
+            await scatter.locator("#placement-zoom-in").click()
+            assert "P25–P75" in await scatter.locator('[role="status"]').inner_text()
+            count_second=await scatter.locator("circle[data-open]").count()
+            assert 1<count_second<count_first,("D07 second zoom",count_second,count_first)
+            assert await scatter.locator("#placement-zoom-in").is_disabled()
+            await scatter.locator("#placement-zoom-reset").click()
+            assert await scatter.locator("circle[data-open]").count()==count_full
+            assert "Hela fältet" in await scatter.locator('[role="status"]').inner_text()
             await page.wait_for_function("document.querySelector('#checkpoint-spread')?.textContent.includes('Varje kontroll använder sitt eget observerade n')")
             # D18/D19 use identical user-selected class groups, not separate top-N lists.
             await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
