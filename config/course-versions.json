@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "race_family": "trail43",
+  "status": "normalized_route_candidates_built",
+  "year_candidates": {
+    "2021": {"comparison_group":"trail43-2021-2022","source":"VERIFIED_PARTICIPANT","confidence":"high_with_known_wrong_turns"},
+    "2022": {"comparison_group":"trail43-2021-2022","source":"VERIFIED_PARTICIPANT","confidence":"high_with_known_wrong_turn"},
+    "2023": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"},
+    "2024": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"},
+    "2025": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"}
+  },
+  "normalized_route_candidates": {
+    "trail43-2021-2022": {"filename":"Satila_Trail_43km_2021-2022_NORMALISERAD.gpx","geometry_length_km":44.415,"point_count":1091,"sha256":"21752f9d5aafe13cb40c72845f6c1e96e416fb785180f87b3c920fb8178b874c","status":"candidate_pending_official_crosscheck"},
+    "trail43-2023-2025": {"filename":"Satila_Trail_43km_2023-2025_NORMALISERAD.gpx","geometry_length_km":41.595,"point_count":944,"sha256":"e0fb4b648b48cd396f8922146e9ce27a20093b397d8c9413b4697b02bec45111","status":"candidate_pending_official_crosscheck"}
+  },
+  "project_decision_2026_10_01": {
+    "organizer_route_reuse_assumption": "Official organizer files supplied as 2026 downloads with internal 2025 names are treated as unchanged 2025-2026 routes for 5, 10, 21 and 43 km.",
+    "ultra85": "Keep 2026 organizer route separate until geometry comparison establishes equivalence with 2025."
+  },
+  "rule":"Raw participant tracks remain evidence; normalized route candidates are analysis artifacts until corroborated."
+}
