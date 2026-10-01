@@ -5,6 +5,7 @@ on:
     branches: [build/full-first-draft-2026-10-01]
     paths:
       - "tests/browser_synced_scrub_acceptance.py"
+      - "tests/browser_all_editions_acceptance.py"
       - ".github/workflows/browser-interaction-audit.yml"
       - "docs/assets/app.js"
       - "docs/index.html"
@@ -27,7 +28,9 @@ jobs:
         env:
           SATILA_SITE: docs
           SATILA_INTERACTION_QA: /tmp/satila-interaction-qa
-        run: python tests/browser_synced_scrub_acceptance.py
+        run: |
+          python tests/browser_synced_scrub_acceptance.py
+          python tests/browser_all_editions_acceptance.py
       - name: Preserve reviewable H2H screenshots
         if: always()
         uses: actions/upload-artifact@v4
