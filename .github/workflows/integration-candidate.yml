@@ -79,15 +79,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Factual release copy
-        run: python tests/test_release_copy_acceptance.py
       - name: Install Playwright Chromium
         run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Release navigation history
-        run: python tests/browser_release_navigation_acceptance.py
-      - name: Keyboard focus menu and visible error state
-        run: python tests/browser_release_ux_acceptance.py
-      - name: Pace-distance capability UI gate
-        run: python tests/browser_release_pace_capability_acceptance.py
+      - name: Run all release gates and preserve every failure
+        shell: bash
+        run: |
+          set +e
+          python tests/test_release_copy_acceptance.py
+          COPY=$?
+          python tests/browser_release_navigation_acceptance.py
+          NAV=$?
+          python tests/browser_release_ux_acceptance.py
+          UX=$?
+          python tests/browser_release_pace_capability_acceptance.py
+          PACE=$?
+          echo "release_copy=$COPY navigation=$NAV ux=$UX pace=$PACE"
+          if [ "$COPY" -ne 0 ] || [ "$NAV" -ne 0 ] || [ "$UX" -ne 0 ] || [ "$PACE" -ne 0 ]; then
+            exit 1
+          fi
