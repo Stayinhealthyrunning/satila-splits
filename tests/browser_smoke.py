@@ -65,9 +65,11 @@ async def main():
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
    assert await page.locator('#segment-pacing circle[data-pacing-segment]').count()>0
+   assert await page.locator('#percentile-chart svg').count()==1
    assert await page.locator('#segment-sex-extra svg').count()==1
    assert await page.locator('#segment-groups svg').count()==1
    assert await page.locator('[data-class-series]:checked').count()<=5
+   assert await page.locator('#segment-heatmap .heat-cell small').count()>0
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
    await page.locator("#runner-search").fill(runner["name"].split()[0])
    assert await page.locator(".suggestion").count()>0
