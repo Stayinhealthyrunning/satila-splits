@@ -61,3 +61,20 @@ python tools/build_satila.py \
 **Publiceringsbeslut:** De sex rekonstruerade filgrupperna är reproducerbara utifrån fryst källarkiv. Detta verifierar datapipeline och exporterad analysinput, **inte** hela framtida Codex-designen, alla användarflöden eller publiceringsgodkännande. Vid nästa ändring i importer, källrevision eller data måste exporten och 36-filsjämförelsen köras igen med tydlig referens-HEAD.
 
 **Informationsskydd:** Ingen rå deltagarfil, källa-JSON eller temporär `satila.sqlite` har lagts till i den offentliga webbplatsen eller denna GitHub-revision.
+
+## Återanvändbart verifieringsverktyg
+
+`tools/audit_rebuild_against_published.py` är nu checkat in för nästa källdata- eller Codex-integration. Det tar källorna som **lokala privata kataloger**, kontrollerar SHA-256 för fem GPX, skriver oförändrade GPX-byte till en temporär katalog under kanoniska filnamn, kör `tools/build_satila.py` i en fristående temporär output och jämför alla JSON-filer via exakt Git-blob-SHA mot vald `--published`-katalog. Rådata kopieras aldrig till `docs/`.
+
+Exempel efter att arkivet packats upp lokalt:
+
+```bash
+python tools/audit_rebuild_against_published.py \
+  --source /private/eqtiming-full \
+  --original-gpx /private/raw-organizer-gpx \
+  --events config/eqtiming-events.json \
+  --published docs/data \
+  --report /tmp/satila-independent-rebuild-metadata.json
+```
+
+**Verifieringsbevis på fryst första utkast:** kommandots motsvarande fristående återskapning utfördes lokalt och alla 36 JSON-blobbar matchade GitHub-trädet. Det nyincheckade CLI-skriptet automatiserar samma arbetsordning; råarkivet är privat och scriptet körs därför inte som vanlig publik PR-CI utan att åtkomstbehöriga källfiler uttryckligen tillförs körmiljön.
