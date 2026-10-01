@@ -37,7 +37,7 @@ async def main():
             opts.update(executable_path="/usr/bin/chromium",args=["--no-sandbox"])
         browser=await p.chromium.launch(**opts)
         try:
-            for width,height in ((1440,900),(390,844)):
+            for width,height in ((1440,900),(900,900),(390,844)):
                 page=await browser.new_page(viewport={"width":width,"height":height})
                 page.set_default_timeout(6000)
                 errors=[]
