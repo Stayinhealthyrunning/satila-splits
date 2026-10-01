@@ -1,0 +1,42 @@
+# Oberoende release-handoff: Sätila Splits
+
+Datum 2026-10-01. Denna leverans gör **ingen** ändring i Codex aktiva frontend, databyggaren, Hero eller publicerade JSON-bundlar. Den bör integreras efter lämplig synkning med Codex `codex/saetila-complete-first-draft`.
+
+## Slutligt QA-läge på aktuell frusen förstautkast-databas
+
+[Alla fristående kontroller godkända – GitHub Actions 36844103210](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36844103210).
+
+| Fristående kontroll | Kommando | Resultat |
+|---|---|---|
+| Katalog, nycklar, status, publika målpassager, inga fabricerade tider | `python tests/test_published_data_integrity.py` | PASS |
+| Exakta segmentpar och minsta n per edition och grupp | `python tools/audit_segment_capabilities.py` | PASS |
+| Metadata-only stationer, verkliga sammanslagna delsträckor | `python tools/audit_station_coverage.py` | PASS |
+| Fem officiella GPX: SHA, koordinater, kumulativ längd | `python tests/test_route_geometry_integrity.py` | PASS |
+| Könspodium, placeringsresa, personlig profil, rutt-readiness | `python tools/audit_ui_capabilities.py` | PASS |
+| Endast kuraterat offentligt innehåll i Pages, inga råspår/profilbildslänkar | `python tests/test_publication_privacy.py` | PASS |
+
+Maskinläsbara `satila-source-integrity.json`, `satila-segment-capabilities.json` och `satila-ui-capabilities.json` finns under Actions-runens artifact **satila-source-integrity**.
+
+**Fast baseline:** 27 RaceEdition, 3 272 publicerade resultatrader, 2 649 FINISHED, 128 DNF, 494 DNS, 1 UNKNOWN; 16 525 publicerade verkliga TIME-observationer; 5 officiella arrangörsrutter. Alla källreferenser till registrerade passager är konsistenta.
+
+## Två obligatoriska slutgranskningsfall
+
+**S1 / 43 km 2025:** Tostared, 10,2 km, UID 1416266 är en publicerad station med **0 TIME**. Den kan inte definiera en historiskt mätt segmentgräns. Grind→Torrås, 1,2→16,2 km, har däremot **130 positiva verkliga tidspar**. Presentera det som ett enda historiskt 15,0-km-segment, behåll Tostared i rå metadata, och märk eventuell interpolerad Tostared-loppplan som planering – inte officiell passage.
+
+**S2 / 43 km 2023:** Almered→Skolan och Skolan→Ramhulta har vardera **n=8 (F=4, M=4)**. Visa totalmedian men inte kvartiler, deciler eller könsspecifika medianer. Top3 av *registrerade* kvinnliga/manliga tider kan visas med n=4 och tydlig datatäckningsförklaring. **85 km 2016** har endast två kvinnliga FINISHED och kan inte ha en tredje/bronsplacerad kvinna i topplistan.
+
+## Integration i rekommenderad ordning
+
+1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
+2. Synka Codex PR mot dåvarande `build/full-first-draft-2026-10-01`.
+3. Öppna/uppdatera denna separata audit-PR #4 mot aktuella bygggrenen och kör dess sex kontroller.
+4. Kontrollera att Codex behandling av Tostared inte tilldelar någon fiktiv tid. Vårt stationstest är förberett för båda tillåtna sätten att markera stationen: som källa med metadata-only-status eller som source analysis-boundary som filtreras bort vid beräkning.
+5. Kör slutligen fristående Chromium-regression, visuell desktop/mobil-granskning och gransknings-ZIP på samma integrerade commit.
+6. Publicera först när projektägaren uttryckligen godkänt; varken denna PR eller Codex PR ska auto-mergas till `main`.
+
+## Viktiga källavgränsningar
+
+- Den officiella timingaxeln och GPX-displaydistansen är olika mått: 43 km 2025 ger 43,0 km respektive cirka 42,254 km; 21/22-familjens moderna arrangörs-GPX ger cirka 23,043 km. Ändra inte segmentdistans till GPS-distans utan explicit metodbyte.
+- 2025/2026 officiell återanvändning är godkänd för 5/10/21/43 km. Den separata 85-km-rutten från 2026 får inte obemärkt kopplas till 2025 eller äldre upplagor.
+- Rå deltagar-GPX, arkivdatabas och sociala profilbilder ska inte ingå i det publika GitHub Pages-paketet.
+- Löparhistorik över olika år kräver en separat verifierad identitetsmodell och course comparability; gissa inte individers identitet från liknande namn.
