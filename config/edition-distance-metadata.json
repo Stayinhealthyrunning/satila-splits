@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "description": "Source-attributed distance semantics that supplement, but never overwrite, EQ Timing leg kilometres.",
+  "editions": {
+    "2019-ultra85": {
+      "eq_timing_leg_km": 82.0,
+      "organizer_advertised_km": 85.0,
+      "distance_semantics_status": "organizer_eq_discrepancy",
+      "distance_evidence_note": "EQ Timing registers 82 km; the organizer invitation advertises the race as 85 km. No accepted year-specific GPX geometry is assigned.",
+      "distance_source_urls": [
+        "https://www.satilatrail.se/wp-content/uploads/2019/07/Inbjudan-S%C3%A4tila-Trail-2019.pdf"
+      ]
+    },
+    "2021-ultra85": {
+      "eq_timing_leg_km": 82.0,
+      "organizer_advertised_km": 85.0,
+      "distance_semantics_status": "organizer_eq_discrepancy",
+      "distance_evidence_note": "EQ Timing registers 82 km; the organizer invitation advertises the race as 85 km. No accepted year-specific GPX geometry is assigned.",
+      "distance_source_urls": [
+        "https://www.satilatrail.se/wp-content/uploads/2021/07/Inbjudan-ST-2021-ENG.pdf"
+      ]
+    }
+  }
+}
