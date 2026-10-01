@@ -9,6 +9,20 @@ Datum: 2026-10-01. Detta dokument avser endast sådant som den oberoende ChatGPT
 - Tre skärmstorlekar för karta/höjd/H2H i första utkastet.
 - Alla 48 D/T/K/P0 blueprint-komponenter finns i `reports/COMPONENT_READINESS_MATRIX.json` med evidensstatus.
 
+## Ny pace-distance capability före release
+
+Käll-QA visar två historiska 43-km-segment där faktiska TIME-par är giltiga men timing-km-metadata inte bör användas för min/km/fartretention:
+- **2023 Torrås→Almered**: 16,0 km, n=84, implicerad fältmedian 23,663 km/h.
+- **2024 Torrås→Almered**: 16,0 km, n=58, implicerad fältmedian 20,285 km/h.
+
+Visa segmenttiden och n, men dölj eller märk pace som `distans ej verifierad`/time-only. Ändra inte källtiden eller stationernas km för att “fixa” detta.
+
+Kör på releasekandidaten:
+
+```bash
+python tests/browser_release_pace_capability_acceptance.py
+```
+
 ## Codex-releasekrav som fortfarande måste verifieras på den nya kandidaten
 
 ### 1. Saklig hero/footer-copy
