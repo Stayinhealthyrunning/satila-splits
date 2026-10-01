@@ -236,7 +236,7 @@ Den som granskar ska utan utvecklarverktyg kunna:
 Arrangörens kompletterande officiella GPX, eventuella extra 22 km-rutter, verifierad full personidentitet över år, sammanvägd difficulty-poäng (inte planerad utan ny metodprövning), musikproduktion, separat standalone legacy-kartsida och produktionsintegration på loppanalys.se. Ingen av dessa får blockera ett granskningsbart datakorrekt Sätila-utkast.
 
 ---
-**Byggdirektiv för nästa uppdrag:** Läs hela denna rapport, kontrollera respektive repo-/branch-SHA och nuvarande Sätila-main, börja omedelbart på S0 och fortsätt genom S11 utan mellanliggande designavstämningar. Redovisa endast faktiska utförda commits, tester, previews och kvarvarande begränsningar.
+**Byggdirektiv för nästa uppdrag:** Läs hela denna rapport inklusive de senare tillagda kapitel 12–13 och projektägarens återanvändningsbeslut för 2025/2026, kontrollera respektive repo-/branch-SHA och nuvarande Sätila-main, börja omedelbart på S0 och fortsätt genom S11 utan mellanliggande designavstämningar. Redovisa endast faktiska utförda commits, tester, previews och kvarvarande begränsningar.
 
 ## 12. Särskilt prioriterade produktmönster – beställarens designlås 2026-10-01
 
@@ -360,17 +360,17 @@ Beställaren har bifogat fem filer som uppges vara hämtade från arrangörens o
 \* Rå höjd är summan av positiva differenser mellan filens GPX-eleveringar och är **inte** automatiskt officiell D+. Den ska normaliseras/QA-granskas före publik höjdmetrik.
 
 Viktiga konsekvenser:
-- För `trail22` finns nu en **officiell modern referensrutt** (marknadsförd 21 km för 2026), vilket kraftigt förbättrar karta/banprofil och framtida checkpointprojektion. Den får däremot inte retroaktivt påstås vara 2021–2025 års bana utan geometrisk/källdokumenterad jämförbarhet.
-- `trail43` 2026 blir den viktigaste officiella kontrollgeometrin mot de normaliserade deltagarkandidaterna 2021–2022 och 2023–2025. Jämför 2026 mot båda innan någon kandidat promoted till explicit compatible/exact.
+- För `trail22` finns nu en **officiell återanvänd 2025/2026-referensrutt** (marknadsförd 21 km), vilket kraftigt förbättrar karta/banprofil och checkpointprojektion för **både 2025 och 2026**. Den får däremot inte automatiskt påstås vara 2021–2024 års bana utan separat jämförbarhetsevidens.
+- `trail43`-filen blir **gemensam arrangörsreferens för 2025/2026**. Jämför mot de normaliserade deltagarkandidaterna 2021–2022 och 2023–2025, i synnerhet 2025-deltagarspåret som oberoende kontroll av återanvändningsantagandet. Arbets-CourseVersion får delas för 2025/2026 med dokumenterat antagande, men äldre års identitet och whole-course-prestationsjämförbarhet ska fortfarande grundas på evidens.
 - `ultra85` 2026 är en officiell kontrollgeometri och ska jämföras med samtliga tillgängliga 2021–2025-spår; särskilt testa om 2025:s cirka 87 km-spår ligger i samma korridor.
 - 5 och 10 km ligger utanför första huvudscope 85/43/22, men filerna ska behållas i källinventeringen. Engine-kontraktet ska inte försvåra en senare utökning till dessa familjer.
-- Fyra filer heter 2026 externt men har intern GPX-track-title `...2025`. Detta är en källmetadataavvikelse, inte ett skäl att döpa om eller modifiera råinnehållet. I normaliserad katalog: `edition_reference=2026`, `source_internal_title=...2025`, `provenance_note=official 2026 download with stale embedded track name`.
+- Fyra filer heter 2026 externt men har intern GPX-track-title `...2025`. **Beslut från projektägaren 2026-10-01:** arrangören har återanvänt 2025 års banfiler därför att banorna utgår från att vara oförändrade 2025→2026 för 5, 10, 21 och 43 km. Detta är ett explicit, giltigt arbetsantagande för Sätila Splits, inte ett påstående om oberoende geometrisk verifiering. I normaliserad katalog: `edition_references=[2025,2026]`, `source_internal_title=...2025`, `assumption=organizer_route_reused_unchanged_2025_2026`, `evidence=project_owner_interpretation_of_organizer_2026_download`. Den **samma sanerade route asset och samma arbets-CourseVersion** får knytas till bägge årens upplagor (när upplaga/resultat existerar), med explicit assumption/confidence. Råfilen lämnas byteidentisk. 85 km har intern titel 2026 och behandlas som **separat 2026-route** tills jämförelse med 2025-spåret visar något annat.
 - Ingen fil har tidsstämplar. De får därför aldrig skapa splits eller GPS-passage-tider.
 
 S0/S2 ska nu uttryckligen:
 1. materialisera och bevara dessa fem råfiler med originalbyte/checksum om distributionsrätt och repo-policy tillåter, annars privat/raw-arkiv + checksummor;
 2. skapa sanerade/kanoniskt namngivna public route-assets utan att ändra råfilen;
-3. geometrijämföra 21/43/85 mot historiska källor;
-4. bygga route/elevation-browserassets och checkpointprojektion;
+3. registrera återanvänd `2025_2026`-geometri för 5/10/21/43, geometrijämföra 21/43/85 mot äldre tillgängliga källor och behålla 85 km 2026 separat tills verifierat;
+4. bygga en gemensam sanerad route/elevation-browserasset per återanvänd 2025/2026-bana (5/10/21/43) och separat 85 km 2026, med editionsspecifik checkpointprojektion/timing;
 5. uppdatera readiness så att 2026-route inte automatiskt ger Replay före 2026-resultat/timing (loppet ligger i framtiden den 1 oktober 2026).
 
