@@ -1,0 +1,72 @@
+name: Codex + independent QA integration
+on:
+  push:
+    branches: [integration/codex-independent-qa-2026-10-01]
+    paths:
+      - ".github/workflows/integration-candidate.yml"
+      - "tests/**"
+      - "tools/**"
+      - "docs/**"
+      - "config/**"
+      - "BUILD_STATE.json"
+      - "qa.integration.trigger"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: satila-integration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-and-method:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: All independent source, statistical and release-static tests
+        run: |
+          set -o pipefail
+          python tools/run_release_candidate_checks.py --source --json-output /tmp/satila-source-checks.json 2>&1 | tee /tmp/satila-source-checks.log
+      - name: Preserve source audit and first failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-source-report
+          path: |
+            /tmp/satila-source-checks.json
+            /tmp/satila-source-checks.log
+          if-no-files-found: warn
+          retention-days: 14
+  browser-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Browser parity - all historical editions and synchronized duel
+        env:
+          SATILA_SITE: docs
+          SATILA_INTERACTION_QA: /tmp/satila-integration-images
+        run: |
+          set -o pipefail
+          python tests/browser_synced_scrub_acceptance.py 2>&1 | tee /tmp/satila-browser-duel.log
+          python tests/browser_all_editions_acceptance.py 2>&1 | tee /tmp/satila-browser-all-editions.log
+          python tests/browser_evidence_acceptance.py 2>&1 | tee /tmp/satila-browser-evidence.log
+      - name: Save browser logs and actual screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-browser-evidence
+          path: |
+            /tmp/satila-integration-images/
+            /tmp/satila-browser-*.log
+          if-no-files-found: warn
+          retention-days: 14
