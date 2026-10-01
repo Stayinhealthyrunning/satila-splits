@@ -25,6 +25,17 @@ Maskinläsbara `satila-source-integrity.json`, `satila-segment-capabilities.json
 
 **S2 / 43 km 2023:** Almered→Skolan och Skolan→Ramhulta har vardera **n=8 (F=4, M=4)**. Visa totalmedian men inte kvartiler, deciler eller könsspecifika medianer. Top3 av *registrerade* kvinnliga/manliga tider kan visas med n=4 och tydlig datatäckningsförklaring. **85 km 2016** har endast två kvinnliga FINISHED och kan inte ha en tredje/bronsplacerad kvinna i topplistan.
 
+## Kompletterande metodregression (utförd medan Codex bygger frontend)
+
+[Samlat godkänd CI-körning inklusive de nya fallen: 36844654698](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36844654698).
+
+- `tools/audit_statistics_reference.py` är en **separat metodreferens**, inte ny produktionmotor. Den innehåller exakta tidspar, n-gränsade kvantiler, verkliga podiumplaceringar, observerad placeringsutveckling och exakt normaliserad måltidsfördelning med tydligt märkta fallback-segment.
+- `tests/test_statistics_contract.py`: 9 fristående syntetiska regressionstester, inklusive Tostared utan passage, saknad observation, n=4/5/9/10/19/20, två kvinnliga podiumplaceringar, nollstart endast vid race-start och pacingplan som summerar exakt till angiven sluttid.
+- `tests/test_course_comparability_contract.py`: 8 regressionsfall för explicit banversion, 2025/26 återanvändning, separat 85 km 2026, opromoted deltagarkandidater och skillnaden mellan officiell timing- och GPX-displaydistans.
+- Dessa tester körs tillsammans med de sex befintliga käll- och publiceringskontrollerna i `.github/workflows/source-integrity.yml` på PR #4. De ändrar inte publicerade race-data eller Codex-filer.
+
+**Viktig metodregel vid Codex-integration:** Kontrollera att pacing inte byggs som en mekanisk fördelning över stationsmetadata när en publikt angiven station helt saknar tidtagning. Eliminera bara den oobserverade analysgränsen (inte källstationen), bygg verkliga positiva grannankare och markera eventuell interpolerad Tostared-planering som icke observerad. För utvecklaren är statistisk referensimplementation i `tools/audit_statistics_reference.py` tillgänglig att jämföra mot faktisk JS.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
