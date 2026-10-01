@@ -1,0 +1,89 @@
+name: Build Sätila first draft from frozen EQ archive
+on:
+  workflow_dispatch:
+  push:
+    branches: [build/saetila-first-draft]
+    paths:
+      - ".github/workflows/build-first-draft.yml"
+      - "tools/build_satila.py"
+      - "config/eqtiming-events.json"
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: satila-first-draft
+  cancel-in-progress: false
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore verified public EQ Timing archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/work
+          gh run download 36818159977 --repo "${GITHUB_REPOSITORY}" --name satila-eqtiming-raw-36818159977 --dir data/work
+          test -s data/work/eqtiming-full/summary.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("data/work/eqtiming-full/summary.json")
+          s=json.loads(p.read_text())
+          assert len(s)==9, f"Expected 9 source events, received {len(s)}"
+          assert all(x.get("station_count",0)>0 for x in s)
+          print("Source archive:",len(s),"events,",sum(x['result_observations'] for x in s),"raw station observations")
+          PY
+      - name: Build curated edition bundles
+        run: |
+          python tools/build_satila.py --source data/work/eqtiming-full --out docs/data
+          test -s docs/data/bootstrap.json
+          test -d docs/data/races
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path("docs/data")
+          b=json.loads((d/"bootstrap.json").read_text())
+          races=b["editions"]
+          assert len(races)==27, f"Expected 27 selected editions, received {len(races)}"
+          assert {r['family'] for r in races}=={'ultra85','trail43','trail22'}
+          total=0
+          for r in races:
+              p=d/'races'/f"{r['race_key']}.json"
+              assert p.is_file(),str(p)
+              o=json.loads(p.read_text())
+              assert o['race_key']==r['race_key']
+              total+=r['results']
+          assert total>2500,total
+          print("PASS:",len(races),"edition bundles,",total,"unique results")
+          PY
+      - name: Check frontend source syntax and required assets
+        run: |
+          node --check docs/assets/app.js
+          test -s docs/assets/hero.webp
+          test -s docs/assets/design-reference.webp
+          test -s docs/assets/style.css
+          test -s docs/index.html
+      - name: Preserve reproducible web export in build branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/data/bootstrap.json docs/data/races docs/data/route-inventory.json docs/data/routes docs/data/satila.sqlite 2>/dev/null || true
+          git add -f docs/data/bootstrap.json docs/data/races docs/data/satila.sqlite
+          if ! git diff --cached --quiet; then
+            git commit -m "Generate actual Sätila race bundles from frozen EQ archive [skip ci]"
+            git push origin HEAD:build/saetila-first-draft
+          fi
+      - name: Upload reviewable static draft
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-first-draft-${{ github.run_id }}
+          path: docs/
+          retention-days: 30
+          if-no-files-found: error
