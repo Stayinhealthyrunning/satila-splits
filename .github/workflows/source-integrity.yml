@@ -54,6 +54,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_replay_source_contract.py -v
       - name: Frozen representative aggregate regression
         run: python -m unittest discover -s tests -p test_golden_aggregate_regression.py -v
+      - name: Review bundle regression
+        run: python -m unittest discover -s tests -p test_review_package_contract.py -v
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
