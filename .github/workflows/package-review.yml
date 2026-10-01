@@ -5,6 +5,7 @@ on:
     branches: ["build/full-first-draft-2026-10-01"]
     paths:
       - ".github/workflows/package-review.yml"
+      - "qa.trigger"
 permissions:
   contents: read
 jobs:
@@ -13,6 +14,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - name: Fast accessibility and delivery-budget gates
+        run: python tests/test_accessibility_performance.py
       - name: Validate and package only static published site
         run: |
           python - <<'PY'
