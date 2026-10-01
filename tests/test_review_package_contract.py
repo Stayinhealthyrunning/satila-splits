@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
+import tempfile
 import unittest
 from zipfile import ZipFile,ZIP_DEFLATED
 
@@ -66,10 +67,11 @@ class ReviewPackageContract(unittest.TestCase):
 
     def test_review_zip_paths_are_static_and_cannot_escape_site(self):
         m=verified_manifest()
-        with ZipFile(pathlib.Path("/tmp")/"satila-review-audit-allowlist.zip","w",ZIP_DEFLATED) as z:
+        zpath=pathlib.Path(tempfile.gettempdir())/"satila-review-audit-allowlist.zip"
+        self.assertTrue(zpath.parent.is_dir(),zpath.parent)
+        with ZipFile(zpath,"w",ZIP_DEFLATED) as z:
             for path in m:z.write(SITE/path,"site/"+path)
             z.writestr("README.txt","Private review-only static bundle; not the raw source archive.\n")
-        zpath=pathlib.Path("/tmp")/"satila-review-audit-allowlist.zip"
         try:
             with ZipFile(zpath) as z:
                 names=z.namelist()
