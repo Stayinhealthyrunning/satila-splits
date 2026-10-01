@@ -113,6 +113,15 @@ För framtida körning har ett isolerat återbyggnadsverktyg checkats in: `tools
 
 **Denna granskning ersätter inte Codex funktionella browser-QA.** När frontend-/dataexporten ändras behöver 36/36 baslinjen omprövas mot avsiktliga nya datarevisioner och dåvarande GitHub-HEAD. Ändra aldrig gamla kontrollrapporter tyst.
 
+## Nytt P0-kontrakt: synkroniserad kart-/höjd-Replay och H2H utan falsk GPS
+
+[Grön verklig-data-regression 36851968462](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36851968462).
+
+- `tools/audit_replay_reference.py` är en fristående metodreferens för att koppla **verkliga** offentliga tidtagningsankare till godkänd GPX-displaydistans; den får inte blandas ihop med uppmätt deltagar-GPS.
+- `tests/test_replay_source_contract.py` innehåller **sex regressioner**: samtliga faktiska fullföljare på 2025 års 43/22-km-upplagor, exakt bevarande av varje registrerad tidsposition, Tostared som endast illustrativ mellanposition (ingen fabricerad TIME), ingen extrapolering utanför senaste verkliga ankaret, H2H-luckans antisymmetri och korrekta verkliga måltider, kartans giltiga interpolerade koordinater samt förbud mot Replay på historiska editioner utan auktoriserad rutt.
+- Resultatet är ett metod-/datakontrakt, **inte** ett godkännande av Codex slutliga DOM eller att fysisk karta/höjd klickas korrekt. Browser-E2E för detta ska köras efter integrering. Både karta och höjdkurva måste skriva till **en** delad, klampad displaydistans. Tillhörande tidsangivelser är observerade vid verkliga kontroller och uttryckligen illustrativa *mellan* två kontroller.
+- Aktuellt första utkast har `runnerAnchors`, `estimatedAt`, `drawCompareMap` och `attachElevation` i `docs/assets/app.js`; granska dem mot ovanstående oberoende kontrakt i Codex slutleverans. Om någon löpare saknar senare bekräftat ankare visas **ingen** H2H-lucka vid sådan position. Klassa inte en illustrativ GPS-position som löparens verkliga spår.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
