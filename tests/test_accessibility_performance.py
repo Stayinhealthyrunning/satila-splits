@@ -69,6 +69,22 @@ def test_budget():
     assert initial<=512*1024,f"Critical initial transfer >512KiB: {initial}"
     print(f"PASS transfer budget: initial={initial}B, JS={js}B, CSS={css}B, HTML={markup}B; {len(races)} editions")
 
+def test_coverage():
+    boot=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
+    coverage=json.loads((ROOT/"data/coverage.json").read_text(encoding="utf-8"))
+    editions={e["race_key"]:e for e in boot["editions"]}
+    assert len(coverage)==len(editions)==27
+    for row in coverage:
+        source=editions[row["race_key"]]
+        assert row["results"]==source["results"]
+        assert row["route_status"]==source["route_status"]
+        assert row.get("route_file")==source.get("route_file")
+        assert row["sex_known"]==row["sex_f"]+row["sex_m"]
+        for field in ("sex_known","age_known","class_known","club_known","status_known","known_starters"):
+            assert 0<=row[field]<=row["results"],(row["race_key"],field)
+    print("PASS coverage: 27 current editions, source fields and route status agree")
+
 if __name__=="__main__":
     test_page_structure()
     test_budget()
+    test_coverage()

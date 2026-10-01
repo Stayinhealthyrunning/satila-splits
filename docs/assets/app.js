@@ -427,11 +427,45 @@ window.SatilaExtras=(()=>{
   function historyEditions(){return S.boot.editions.filter(e=>e.family===S.family).sort((a,b)=>a.year-b.year)}
   function renderHistoryPerformance(){const h=$('#history-performance');if(!h)return;const ed=historyEditions().filter(e=>num(e.median_seconds));if(!ed.length){h.innerHTML=empty();return}const min=Math.min(...ed.map(e=>e.median_seconds)),max=Math.max(...ed.map(e=>e.median_seconds)),span=Math.max(1,max-min);h.innerHTML=`<div class="edition-dotplot">${ed.map(e=>`<button type="button" data-year-extra="${e.year}" style="--pos:${100*(e.median_seconds-min)/span}%"><span>${e.year}</span><i></i><strong>${time(e.median_seconds)}</strong></button>`).join('')}</div><p class="small muted">Punkterna är separata upplagemedianer. Ingen linje dras mellan år utan verifierad whole-course-grupp.</p>`;$$('[data-year-extra]',h).forEach(b=>b.addEventListener('click',()=>{S.year=+b.dataset.yearExtra;loadRace().then(()=>$('#race-context').scrollIntoView())}))}
   async function loadRaceMini(ed){try{return await fetch(`data/races/${encodeURIComponent(ed.race_key)}.json`).then(r=>r.ok?r.json():null)}catch{return null}}
-  async function renderSexHistory(){const h=$('#history-sex');if(!h)return;const token=`${S.family}-${Date.now()}`;h.dataset.token=token;h.innerHTML='<p class="muted small">Laddar könsfördelning per upplaga…</p>';const ed=historyEditions(),races=await Promise.all(ed.map(loadRaceMini));if(h.dataset.token!==token)return;const rows=ed.map((e,i)=>{const rs=races[i]?.results||[],f=rs.filter(r=>r.sex==='F').length,m=rs.filter(r=>r.sex==='M').length,u=rs.length-f-m,d=f+m;return {...e,f,m,u,pf:d?100*f/d:null}});h.innerHTML=rows.some(x=>num(x.pf))?`<div class="sex-history-bars">${rows.map(x=>`<div><span>${x.year}</span><div class="stack"><i class="women" style="width:${x.pf||0}%"></i><i class="men" style="width:${100-(x.pf||0)}%"></i></div><strong>${num(x.pf)?x.pf.toFixed(0)+' % K':'—'}</strong><small>${x.f} K · ${x.m} M${x.u?' · '+x.u+' utan kön':''}</small></div>`).join('')}</div>`:empty('Källstött kön saknas i historiska resultat.')}
+  let coveragePromise=null;
+  function loadCoverage(){
+    if(!coveragePromise)coveragePromise=fetch('data/coverage.json').then(response=>{
+      if(!response.ok)throw Error('Källtäckningen kunde inte läsas');
+      return response.json();
+    }).catch(()=>null);
+    return coveragePromise;
+  }
+  async function renderSexHistory(){
+    const host=$('#history-sex');
+    if(!host)return;
+    const family=S.family;
+    host.innerHTML='<p class="muted small">Laddar källstödd könsfördelning…</p>';
+    const coverage=await loadCoverage();
+    if(S.family!==family)return;
+    if(!coverage){host.innerHTML=empty('Källtäckningsfilen kunde inte läsas.');return}
+    const rows=coverage.filter(e=>e.family===family).sort((a,b)=>a.year-b.year).map(e=>{
+      const known=e.sex_known,coverageRate=e.results?known/e.results:0;
+      return {...e,coverageRate,pf:known&&coverageRate>=.8?100*e.sex_f/known:null};
+    });
+    host.innerHTML=rows.some(e=>num(e.pf))?`<div class="sex-history-bars">${rows.map(e=>`<div><span>${e.year}</span><div class="stack">${num(e.pf)?`<i class="women" style="width:${e.pf}%"></i><i class="men" style="width:${100-e.pf}%"></i>`:''}</div><strong>${num(e.pf)?e.pf.toFixed(0)+' % K':'—'}</strong><small>${e.sex_f} K · ${e.sex_m} M · ${e.results-e.sex_known} utan kön · täckning ${(100*e.coverageRate).toFixed(0)} %${e.coverageRate<.8?' (trend dold under 80 %)':''}</small></div>`).join('')}</div>`:empty('Inget år når minst 80 % källstödd könstäckning.');
+  }
+
   function renderFingerprint(){const h=$('#history-fingerprint');if(!h)return;const ed=historyEditions(),maxR=Math.max(1,...ed.map(e=>e.results)),maxT=Math.max(1,...ed.map(e=>e.timing_stations||0)),maxM=Math.max(1,...ed.map(e=>e.median_seconds||0)),maxD=Math.max(1,...ed.map(e=>e.results?100*e.dnf/e.results:0));h.innerHTML=`<div class="finger-table"><div class="finger-head"><b>År</b><b>Volym</b><b>Stationer</b><b>Median</b><b>DNF</b></div>${ed.map(e=>{const d=e.results?100*e.dnf/e.results:0;return `<div><b>${e.year}</b>${[[e.results/maxR,e.results],[ (e.timing_stations||0)/maxT,e.timing_stations||0],[ (e.median_seconds||0)/maxM,time(e.median_seconds)],[d/maxD,d.toFixed(1)+' %']].map(([p,v])=>`<span><i style="--v:${Math.max(0,p)*100}%"></i><em>${esc(v)}</em></span>`).join('')}</div>`}).join('')}</div>`}
   function renderProvenance(){const h=$('#course-provenance');if(!h)return;const ed=historyEditions().slice().reverse();h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>År</th><th>CourseVersion</th><th>Rutt</th><th>Timing</th><th>Whole-course jämförelse</th></tr></thead><tbody>${ed.map(e=>`<tr><td>${e.year}</td><td>${esc(e.course_version||`${e.family}-${e.year}-unverified`)}</td><td>${esc(e.route_status||'none')}</td><td>EQ Timing · event ${e.event_id}</td><td>${String(e.course_version||'').includes('unverified')||!e.course_version?'Inte promoted':'Endast inom explicit grupp'}</td></tr>`).join('')}</tbody></table></div>`}
   function renderGroupTable(){const h=$('#group-table');if(!h)return;const rows=S.filtered,groups=[];for(const sex of ['F','M']){const rs=rows.filter(r=>r.sex===sex),fs=rs.filter(finish);groups.push({kind:'Kön',name:sex==='F'?'Kvinnor':'Män',n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}for(const cl of Object.entries(collections(rows.map(r=>r.class_name||'').filter(Boolean))).sort((a,b)=>b[1]-a[1])){const rs=rows.filter(r=>r.class_name===cl[0]),fs=rs.filter(finish);groups.push({kind:'Klass',name:cl[0],n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>Typ</th><th>Grupp</th><th>Resultat</th><th>Fullföljare</th><th>Median*</th></tr></thead><tbody>${groups.map(g=>`<tr><td>${g.kind}</td><td>${esc(g.name)}</td><td>${g.n}</td><td>${g.finish}</td><td>${time(g.med)}</td></tr>`).join('')}</tbody></table></div><p class="small muted">* Median visas först vid minst fem fullföljare.</p>`}
-  function renderCoverage(){const h=$('#coverage-table');if(!h)return;const ed=historyEditions().slice().reverse();h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>År</th><th>Resultat</th><th>Fullföljare</th><th>Splitobs.</th><th>Stationer</th><th>Rutt</th></tr></thead><tbody>${ed.map(e=>`<tr><td>${e.year}</td><td>${format(e.results)}</td><td>${format(e.finishers)}</td><td>${format(e.split_observations)}</td><td>${e.timing_stations}</td><td>${e.route_status&&e.route_status!=='none'?'Ja · '+esc(e.route_status):'Nej'}</td></tr>`).join('')}</tbody></table></div>`}
+  async function renderCoverage(){
+    const host=$('#coverage-table');
+    if(!host)return;
+    const family=S.family;
+    host.innerHTML='<p class="muted small">Laddar täckningsinventering…</p>';
+    const coverage=await loadCoverage();
+    if(S.family!==family)return;
+    if(!coverage){host.innerHTML=empty('Källtäckningsfilen kunde inte läsas.');return}
+    const rows=coverage.filter(e=>e.family===family).sort((a,b)=>b.year-a.year);
+    const pct=(count,total)=>total?(100*count/total).toFixed(0)+' %':'—';
+    host.innerHTML=`<p class="small muted">Maskinläsbar export: <a href="data/coverage.json" download>coverage.json ↗</a>. Täckning räknas på källfält, inte på antaganden.</p><div class="table-scroll"><table><thead><tr><th>År</th><th>Resultat</th><th>Fullföljare</th><th>TIME</th><th>Stationer</th><th>Status</th><th>Kön</th><th>Ålder</th><th>Klass</th><th>Klubb</th><th>Rutt</th><th>CourseVersion</th></tr></thead><tbody>${rows.map(e=>`<tr><td>${e.year}</td><td>${format(e.results)}</td><td>${format(e.finishers)}</td><td>${format(e.split_observations)}</td><td>${e.timing_stations}</td><td>${pct(e.status_known,e.results)}</td><td>${pct(e.sex_known,e.results)}</td><td>${pct(e.age_known,e.results)}</td><td>${pct(e.class_known,e.results)}</td><td>${pct(e.club_known,e.results)}</td><td>${e.route_file?'Ja · '+esc(e.route_status):'Nej'}</td><td>${esc(e.course_version||'ej verifierad')}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+
   extraHelp.pacing='Pacingindex = 100 × (egen sluttid / officiell timingdistans) / (egen segmenttid / kontrakterad segmentdistans). Över 100 betyder snabbare än löparens eget hel-loppssnitt. Diagrammet visar median av individuella index från minst fem fullföljare med två exakta segmentpassager.';
   extraHelp.sexpace='Gemensam tidsaxel visar separata segmentmedianer för källstödda kvinnor och män. Varje punkt kräver minst fem exakta observationer i könsgruppen; en saknad punkt bryter linjen.';
   extraHelp.groups='Välj högst fem publicerade klasser. Gruppkurvan är median av individuella pacingindex per segment; minst fem exakta observationer krävs per klass och punkt.';

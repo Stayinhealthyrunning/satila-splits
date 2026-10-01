@@ -142,7 +142,29 @@ def routes(out,gpxdir):
    f=out/'races'/f'{ed["race_key"]}.json';race=load(f);race['route_status']=ed['route_status'];race['route_file']=ed['route_file'];race['course_version']=ed['course_version'];js(f,race)
  return inventory
 
+def refresh_coverage(out):
+ """Derive public field coverage from committed race bundles after course linking."""
+ boot=load(out/'bootstrap.json');coverage=[]
+ for ed in boot['editions']:
+  race=load(out/'races'/f"{ed['race_key']}.json")
+  rows=race['results'];sex_f=sum(r.get('sex')=='F' for r in rows);sex_m=sum(r.get('sex')=='M' for r in rows)
+  coverage.append(ed|{
+   'sex_f':sex_f,'sex_m':sex_m,'sex_known':sex_f+sex_m,
+   'age_known':sum(isinstance(r.get('age'),int) for r in rows),
+   'class_known':sum(bool(r.get('class_name')) for r in rows),
+   'club_known':sum(bool(r.get('club')) for r in rows),
+   'status_known':sum(r.get('status')!='UNKNOWN' for r in rows),
+   'known_starters':sum(r.get('status') in ('FINISHED','DNF','DSQ') for r in rows),
+   'route_status':ed.get('route_status','none'),
+   'course_version':ed.get('course_version'),
+   'whole_course_comparison_group':ed.get('whole_course_comparison_group')
+  })
+ js(out/'coverage.json',coverage)
+ return coverage
+
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--source',default=str(ROOT/'data/work/eqtiming-full'));ap.add_argument('--gpix',default=str(ROOT/'data/source/gpx'));ap.add_argument('--events',default=str(ROOT/'config/eqtiming-events.json'));ap.add_argument('--out',default=str(ROOT/'docs/data'));arg=ap.parse_args();out=Path(arg.out);out.mkdir(parents=True,exist_ok=True)
- meta,n=parse(Path(arg.source),out,Path(arg.events));inv=routes(out,Path(arg.gpix));print('EQ full observations',n,'EDITION COUNT',len(meta['editions']),'UNIQUE',sum(x['results'] for x in meta['editions']),'FINISHED',sum(x['finishers'] for x in meta['editions']),'SPLITS',sum(x['split_observations'] for x in meta['editions'])); print('BY FAMILY',collections.Counter(x['family'] for x in meta['editions']));print('GPX',[(x['family'],x['geometry_length_km']) for x in inv]);
+ ap=argparse.ArgumentParser();ap.add_argument('--source',default=str(ROOT/'data/work/eqtiming-full'));ap.add_argument('--gpix',default=str(ROOT/'data/source/gpx'));ap.add_argument('--events',default=str(ROOT/'config/eqtiming-events.json'));ap.add_argument('--out',default=str(ROOT/'docs/data'));ap.add_argument('--refresh-coverage-only',action='store_true');arg=ap.parse_args();out=Path(arg.out);out.mkdir(parents=True,exist_ok=True)
+ if arg.refresh_coverage_only:
+  print('COVERAGE',len(refresh_coverage(out)),'editions refreshed from committed bundles');return
+ meta,n=parse(Path(arg.source),out,Path(arg.events));inv=routes(out,Path(arg.gpix));refresh_coverage(out);print('EQ full observations',n,'EDITION COUNT',len(meta['editions']),'UNIQUE',sum(x['results'] for x in meta['editions']),'FINISHED',sum(x['finishers'] for x in meta['editions']),'SPLITS',sum(x['split_observations'] for x in meta['editions'])); print('BY FAMILY',collections.Counter(x['family'] for x in meta['editions']));print('GPX',[(x['family'],x['geometry_length_km']) for x in inv]);
 if __name__=='__main__':main()
