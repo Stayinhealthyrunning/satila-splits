@@ -1,0 +1,403 @@
+{
+  "schema": "satila-component-readiness-v1",
+  "date": "2026-10-01",
+  "scope": "Source/method readiness only. Frontend implementation status must be re-audited on the Codex candidate commit.",
+  "thresholds": {
+    "median_n": 5,
+    "q25_q75_n": 10,
+    "q10_q90_n": 20,
+    "sex_median_n_each": 5
+  },
+  "status_meaning": {
+    "ready": "Current frozen data/method supports component for at least one edition with normal gating.",
+    "gated": "Supported only when per-edition/per-group evidence requirements are met; UI must expose empty/method state.",
+    "blocked_by_evidence": "Current approved public evidence cannot support the component as described.",
+    "frontend_pending": "Method/data contract exists but Codex candidate UI has not yet been verified."
+  },
+  "components": [
+    {
+      "id": "D01",
+      "name": "KPI/status/completion",
+      "status": "ready",
+      "evidence": "All 27 editions; denominator tests distinguish registered/known-started/finished.",
+      "test": "tests/test_population_denominators.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D02",
+      "name": "Finish histogram",
+      "status": "ready",
+      "evidence": "All editions; 15-minute bins reconcile to exact finishers.",
+      "test": "tests/test_population_denominators.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D03",
+      "name": "Finish percentiles",
+      "status": "gated",
+      "evidence": "Per selected field; median n>=5, quartiles n>=10, deciles n>=20.",
+      "test": "tests/test_statistics_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D04",
+      "name": "Sex overview/completion",
+      "status": "gated",
+      "evidence": "Only source-supported F/M; unknown retained separately.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D05",
+      "name": "Class distribution",
+      "status": "ready",
+      "evidence": "Source class strings available; no inferred class from age.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D06",
+      "name": "Status + field flow",
+      "status": "gated",
+      "evidence": "Flow uses observed TIME only; missing passage is not DNF.",
+      "test": "tests/test_population_denominators.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D07",
+      "name": "Finish time vs total place",
+      "status": "ready",
+      "evidence": "FINISHED + public total place; profile click remains frontend concern.",
+      "test": "tests/test_real_data_analysis_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D08",
+      "name": "Observed target time to placing",
+      "status": "ready",
+      "evidence": "Can map to current-edition observed finish distribution; must not be future forecast.",
+      "test": "tests/test_statistics_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D09",
+      "name": "DNF last observed checkpoint",
+      "status": "gated",
+      "evidence": "128 DNF; exact last TIME when available, otherwise unknown station.",
+      "test": "tests/test_population_denominators.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D10",
+      "name": "Placement journey",
+      "status": "gated",
+      "evidence": "Requires >=2 real placement observations; never synthesize start rank.",
+      "test": "tests/test_real_data_analysis_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D11",
+      "name": "Closing strength",
+      "status": "gated",
+      "evidence": "Requires positive real final segment pair.",
+      "test": "tests/test_real_data_analysis_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D12",
+      "name": "Age / source age class",
+      "status": "gated",
+      "evidence": "Use exact source age when present; never infer exact age from class text.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D13",
+      "name": "Club/place groups",
+      "status": "gated",
+      "evidence": "Source club/location strings only; small groups must expose n.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D14",
+      "name": "Segment median + Q25-Q75",
+      "status": "gated",
+      "evidence": "Exact positive segment pairs; thresholds n>=5/10.",
+      "test": "tools/audit_segment_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D15",
+      "name": "Q10-Q90 detail",
+      "status": "gated",
+      "evidence": "Exact positive segment pairs; threshold n>=20.",
+      "test": "tools/audit_segment_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D16",
+      "name": "Pace retention",
+      "status": "gated",
+      "evidence": "Requires valid timing-axis segment distance and finish; no GPX distance substitution.",
+      "test": "tests/test_course_comparability_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D17",
+      "name": "Women/men segment pacing",
+      "status": "gated",
+      "evidence": "Per-sex n enforced; 2023 43 km two sparse segments F=4/M=4.",
+      "test": "tools/audit_ui_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D18",
+      "name": "Up to five analysis groups",
+      "status": "gated",
+      "evidence": "Allowed only with source group + exact segment pairs; n visible.",
+      "test": "tools/audit_ui_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D19",
+      "name": "Group x segment heatmap",
+      "status": "gated",
+      "evidence": "Empty cell means insufficient evidence, never zero pace.",
+      "test": "tools/audit_segment_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D20",
+      "name": "Field finish progression",
+      "status": "ready",
+      "evidence": "Uses actual FINISHED denominator and finish times.",
+      "test": "tests/test_population_denominators.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D21",
+      "name": "Field spread through controls",
+      "status": "gated",
+      "evidence": "Only source TIME observations; population changes must be shown.",
+      "test": "tests/test_published_data_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D22",
+      "name": "Course intelligence",
+      "status": "gated",
+      "evidence": "Separate dimensions only; geometry-dependent measures only on authorized route editions.",
+      "test": "tests/test_route_geometry_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D23",
+      "name": "Elevation profile",
+      "status": "gated",
+      "evidence": "Five organizer display routes exist; public historical result UI route link currently only authorized where edition route_file permits.",
+      "test": "tests/test_route_geometry_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D24",
+      "name": "Historical participation/status",
+      "status": "ready",
+      "evidence": "Nine source years; 2020 absent, not zero.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D25",
+      "name": "Historical performance trends",
+      "status": "gated",
+      "evidence": "Requires explicit whole-course comparison group; current participant candidate routes are not promoted.",
+      "test": "tests/test_course_comparability_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D26",
+      "name": "Year fingerprint/records",
+      "status": "gated",
+      "evidence": "Participation can span family; performance index requires verified comparable years.",
+      "test": "tests/test_course_comparability_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "D27",
+      "name": "Historical women/men share",
+      "status": "gated",
+      "evidence": "Source sex only; unknown retained, coverage visible.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T01",
+      "name": "Results database",
+      "status": "ready",
+      "evidence": "27 edition bundles, 3272 rows; sort/filter/pagination UI remains frontend verification.",
+      "test": "tests/test_published_data_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T02",
+      "name": "Official passages profile",
+      "status": "gated",
+      "evidence": "Only source TIME rows; missing remains missing.",
+      "test": "tests/test_published_data_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T03",
+      "name": "Runner segment + relative performance",
+      "status": "gated",
+      "evidence": "Requires real positive pair; field median threshold enforced.",
+      "test": "tests/test_real_data_analysis_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T04",
+      "name": "Segment lab",
+      "status": "gated",
+      "evidence": "Per-segment readiness matrix and provenance available.",
+      "test": "tools/audit_segment_capabilities.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T05",
+      "name": "Direct comparison",
+      "status": "gated",
+      "evidence": "Same RaceEdition real results; textual finish compare without route, segment/map compare only with common observed anchors + authorized route.",
+      "test": "tests/test_replay_source_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T06",
+      "name": "Race plan",
+      "status": "gated",
+      "evidence": "Observed relative median n>=5 per effective segment; explicit distance-only fallback; exact total-time normalization.",
+      "test": "tests/test_statistics_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T07",
+      "name": "Course versions/source",
+      "status": "ready",
+      "evidence": "Five checksum-locked organizer GPX; explicit 2025/26 reuse rules; participant candidates kept unpromoted.",
+      "test": "tests/test_source_chain_of_custody.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T08",
+      "name": "Historical years",
+      "status": "ready",
+      "evidence": "Nine years and course/source status available.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T09",
+      "name": "Class/age/club",
+      "status": "gated",
+      "evidence": "Source-supported groups only; frontend presentation pending Codex.",
+      "test": "tests/test_public_summary_reconciliation.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "T10",
+      "name": "Source/coverage inventory",
+      "status": "ready",
+      "evidence": "Edition counts, split coverage, station coverage, route/source fingerprints and JSON audit artifacts exist.",
+      "test": "reports/INDEPENDENT_SOURCE_AUDIT_2026-10-01.md",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K01",
+      "name": "Overview map",
+      "status": "gated",
+      "evidence": "Authorized local route required; timing distance must stay distinct from GPX display distance.",
+      "test": "tests/test_route_geometry_integrity.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K02",
+      "name": "Historical route comparison",
+      "status": "blocked_by_evidence",
+      "evidence": "No pair of separately approved historical public route assets currently available for authoritative two-year overlay; participant candidates remain candidates.",
+      "test": "tests/test_course_comparability_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K03",
+      "name": "Synchronized segment/course map",
+      "status": "gated",
+      "evidence": "Authorized route + selected effective segment; source anchors only.",
+      "test": "tests/browser_synced_scrub_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K04",
+      "name": "Runner Replay",
+      "status": "gated",
+      "evidence": "At least two real timing anchors + authorized route; interpolation only between anchors; no old-course borrowing.",
+      "test": "tests/test_replay_source_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K05",
+      "name": "Map duel",
+      "status": "gated",
+      "evidence": "Same edition, authorized route, >=2 real anchors per runner. Current first-draft 2025 43 km two-person scrub is browser-tested.",
+      "test": "tests/browser_synced_scrub_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "K06",
+      "name": "Neutral map fallback",
+      "status": "frontend_pending",
+      "evidence": "Source rule is clear: no other edition route may be substituted; visual fallback must be verified on Codex candidate.",
+      "test": "tests/browser_all_editions_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "P0.1",
+      "name": "Interactive mini-map + elevation",
+      "status": "gated",
+      "evidence": "2025 route-enabled editions supported; bidirectional scrub tested in first draft.",
+      "test": "tests/browser_synced_scrub_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "P0.2",
+      "name": "Sex-separated podiums",
+      "status": "gated",
+      "evidence": "Actual observed count only; 2016 ultra85 women has exactly two finishers.",
+      "test": "tests/browser_evidence_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "P0.3",
+      "name": "Individual runner analysis",
+      "status": "gated",
+      "evidence": "Real segments, placement journey and relative stats contracts exist; UI richness pending Codex.",
+      "test": "tests/test_real_data_analysis_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "P0.4",
+      "name": "Personal race plan",
+      "status": "gated",
+      "evidence": "Effective source-observed segment axis; Tostared metadata-only bridge rule; exact target total.",
+      "test": "tests/test_statistics_contract.py",
+      "frontend_verification": "pending_codex_candidate"
+    },
+    {
+      "id": "P0.5",
+      "name": "Compare 2 races/results",
+      "status": "gated",
+      "evidence": "Same-edition two-person route/elevation bidirectional scrub tested in first draft.",
+      "test": "tests/browser_synced_scrub_acceptance.py",
+      "frontend_verification": "pending_codex_candidate"
+    }
+  ]
+}
