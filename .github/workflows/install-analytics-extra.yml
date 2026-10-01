@@ -26,7 +26,7 @@ jobs:
           root=pathlib.Path(".")
           specs=[
             ("tools/payloads/analytics-extra.js.gz.b64","docs/assets/analytics-extra.js","b99f47737288d38fc1756e7a58ddda55110299b8037e9b75075cacd8d436deb4"),
-            ("tools/payloads/style-extra.css.gz.b64","docs/assets/style-extra.css","f57e66ba4b1530cb4ef9c57100fcfd5958b7e1479d106ba850005bab90bf17a8"),
+            ("tools/payloads/style-extra.css.gz.b64","docs/assets/style-extra.css","1b8b9384192cb5698f0bf2efc5e292891ecf2196610bff4df62d7d6b6078fe92"),
           ]
           for src,dst,expected in specs:
               raw=gzip.decompress(base64.b64decode((root/src).read_text().strip()))
