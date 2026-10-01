@@ -52,6 +52,9 @@ async def main():
    await page.wait_for_selector("#extra-overview",timeout=20000)
    assert "85 km" in await page.locator("#race-title").inner_text()
    assert await page.locator("#segment-table tbody tr").count()>0
+   assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
+   assert await page.locator('#results-table th').count()==11
+   assert await page.locator('#segment-table th').count()==10
    for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
    try:
@@ -70,6 +73,16 @@ async def main():
    assert "Ingen godkänd" in await page.locator("#course-map").inner_text()
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
+   assert await page.locator('#finish-series [data-finish-mode]').count()==3
+   await page.locator('#finish-series [data-finish-mode="F"]').click()
+   assert await page.locator('#finish-series [data-finish-mode="F"]').get_attribute('aria-pressed')=='true'
+   await page.locator('#finish-series [data-finish-mode="all"]').click()
+   assert await page.locator('#finish-series [data-finish-mode="all"]').get_attribute('aria-pressed')=='true'
+   assert await page.locator('#group-table th').count()==5
+   assert await page.locator('#group-table #group-next').count()==1
+   await page.locator('#group-table #group-next').click()
+   assert 'Sida 2' in await page.locator('#group-table .pagination').inner_text()
+   await page.locator('#group-table #group-prev').click()
    assert await page.locator('#segment-pacing circle[data-pacing-segment]').count()>0
    assert await page.locator('#percentile-chart svg').count()==1
    assert await page.locator('#segment-sex-extra svg').count()==1
