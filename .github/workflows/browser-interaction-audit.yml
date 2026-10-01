@@ -8,6 +8,9 @@ on:
       - "tests/browser_all_editions_acceptance.py"
       - ".github/workflows/browser-interaction-audit.yml"
       - "qa.interaction.trigger"
+concurrency:
+  group: satila-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
