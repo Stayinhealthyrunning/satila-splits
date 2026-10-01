@@ -1,0 +1,25 @@
+name: Codex integration data review
+on:
+  push:
+    branches: [review/codex-integration-2026-10-01]
+    paths:
+      - "tests/test_codex_coverage_derivation.py"
+      - ".github/workflows/codex-integration-data-review.yml"
+      - "docs/data/**"
+      - "tools/build_satila.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  coverage-derivation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Prove coverage fields are pure derivations
+        run: python -m unittest discover -s tests -p test_codex_coverage_derivation.py -v
+      - name: Syntax-check updated builder
+        run: python -m py_compile tools/build_satila.py
