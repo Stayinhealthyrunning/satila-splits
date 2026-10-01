@@ -5,9 +5,11 @@ on:
     paths:
       - "tests/test_published_data_integrity.py"
       - "tools/audit_segment_capabilities.py"
+      - "tools/audit_station_coverage.py"
       - ".github/workflows/source-integrity.yml"
       - "docs/data/**"
       - "tools/audit_segment_capabilities.py"
+      - "tools/audit_station_coverage.py"
   workflow_dispatch:
   push:
     branches: [audit/satila-data-method-2026-10-01]
@@ -30,6 +32,8 @@ jobs:
         run: python tests/test_published_data_integrity.py --output /tmp/satila-source-integrity.json
       - name: Verify segment and goal-plan observation coverage
         run: python tools/audit_segment_capabilities.py --output /tmp/satila-segment-capabilities.json
+      - name: Detect unobserved source stations and verify real bridge pairs
+        run: python tools/audit_station_coverage.py
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
