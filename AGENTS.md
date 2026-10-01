@@ -1,6 +1,6 @@
 # AGENTS.md – Sätila Splits / 2026-10-01 post-integration
 
-**NY AUKTORITATIV CHECKPOINT:** 217439a4, [Actions #36875529003 (4/4 PASS)](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36875529003). Läs först [VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md](reports/VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md). K03 och T06-underlagskolumner är genomförda och browser-testade. Äldre pekare i BUILD_STATE och historisk parity-audit är inte aktuell Codex-att-göra-lista.
+**NY AUKTORITATIV CHECKPOINT:** 790dcd78, [Actions #36878403527 (4/4 PASS)](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36878403527). Läs först [VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md](reports/VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md). K03 och T06-underlagskolumner är genomförda och browser-testade. Även markerad kartlinje har `pointer-events:none` och valfri klass i loppplanen döljs utanför klassläget; båda har nya Chromiumregressioner. Äldre pekare i BUILD_STATE och historisk parity-audit är inte aktuell Codex-att-göra-lista.
 
 
 ## Current stage: do not restart source discovery

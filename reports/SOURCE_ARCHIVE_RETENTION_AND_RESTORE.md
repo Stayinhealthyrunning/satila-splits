@@ -34,6 +34,12 @@ Den frysta EQ-käll-ZIP:ens egen SHA-256 är
 
 **Kvarstående manuella moment:** Projektägaren måste ladda ner den privata samtalsfilen och bevara den i sin egen åtkomstbegränsade, säkerhetskopierade lagringsplats. Att en fil för tillfället finns i samtalets arbetsmiljö är inte ett permanent långtidsarkiv. De tidigare fem autentiska Suunto 43-km-deltagarspåren från 2021–2025 ingår **inte** i detta paket och behöver bevaras separat om original-XML krävs för framtida ombearbetning. Inga råa personuppgifter har lagts till i Git-repot.
 
+## Förnyad separat kontroll av EQ Timing-raw (2026-10-01)
+
+Den **ursprungliga raw-artifacten**, ID 11142571759, laddades ned igen till en privat samtalsfil som en extra återhämtningskopia. Exakt 6 626 914 byte; SHA-256 `b7b0b6ad97b504900d8dc06e749d7e9818312d88f37edb9424030c3847457b89`; 560 ZIP-poster, nio historiska år och `eqtiming-full`; integritetstest utan skadad post. Detta är samma raw-ZIP som ingår i det tidigare dokumenterade större privata källpaketet – **de fem ursprungliga GPX-filerna ingår inte i enbart denna raw-artifact**.
+
+GitHub-artifacten utgår 2026-10-31T05:09:48Z. Den privata samtalskopian är INTE en bekräftad beständig backup hos ägaren. Issue #6 förblir öppen tills ägaren har sparat raw och samtliga original-GPX på åtkomstbegränsad säkerhetskopierad lagring. Ingen byte av den privata rawimporten har publicerats eller checkats in.
+
 ## Omedelbar åtgärd innan artifacten går ut
 
 En användare med åtkomst till repositoryt kör lokalt i en säker katalog, **inte** under `docs/` och **inte** i ett publikt Git-commit:

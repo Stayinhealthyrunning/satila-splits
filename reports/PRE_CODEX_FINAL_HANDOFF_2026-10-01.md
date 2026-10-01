@@ -1,6 +1,6 @@
 # Sätila Splits – pre-Codex integrationsöverlämning (2026-10-01)
 
-> **SLUTLIG VERIFIERAD UPPDATERING:** 217439a4 / [4/4 PASS #36875529003](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36875529003). [Den nya slutcheckpointen](VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md) ersätter alla äldre QA-pekarvärden nedan; K03 inklusive tangentbordsval och T06:s källbegränsade höjd-/underlagskolumner är klara.
+> **SLUTLIG VERIFIERAD UPPDATERING:** 790dcd78 / [4/4 PASS #36878403527](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36878403527). [Den nya slutcheckpointen](VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md) ersätter alla äldre QA-pekarvärden nedan; K03 inklusive tangentbordsval och T06:s källbegränsade höjd-/underlagskolumner är klara. Senaste QA omfattar också klick genom segmentmarkeringen på kartan och att klassfältet i planen faktiskt är dolt i hela-fältet-läge.
 
 Denna fil är **aktuellt tillägg** till historiska `CODEX_PARITY_AUDIT.md` (vars K04/K05- och T09-rader beskriver en äldre Codex-checkpoint). Använd **inte** `main`, `build/full-first-draft-2026-10-01` eller gamla Codex-grenen som bas för nästa pass.
 
