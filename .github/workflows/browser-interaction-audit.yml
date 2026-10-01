@@ -1,14 +1,13 @@
 name: Sätila independent interaction acceptance
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [build/full-first-draft-2026-10-01]
+  push:
+    branches: [audit/satila-data-method-2026-10-01]
     paths:
       - "tests/browser_synced_scrub_acceptance.py"
       - "tests/browser_all_editions_acceptance.py"
       - ".github/workflows/browser-interaction-audit.yml"
-      - "docs/assets/app.js"
-      - "docs/index.html"
+      - "qa.interaction.trigger"
 permissions:
   contents: read
 jobs:
