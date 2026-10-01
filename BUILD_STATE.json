@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "project": "Sätila Splits",
-  "branch": "codex/saetila-complete-first-draft",
+  "branch": "integration/codex-independent-qa-2026-10-01",
   "updated": "2026-10-01",
-  "resume_rule": "Resume from this exact branch and the first incomplete blueprint item. Preserve verified assets, data bundles and CI; do not restart source research unless evidence changes.",
+  "resume_rule": "Read reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md and AGENTS.md; start a NEW isolated worktree from latest origin/integration/codex-independent-qa-2026-10-01. Preserve the original owner's Codex worktree and reports/qa-local. Do not restart EQ imports, alter verified source bundles, merge to main or publish without owner review.",
   "sprints": {
     "S0": {
       "status": "complete",
@@ -50,8 +50,8 @@
       "evidence": "Chromium 36839581103 success; fast a11y/performance 36839729757 success"
     },
     "S11": {
-      "status": "review_archive_current_ready_pending_owner_review",
-      "evidence": "Draft PR #2; artifact 11151260943; Codex audit brief issue #3 (prepared, not started)."
+      "status": "integration_full_qa_green_review_package_ready_not_published",
+      "evidence": "Four green jobs on source code bdcf74f at GitHub Actions 36869568573; review artifact 11166427650; no owner visual signoff yet."
     }
   },
   "verified_local_checkpoint": {
@@ -65,13 +65,13 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "PARITY_IMPLEMENTATION_IN_PROGRESS",
+  "status": "INTEGRATED_FUNCTIONAL_QA_GREEN_PENDING_CODEX_VISUAL_FINISH_AND_OWNER_SIGNOFF",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
     "finishers": 2649,
     "observed_time_passages": 16525,
-    "latest_green_ci": 36838917833,
+    "latest_green_ci": 36869568573,
     "independent_data_ci": 36835282859,
     "browser_viewports": [
       "1440x900",
@@ -83,31 +83,58 @@
     "zero_horizontal_overflow": true,
     "deep_map_elevation_scrub": true,
     "extended_analytics_ci": 36838917833,
-    "verified_build_head": "c7a98d4a946590691131b523bf0e8a2503833c24",
+    "verified_build_head": "bdcf74f1c742ad7161ead8c7dbaae719c891f0d3",
     "module": "docs/assets/analytics-extra.js integrated inside docs/assets/app.js",
     "review_zip": {
-      "run_id": 36839244517,
-      "artifact_id": 11151105284,
-      "inner_zip_bytes": 814751,
-      "sha256": "fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f",
-      "public_files": 44
+      "run_id": 36869568573,
+      "artifact_id": 11166427650,
+      "inner_zip_bytes": 830505,
+      "sha256": "c591ba4d532b29d2d904a578d15a61b66ac86bfb73f9739da2f05e4e5f52d192",
+      "public_files": 44,
+      "code_sha": "bdcf74f1c742ad7161ead8c7dbaae719c891f0d3"
     },
     "accessibility_release_gate": "tests/test_accessibility_performance.py PASS",
     "dialog_labelling_commit": "8e82f6bb97771d6c599d226756bc08c7590e648c",
-    "latest_green_chromium": "36839581103",
-    "review_zip_workflow": "36839729757",
-    "review_zip_artifact_id": 11151260943,
-    "review_zip_digest": "sha256:ddf02a3e4ad28c90bdf7c644e497464c1cb1e174850688f3022a6b8bd95ff5e2",
+    "latest_green_chromium": "36869568573",
+    "review_zip_workflow": "36869568573",
+    "review_zip_artifact_id": 11166427650,
+    "review_zip_digest": "sha256:c591ba4d532b29d2d904a578d15a61b66ac86bfb73f9739da2f05e4e5f52d192",
     "critical_initial_bytes": 335164,
-    "latest_local_code_commit": "3c5951e"
+    "latest_local_code_commit": "3c5951e",
+    "integration": {
+      "verified_code_commit": "bdcf74f1c742ad7161ead8c7dbaae719c891f0d3",
+      "workflow_run_id": 36869568573,
+      "workflow_url": "https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36869568573",
+      "source_and_method": "PASS",
+      "browser_core": "PASS",
+      "release_gates": "PASS",
+      "review_package": "PASS",
+      "screenshot_artifact_id": 11166422620,
+      "source_report_artifact_id": 11165203092,
+      "review_artifact_id": 11166427650,
+      "browser_fullpage_widths": [
+        1440,
+        900,
+        768,
+        390
+      ],
+      "browser_document_horizontal_overflow_px": 0,
+      "all_27_editions_desktop_and_mobile": "PASS",
+      "synced_map_elevation_h2h": "PASS",
+      "special_evidence_cases": "PASS: Tostared metadata-only excluded from retention, Grind-Torrås n130, 2023 n8, 2016 female podium2, DNF unknown, D07/D11/D18/D19/D21/D22/T07"
+    }
   },
   "known_limits": [
-    "Blueprint-wide feature parity is actively being implemented on the Codex branch; component status is in reports/CODEX_PARITY_AUDIT.md",
-    "Historical participant GPX not yet committed; no route borrowing",
-    "Full-year course performance trend requires verified equivalence",
-    "Review draft is not yet merged or added to Loppanalys production catalogue",
-    "Full 27-diagram/10-table/6-map blueprint parity is not yet complete; four-width local Chromium regression is green after segment, profile and comparison updates."
+    "Actual owner visual signoff and final Codex design pass are pending; four-green-job CI is not authorization to publish.",
+    "K02 historical two-route overlay and D25 linked whole-course performance trend remain gated by unpromoted historical route/equivalence evidence; D26 comparable records likewise gated.",
+    "Organizer 21/43 km 2025/2026 route reuse is an explicit project assumption; separate 85 km 2026 geometry does not validate 2025 ultra.",
+    "No linked public TIME passages for the current 128 DNF; cannot infer withdrawal checkpoint, location or km.",
+    "D23/K01 physical checkpoint anchors and T06 segment D+/D- require validated physical anchoring/elevation; no synthetic route interpolation may be presented as measured.",
+    "Remaining visual/UX review: D07 scatter zoom/reset, T01 keyboard/sort, K03 complete cross-panel segment sync, narrow-table presentation at four viewports.",
+    "Original private EQ Timing source archive needs owner-controlled long-term backup before artifact expiry 2026-10-31; issue #6.",
+    "No merge of Draft PR #7 into main and no production publication on Loppanalys.se."
   ],
-  "next_action": "Continue D07/T07/T09 and K04/K05, then finish remaining partial blueprint items and full visual/accessibility QA. Rerun Chromium and update this status after each component group. Do not merge or publish before owner review.",
-  "parity_audit": "reports/CODEX_PARITY_AUDIT.md"
+  "next_action": "After Codex quota reset 16:13, follow reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md using a separate Git worktree from latest integration HEAD. Finish true source-supported blueprint UX gaps and visual QA against design reference at 1440/900/768/390; run all four CI groups and regenerate review ZIP on the same final candidate SHA. Project owner must approve before main/production.",
+  "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
+  "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md"
 }
