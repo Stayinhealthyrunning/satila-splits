@@ -4,9 +4,9 @@
   "blueprint": "reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md",
   "branch": "build/saetila-first-draft",
   "sprint": "S3",
-  "status": "IMPLEMENTED_NOT_YET_VALIDATED",
+  "status": "DATA_EXPORT_VALIDATED_FRONTEND_QA_PENDING",
   "base_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
-  "verified_code_head_sha": "e3b836fb90971dd8a06ef8b21694231d4879b932",
+  "verified_code_head_sha": "cf87edf1e59c5297eceb8a0d542d0e24b95ec288",
   "done": [
     {
       "sprint": "S0",
@@ -36,12 +36,13 @@
   ],
   "checks": [
     "GitHub tree inspected; docs/index.html, docs/assets/app.js, style.css, hero.webp, design-reference.webp and tools/build_satila.py present",
-    "docs/data/ is absent on verified_code_head_sha, so web app is NOT YET RUNNABLE"
+    "docs/data/ is absent on verified_code_head_sha, so web app is NOT YET RUNNABLE",
+    "Actions run 36831622132 successful: raw EQ ZIP restored, exactly 9 events, 27 selected race editions, 3272 unique results, node --check app.js and required static assets passed; 29 files committed including 27 real race bundles, SQLite and bootstrap."
   ],
   "known_limits": [
     "Original participant GPX 2021–2025 not in GitHub",
     "Five official GPX 2026 not yet repository/CI backed",
     "Source ZIP only persisted in previous session and in GitHub Actions artifact"
   ],
-  "next_action": "Execute GitHub Actions workflow to download EQ artifact, run tools/build_satila.py, run data/browser smoke checks, and commit generated docs/data to this branch. Then do honest per-sprint browser QA and route ingestion."
+  "next_action": "Run real browser visual/functional test on generated docs, then ingest official 2026 GPX files into durable repo assets and route metadata; continue incomplete S4-S11 features. This is a working data-backed draft, not READY FOR HUMAN REVIEW."
 }
