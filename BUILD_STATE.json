@@ -1,0 +1,28 @@
+{
+  "schema_version":1,
+  "project":"Sätila Splits",
+  "branch":"build/full-first-draft-2026-10-01",
+  "updated":"2026-10-01",
+  "resume_rule":"Continue from the first sprint not marked complete. Never redo completed import work unless a fingerprint changes.",
+  "sprints":{
+    "S0":{"status":"complete","note":"Build branch, provenance registry, EQ Timing artifact secured, organizer GPX checksums recorded, design decisions locked."},
+    "S1":{"status":"in_progress","note":"Normalize EQ Timing archive into RaceEdition/result/split bundles and reproducible SQLite/JSON outputs."},
+    "S2":{"status":"pending"},
+    "S3":{"status":"pending"},
+    "S4":{"status":"pending"},
+    "S5":{"status":"pending"},
+    "S6":{"status":"pending"},
+    "S7":{"status":"pending"},
+    "S8":{"status":"pending"},
+    "S9":{"status":"pending"},
+    "S10":{"status":"pending"},
+    "S11":{"status":"pending"}
+  },
+  "verified_local_checkpoint":{
+    "editions":27,
+    "result_appearances":3272,
+    "browser_viewports_passed":[1440,900,390],
+    "browser_errors":0,
+    "horizontal_overflow_px":0
+  }
+}
