@@ -18,7 +18,7 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | D10 | Implementerad | `renderPlacementGain`, `#placement-gain` | Källstött positionspar används. |
 | D11 | Delvis | `renderFinishProgress`, `#finish-progression` | Sista verifierade segmentets styrka och kohortn behöver visas tydligare. |
 | D12 | Implementerad | `renderAge`, `#age-chart` | Exakt ålder och klass hålls isär. |
-| D13 | Delvis | `renderClub`, `#club-chart` | Väljbara max fyra grupper samt full tabell saknas. |
+| D13 | Implementerad | `renderClub`, `#club-chart` | Upp till fyra källgrupper kan väljas; full tabell med deltagande och mediansluttid kan öppnas. |
 | D14 | Implementerad | `renderSegmentGraph`, `#segment-chart` | Median n≥5 och kvartil n≥10. |
 | D15 | Implementerad | `renderQ1090`, `#segment-q1090` | Q10–Q90 kräver n≥20. |
 | D16 | Implementerad | `renderPacingIndex`, `#segment-pacing` | Eget pacingindex hålls skilt från den äldre grafen för observerad passageretention. |
@@ -29,7 +29,7 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | D21 | Delvis | `renderCheckpointSpread`, `#checkpoint-spread` | Tydliggör varierande kohort mellan kontroller i kortet. |
 | D22 | Delvis | `renderCourseIntel`, `#course-intelligence` | Pacing loss, segmentvis spridning/placeringsrörelse och DNF-exit saknas. Rå GPX D+ är inte officiell. |
 | D23 | Delvis | `renderCourseMap`, `#course-elevation` | Verifierade checkpoint-ankare och explicit höjdavbrott saknas. |
-| D24 | Delvis | `renderHistory`, `#history-chart` | Skilj startande/resultat och visa källstatus/DNF per år. |
+| D24 | Implementerad | `renderHistory`, `#history-chart`, `#history-table` | Resultat, kända startande, fullföljare och DNF/status per källår; 2020 är en lucka. |
 | D25 | Gated | `renderHistoryPerformance`, `#history-performance` | Separata årsmedianer visas; ingen godkänd flerårig whole-course-grupp är dokumenterad för en prestationslinje. |
 | D26 | Delvis | `renderFingerprint`, `#history-fingerprint` | Årsöversikt finns; jämförbart rekord/prestationsindex saknar källstöd. |
 | D27 | Implementerad | `renderSexHistory`, `#history-sex` | Separat kvinna/man/okänt och 80 % källtäckningsgrind per upplaga. |
@@ -44,8 +44,8 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | T04 | Delvis | `renderSegmentTable`, `#segment-table` | Retention, placeringsrörelse, DNF och proveniens per rad saknas. |
 | T05 | Implementerad | `renderCompareContent`, `#compare-dialog` | Ackumulerade tider, segmenttider, publicerad plats, lucka och insikter från gemensamma exakta passager. |
 | T06 | Delvis | `renderPlan`, `#plan-table` | Kohort/segmentval finns; D+/D− och särskild evidenskolumn återstår. |
-| T07 | Delvis | `renderProvenance`, `#course-provenance` | Fil/checksum, verifieringsgrad och olösta konflikter saknas. |
-| T08 | Delvis | `renderHistory`, `#history-table` | Banjämförbarhet/route-status och alla statusar saknas i årstabellen. |
+| T07 | Delvis | `renderProvenance`, `#course-provenance` | Källfil, SHA-256, CourseVersion och route-status visas. Särskild publiceringsgrad/konfliktkolumn återstår. |
+| T08 | Implementerad | `renderHistory`, `#history-table` | Datum, källdistans, status, median per upplaga, whole-course-grupp, route-status och originallänk. |
 | T09 | Delvis | `renderGroupTable`, `#group-table` | Ålder/klubb och paginering saknas. |
 | T10 | Implementerad | `renderCoverage`, `#coverage-table`, `docs/data/coverage.json` | Status-, köns-, ålders-, klass- och klubbtäckning med aktuell ruttstatus och reproducerbar JSON-export. |
 
