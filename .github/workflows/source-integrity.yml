@@ -3,36 +3,12 @@ on:
   pull_request:
     branches: [build/full-first-draft-2026-10-01]
     paths:
-      - "tests/test_published_data_integrity.py"
-      - "tests/test_statistics_contract.py"
-      - "tests/test_real_data_analysis_contract.py"
-      - "tests/test_course_comparability_contract.py"
+      - "tests/**"
+      - "tools/audit_*.py"
       - "config/course-versions.json"
-      - "tools/audit_statistics_reference.py"
-      - "tests/test_route_geometry_integrity.py"
-      - "tests/test_publication_privacy.py"
-      - "tools/audit_segment_capabilities.py"
-      - "tools/audit_station_coverage.py"
-      - "tools/audit_ui_capabilities.py"
-      - ".github/workflows/source-integrity.yml"
       - "docs/data/**"
-      - "tools/audit_segment_capabilities.py"
-      - "tools/audit_station_coverage.py"
-      - "tools/audit_ui_capabilities.py"
+      - ".github/workflows/source-integrity.yml"
   workflow_dispatch:
-  push:
-    branches: [audit/satila-data-method-2026-10-01]
-    paths:
-      - "tests/test_published_data_integrity.py"
-      - "tests/test_statistics_contract.py"
-      - "tests/test_real_data_analysis_contract.py"
-      - "tests/test_course_comparability_contract.py"
-      - "config/course-versions.json"
-      - "tools/audit_statistics_reference.py"
-      - "tests/test_route_geometry_integrity.py"
-      - "tests/test_publication_privacy.py"
-      - ".github/workflows/source-integrity.yml"
-      - "docs/data/**"
 permissions:
   contents: read
 jobs:
