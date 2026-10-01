@@ -13,7 +13,7 @@ Den kuraterade databunten i `docs/data/` och dess kontroller i Git-repot ger en 
 - Artifact: `satila-eqtiming-raw-36818159977`
 - Känd storleksordning: cirka **6,6 MB komprimerat**.
 - Workflowens `retention-days`: **30**.
-- Importen utfördes 2026-10-01. Ursprungliga artefakten kan därför upphöra att finnas tillgänglig omkring **2026-10-31**, beroende på GitHub-inställningar. Kontrollera `expires_at` i GitHubs artifact-metadata; exakt utgångstid har inte antagits verifierad här.
+- Importen utfördes 2026-10-01. **Verifierad artifact-metadata:** `expires_at = 2026-10-31T05:09:48Z`, `expired = false` vid kontroll 2026-10-01. Ladda ned och verifiera en privat långtidskopia **senast 2026-10-25** så att det finns marginal inför sista utgångstid. ZIP-artifactens av GitHub angivna digest: `sha256:b7b0b6ad97b504900d8dc06e749d7e9818312d88f37edb9424030c3847457b89`. Observera att en **ny** ZIP skapad med `Compress-Archive` får en annan SHA-256 än GitHub-artifactens ZIP även om de extraherade filerna är identiska.
 
 **Risk:** Det räcker inte att bara spara genererad `bootstrap.json`, 27 race-bundlar och källfingeravtryck för att exakt kunna återköra `tools/build_satila.py` senare. De fullständiga råa paginerade svaren, metadata och käll-GPX behövs.
 
@@ -74,4 +74,4 @@ Jämför SHA-256 för alla genererade `*.json` mot nuvarande `docs/data/**/*.jso
 4. Källarkivets roll är reproducerbarhet och verifierbarhet; publicerad frontend ska även fortsättningsvis enbart använda sanerade, avsiktligt kuraterade bundlar.
 5. De av arrangören tillhandahållna GPX:erna ska bevaras med sina ursprungliga byte och checksummevärden. Ändra inte internt namn `2025` i en 2026-fil som en del av normalisering; lägg årstolkningen i metadata.
 
-**Status 2026-10-01:** Arkivet har bekräftats som ingång för tidigare grön export. Den här texten innebär **inte** att ett nytt, separat långtidsarkiv redan har skapats.
+**Status 2026-10-01:** Arkivet finns tillgängligt på GitHub och exakt utgångsdatum samt GitHubs ZIP-digest är verifierade. Den här texten innebär **inte** att ett nytt, separat långtidsarkiv redan har skapats.
