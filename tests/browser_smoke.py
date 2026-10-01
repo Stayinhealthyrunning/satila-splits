@@ -33,6 +33,7 @@ async def main():
    page.on("console",lambda m:errors.append(m.text) if m.type=="error" else None)
    await page.set_content(html)
    await page.add_style_tag(content=css)
+   await page.add_style_tag(content=(ROOT/"assets/style-extra.css").read_text())
    await page.evaluate("""payload=>{
     window.__fixtures=payload;
     window.fetch=async url=>{
@@ -45,6 +46,8 @@ async def main():
    await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=10000)
    assert "85 km" in await page.locator("#race-title").inner_text()
    assert await page.locator("#segment-table tbody tr").count()>0
+   for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
+    assert await page.locator(ex).count()==1,(width,ex)
    for family in ("trail43","trail22","ultra85"):
     await page.locator('[data-family="'+family+'"]').click()
     await page.wait_for_function("""f=>document.querySelector('[data-family="'+f+'"]').classList.contains('selected')""",arg=family)
@@ -62,6 +65,12 @@ async def main():
    assert await page.locator("#profile-dialog").evaluate("e=>e.open")
    assert await page.locator(".insight").count()>0
    await page.locator('[data-close="profile-dialog"]').click()
+   await page.locator('#goal-placement-time').fill('10:00:00')
+   await page.locator('#goal-placement-run').click()
+   assert 'placering' in (await page.locator('#goal-placement').inner_text()).lower()
+   await page.locator('#sex-filter').select_option('F')
+   await page.locator('#sex-filter').select_option('all')
+   await page.wait_for_timeout(120)
    overflow=await page.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth")
    assert overflow<=1,(width,overflow)
    assert not errors,(width,errors)
