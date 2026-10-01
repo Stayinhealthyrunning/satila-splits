@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Release-only browser acceptance for pace-distance capability gating.
 
-2023 trail43 has a known timing-km metadata anomaly at Torrås -> Almered.
+2023 and 2024 trail43 have known timing-km metadata anomalies at Torrås -> Almered.
 TIME is valid and must remain visible; pace/min-km must be withheld or clearly
 marked non-physical/unverified until segment distance is independently verified.
 """
@@ -43,30 +43,31 @@ async def main():
             await page.add_script_tag(content=js)
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             await page.locator('[data-family="trail43"]').click()
-            await page.locator("#year-select").select_option("2023")
-            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km · 2023')")
+            for year in ("2023","2024"):
+                await page.locator("#year-select").select_option(year)
+                await page.wait_for_function("(y)=>document.querySelector('#race-title').textContent.includes('43 km · '+y)",arg=year)
 
-            rows=page.locator("#segment-table tbody tr")
-            target=None
-            for i in range(await rows.count()):
-                cells=await rows.nth(i).locator("td").all_text_contents()
-                if cells and "Torrås" in cells[0] and "Almered" in cells[0]:
-                    target=cells
-                    break
-            assert target is not None,"Known 2023 Torrås→Almered segment missing"
-            # Median TIME must remain usable.
-            assert target[3].strip() not in ("","—","-"),target
-            # Pace must be unavailable OR explicitly qualified as unverified/time-only.
-            pace=target[5].strip().lower() if len(target)>5 else ""
-            qualified=(
-                pace in ("","—","-","ej verifierad","saknas") or
-                any(token in pace for token in ("tid-only","tid endast","distans ej verifierad","ej verifierad"))
-            )
-            assert qualified,(
-                "Known questionable timing-km segment still exposes unqualified pace/min-km",
-                target
-            )
-            print("RELEASE PACE-CAPABILITY ACCEPTANCE PASSED",target,flush=True)
+                rows=page.locator("#segment-table tbody tr")
+                target=None
+                for i in range(await rows.count()):
+                    cells=await rows.nth(i).locator("td").all_text_contents()
+                    if cells and "Torrås" in cells[0] and "Almered" in cells[0]:
+                        target=cells
+                        break
+                assert target is not None,f"Known {year} Torrås→Almered segment missing"
+                # Median TIME must remain usable.
+                assert target[3].strip() not in ("","—","-"),target
+                # Pace must be unavailable OR explicitly qualified as unverified/time-only.
+                pace=target[5].strip().lower() if len(target)>5 else ""
+                qualified=(
+                    pace in ("","—","-","ej verifierad","saknas") or
+                    any(token in pace for token in ("tid-only","tid endast","distans ej verifierad","ej verifierad"))
+                )
+                assert qualified,(
+                    f"{year} questionable timing-km segment still exposes unqualified pace/min-km",
+                    target
+                )
+                print("RELEASE PACE-CAPABILITY ACCEPTANCE PASSED",year,target,flush=True)
         finally:
             await browser.close()
 
