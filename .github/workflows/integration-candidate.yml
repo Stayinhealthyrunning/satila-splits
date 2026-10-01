@@ -55,11 +55,13 @@ jobs:
         env:
           SATILA_SITE: docs
           SATILA_INTERACTION_QA: /tmp/satila-integration-images
+          SATILA_QA_OUTPUT: /tmp/satila-integration-images/full
         run: |
           set -o pipefail
           python tests/browser_synced_scrub_acceptance.py 2>&1 | tee /tmp/satila-browser-duel.log
           python tests/browser_all_editions_acceptance.py 2>&1 | tee /tmp/satila-browser-all-editions.log
           python tests/browser_evidence_acceptance.py 2>&1 | tee /tmp/satila-browser-evidence.log
+          python tests/browser_smoke.py 2>&1 | tee /tmp/satila-browser-full-page.log
       - name: Save browser logs and actual screenshots
         if: always()
         uses: actions/upload-artifact@v4
