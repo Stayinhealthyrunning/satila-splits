@@ -2,7 +2,21 @@
 
 Datum: 2026-10-01. Detta index är avsett för slutlig integration med Codex och senare projektägargranskning.
 
-## Senaste verifierade käll-/metodbevis
+## Nuvarande överordnade integrationsbevis – 2026-10-01
+
+Det äldre indexet nedan dokumenterar fristående auditsteg från före full Codex-integration. **Aktuell käll- och frontendkod är verifierad gemensamt**:
+
+- Integrationskod: `bdcf74f1c742ad7161ead8c7dbaae719c891f0d3`.
+- [GitHub Actions #36869568573 – fyra av fyra SUCCESS](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36869568573): `source-and-method`, `browser-core`, `release-gates`, därefter `review-package` från samma SHA.
+- Gransknings-ZIP: `satila-codex-integrated-review`, artifact ID **11166427650**, skapad först efter de övriga jobbens PASS och 44-filers allowlist/integritetsgrind.
+- Faktiska Chromium-skärmbilder/loggar: `integration-browser-evidence`, artifact ID **11166422620**. Fyra full-page-bredder **1440, 900, 768, 390 px** med **0 dokumentoverflow**. Karta↔höjd och H2H i 1440/900/390; alla 27 editioner i desktop och mobil; person-/segment-/källa-E2E i 1440/390.
+- `tests/browser_evidence_acceptance.py` omfattar nu också metadata-only Tostared i passagegrafen (sju verkligt observerade kontroller, ingen falsk noll-dipp), okänd DNF-station, D07 källklass, D21 variabelt n, D11 sista verifierade segmentstyrka, D18/D19 gemensam klassselection, D22 selectedSegment och T07 verifieringsreservation.
+- Source- och reviewpaketverifiering sker fortfarande på committade, sanerade bundlar utan nedladdning av privata originalkällor. Granskningen efter `3b3755a` ändrade frontend/test/dokumentation – **inga filer under `docs/data/`**. Se `reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md`.
+- `BUILD_STATE.json` uppdateras därefter på integrationsgrenen. Den sista dokumentations-HEAD ska få en ny full CI före Codex handoff. Den sista gröna **kodbaslinjen** är alltid den ovan explicit verifierade; anta inte att ytterligare framtida kodcommits automatiskt är testade.
+
+---
+
+## Äldre, fristående käll-/metodbevis
 
 - Workflow: **Independent Sätila source integrity**
 - Senast fullständigt grön audit före visual-asset-lock-commit: [Actions 36853895683](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36853895683)
