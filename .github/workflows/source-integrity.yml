@@ -38,6 +38,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_course_comparability_contract.py -v
       - name: All-edition real-data analytical parity oracle
         run: python -m unittest discover -s tests -p test_real_data_analysis_contract.py -v
+      - name: Validate starter denominators, finish histograms and last observed DNF stations
+        run: python -m unittest discover -s tests -p test_population_denominators.py -v
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
