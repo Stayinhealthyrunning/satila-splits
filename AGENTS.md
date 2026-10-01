@@ -26,14 +26,14 @@ The original AGENTS.md previously described the source-discovery phase. That is 
 
 - Profiles, result filters, podiums, source-gated segment stats, individual split-based goal plan, linked official-route SVG map/elevation, history, status/coverage, age/class/club analytics, D16 pacingindex.
 - K04 timed personal Replay and K05 2–5-runner map duel with shared clock, leaderboard and two-way map/elevation scrub.
-- D11 last actual positive segment strength, D18 class selector, D19 synchronized heatmap, D22 segment-linked Course Intelligence, T07 route publication/reservation. DNF unknown, metadata-only Tostared, and source-aware pace/quantile gating.
+- D07 interactive percentile zoom/reset with source-class tooltips and mobile segment-table swipe hint; D11 last actual positive segment strength; D18 class selector, D19 synchronized heatmap, D21 variable source-n disclosure, D22 segment-linked Course Intelligence, T07 route publication/reservation. DNF unknown, metadata-only Tostared, and source-aware pace/quantile gating.
 - Hero copy, mobile Escape/ARIA, Back/Forward deep links, dialog focus, missing-edition error and public privacy controls are already corrected.
 - Original official runner/hero visual assets are locked. Do not substitute or scrape athlete photographs.
 
 ## Next Codex pass after 16:13
 
 1. Review real desktop/mobile screenshots at 1440/900/768/390 against docs/assets/design-reference.webp and approved Hero. Confirm long tables on mobile and remove only actual visual/interaction defects.
-2. Finish genuinely remaining blueprint UX, such as D07 scatter zoom/reset, T01 sort/keyboard and remaining D21/K03 selected-segment interactions. The new D11/D18/D19/D22/T07 functions are already implemented and tested.
+2. Finish genuinely remaining blueprint UX, notably T01 broader table sorting/keyboard and residual K03 full selected-segment synchronization. D07 two-step zoom/reset, D11/D18/D19/D21/D22/T07 are implemented and browser-tested; preserve them.
 3. K01/D23 physical checkpoint anchors, tiles and T06 segment D+/D- depend on accepted source geometry/anchor evidence. K02 historic dual-route overlay, D25 joined interyear performance and D26 comparable records remain evidence-gated. Do not invent physical anchors or borrow courses to force completion.
 4. Run the entire regression on each final candidate: python tools/run_release_candidate_checks.py --all. The integrated CI workflow is .github/workflows/integration-candidate.yml. Require source-and-method, browser-core, release-gates and dependent review-package GREEN on exactly the final code SHA. Verify no source/provenance drift.
 5. Generate new screenshot and static review ZIP on that same SHA, then wait for project owner visual approval. Never auto-merge to main or publish to Loppanalys.se.
