@@ -237,3 +237,140 @@ Arrangörens kompletterande officiella GPX, eventuella extra 22 km-rutter, verif
 
 ---
 **Byggdirektiv för nästa uppdrag:** Läs hela denna rapport, kontrollera respektive repo-/branch-SHA och nuvarande Sätila-main, börja omedelbart på S0 och fortsätt genom S11 utan mellanliggande designavstämningar. Redovisa endast faktiska utförda commits, tester, previews och kvarvarande begränsningar.
+
+## 12. Särskilt prioriterade produktmönster – beställarens designlås 2026-10-01
+
+Följande fem ytor är **P0-produktkrav** för Sätila Splits. De ersätter inte resten av blueprinten, men ska prioriteras i implementation och visuell QA. Ingen av dem får reduceras till en förenklad placeholder när dess datakapabilitet finns.
+
+### P0.1 Banprofil – ÖST:s lilla interaktiva karta som förebild
+Referens: ÖST:s banprofil/översiktskort ("Från kust till slott") med kompakt karta + höjdprofil.
+
+Sätila ska använda samma produktidé men med egen Sätila-identitet:
+- kompakt karta integrerad direkt i banprofilkortet;
+- rutt, höjd och checkpointmarkeringar på samma route-distance;
+- hover/klick i **kartan** väljer/scrubbar motsvarande position i höjdprofilen;
+- hover/klick i **höjdprofilen** markerar motsvarande position på kartan;
+- klick på ett analyserbart segment sätter gemensamt `selectedSegment` och uppdaterar Course Intelligence/delsträckelabb;
+- "Visa hela banan" återställer kartutsnitt;
+- tydlig provenance/status i kortet;
+- neutral SVG-rutt när karttiles fallerar;
+- ingen tom kartbehållare när route asset saknas.
+
+Denna komponent ska byggas som återanvändbar kandidat även för en framtida förbättring av Gotaleden, där motsvarande kompakta interaktiva banprofil bör kunna ersätta/komplettera nuvarande statiska banprofil.
+
+### P0.2 Könsuppdelade topplistor sida vid sida – podium med guld/silver/brons
+Referens: ÖST:s visuella podium/topplistor.
+
+När kön finns källstött och underlaget räcker ska Sätila använda **två parallella topplistor, Kvinnor och Män**, med:
+- plats 1/2/3 markerade visuellt som guld/silver/brons;
+- samma sorteringsmått och samma segment/filter i båda kolumnerna;
+- namn, tid/fart/placering och relevant klass/år;
+- klick/Enter öppnar löparprofil;
+- tydlig n/täckning; ingen könsinferens;
+- kompakt mobilfallback: kolumner staplas men behåller samma rangordning.
+
+Detta gäller särskilt:
+1. valda delsträckor/segmentranking;
+2. "Fem sätt att hitta ovanliga lopp"/standout-analysen;
+3. andra topplistor där könsuppdelning är statistiskt och källmässigt meningsfull.
+
+Standout-kategorier ska väljas från verifierbara mått, exempelvis stark avslutning, jämnast pacing, största placeringslyft, snabbaste segment relativt egen loppfart och tydlig fartförändring. En kategori får bara visas när formeln kan beräknas utan fabricerade splits/placeringar.
+
+### P0.3 Individuell loppanalys – Gotaledens användarflöde + fler personliga insikter
+Basreferens: Gotaledens individuella loppanalys. Djupreferens: Ultravasans RunnerAnalysis/Replay.
+
+Profilen ska vara en av produktens starkaste ytor och innehålla:
+- resultatfakta och status;
+- Journey med verkliga passager;
+- segmenttabell och relativ prestation mot stabil fält-/klass-/könskohort när möjligt;
+- Replay direkt i profilen när capability finns;
+- karta + höjdprofil + tidslinje;
+- favoriter och "Jämför detta resultat";
+- datakvalitet/evidens per passage.
+
+Utöver befintliga systerverktyg ska Sätila generera en **personlig insiktsmotor** från samma verifierade segmentmodell. Insikter ska vara konkreta, reproducerbara och roliga utan att bli psykologiska tolkningar. Kandidater:
+- snabbaste segmentet;
+- långsammaste/tuffaste segmentet relativt egen snittfart;
+- största placeringslyftet;
+- största placeringstappet;
+- starkaste avslutningen;
+- jämnaste två/tre sammanhängande segment;
+- tydligaste fartförändringen;
+- var löparen var starkast relativt fältmedian;
+- var löparen tappade mest relativt fältmedian;
+- bästa relativa köns-/klassposition vid en kontroll;
+- "kom tillbaka": största återhämtning efter tidigare tapp;
+- första/sista tredjedelens pacingbalans;
+- hur många procent av fullföljarna löparen passerade netto efter en viss kontroll.
+
+Varje insikt måste kunna förklaras med formel, källa, segment och n. DNF får endast insikter fram till sista säkra passage. Saknas tillräckligt underlag visas färre insikter i stället för gissningar.
+
+### P0.4 Personlig loppplan – hög prioritet tack vare många delsträckor
+Sätilas många timingkontroller ska utnyttjas till en mer användbar loppplan än en enkel jämnfartsprognos.
+
+Måltempo/loppplan ska:
+- utgå från vald måltid;
+- vara CourseVersion-bunden;
+- använda historiska **observerade segmentandelar** från jämförbar edition/kohort;
+- kunna välja referenskohort: hela fältet, kön, klass och ett relevant sluttidsintervall runt måltiden när n räcker;
+- visa varje delsträcka: segment, km, D+/D− när verifierat, segmentmål, ackumulerad tid, måltempo och historisk vikt;
+- visa om planen bygger på historisk segmentandel eller märkt distansfallback;
+- visa interaktivt på karta/höjdprofil;
+- ge en kort text om vilka segment som historiskt kräver störst tidsandel/pacingreserv;
+- stödja ändrad måltid utan omladdning;
+- aldrig allokera resttid genom dold gissning.
+
+Första utkastet ska dessutom undersöka en "jämför med typisk löpare nära min måltid"-kohort. Den aktiveras bara om tillräckligt många fullföljare finns inom en definierad tidskorridor; korridoren och n redovisas.
+
+### P0.5 "Jämför 2 lopp" – Gotaledens sidvidsida-vy, men fullt interaktiv karta/höjd
+Basreferens: Gotaledens Head-to-head/"Jämför två lopp".
+
+Sätila ska behålla:
+- två balanserade deltagarkort sida vid sida;
+- central sluttidsskillnad;
+- passage-/segmenttabell;
+- tidslucka genom loppet;
+- officiell placeringsresa;
+- gemensamma automatiska duellinsikter.
+
+**Obligatorisk förbättring jämfört med Gotaleden:**
+- klick/hover i höjdprofilen söker båda löparna till samma **route-distance** och uppdaterar kartmarkörer, klocka, gap, segment och readout;
+- klick på banan söker till närmaste route-distance och uppdaterar höjdprofilen på samma sätt;
+- klick på passage/segmentrad söker kartan/höjdprofilen till aktuell kontroll/segment;
+- tangentbordsstyrbar scrubber speglar kart-/höjdsökningen;
+- "Visa hela banan" återställer utsnitt men inte vald tids-/distansposition;
+- om båda har verkliga timingankare visas interpolerade positioner tydligt märkta; en DNF fryser vid sista säkra passage;
+- tile-fallback ska behålla samma interaktivitet på lokal SVG-rutt;
+- ingen karta/höjd för en edition vars route asset saknas, men tabellbaserad tvåpersons-jämförelse ska fortfarande fungera.
+
+Den gemensamma tekniska lösningen bör vara en delad `RouteScrubber/MapEngine` så att P0.1 Banprofil, P0.3 profil-Replay och P0.5 Jämför 2 lopp inte implementerar tre inkompatibla kartinteraktioner.
+
+## 13. Nya officiella arrangörs-GPX för 2026 – mottagna 2026-10-01
+
+Beställaren har bifogat fem filer som uppges vara hämtade från arrangörens officiella webbplats för 2026. De ska behandlas som `OFFICIAL_ORGANIZER` **källa enligt denna provenance**, men råfilens egna metadata ska också bevaras. Filerna saknar tidsstämplar och är ban-/displaygeometri, inte deltagaraktiviteter eller timingkälla.
+
+| Marknadsdistans | Punkter | Geometrisk polyline | Rå positiv höjd* | SHA-256 | Intern GPX-titel |
+|---|---:|---:|---:|---|---|
+| 5 km | 187 | 5,533 km | 82,3 m | `304fe04cba9ae22840253a99589fe142c31971ee129cc3fb38dde0ecfbc7144d` | `Sätila Trail 5 - 2025` |
+| 10 km | 408 | 10,876 km | 189,0 m | `24fc6f0ff6eca90dade4471e4743dccbed2272c02fe88b6619c46c6ece9d7c91` | `Sätila Trail 10 - 2025` |
+| 21 km | 781 | 23,043 km | 436,9 m | `c78872ddd3d9e0575eb260227a2d9b40455d7841d0d8a4dcfe71614356a06c39` | `Sätila Trail 21 - 2025` |
+| 43 km | 1 380 | 42,254 km | 823,7 m | `4b10bee2201e8f2493a1bf564c1603c5431c123fdc8d19dfb432655fb04ee827` | `Sätila Trail 43 - 2025` |
+| 85 km | 2 727 | 87,866 km | 1 948,2 m | `c5c313faf2b137cfeacf3b90cee4638094070793d70c8a88ca00944360f582c0` | `Sätila Trail 85 - 2026` |
+
+\* Rå höjd är summan av positiva differenser mellan filens GPX-eleveringar och är **inte** automatiskt officiell D+. Den ska normaliseras/QA-granskas före publik höjdmetrik.
+
+Viktiga konsekvenser:
+- För `trail22` finns nu en **officiell modern referensrutt** (marknadsförd 21 km för 2026), vilket kraftigt förbättrar karta/banprofil och framtida checkpointprojektion. Den får däremot inte retroaktivt påstås vara 2021–2025 års bana utan geometrisk/källdokumenterad jämförbarhet.
+- `trail43` 2026 blir den viktigaste officiella kontrollgeometrin mot de normaliserade deltagarkandidaterna 2021–2022 och 2023–2025. Jämför 2026 mot båda innan någon kandidat promoted till explicit compatible/exact.
+- `ultra85` 2026 är en officiell kontrollgeometri och ska jämföras med samtliga tillgängliga 2021–2025-spår; särskilt testa om 2025:s cirka 87 km-spår ligger i samma korridor.
+- 5 och 10 km ligger utanför första huvudscope 85/43/22, men filerna ska behållas i källinventeringen. Engine-kontraktet ska inte försvåra en senare utökning till dessa familjer.
+- Fyra filer heter 2026 externt men har intern GPX-track-title `...2025`. Detta är en källmetadataavvikelse, inte ett skäl att döpa om eller modifiera råinnehållet. I normaliserad katalog: `edition_reference=2026`, `source_internal_title=...2025`, `provenance_note=official 2026 download with stale embedded track name`.
+- Ingen fil har tidsstämplar. De får därför aldrig skapa splits eller GPS-passage-tider.
+
+S0/S2 ska nu uttryckligen:
+1. materialisera och bevara dessa fem råfiler med originalbyte/checksum om distributionsrätt och repo-policy tillåter, annars privat/raw-arkiv + checksummor;
+2. skapa sanerade/kanoniskt namngivna public route-assets utan att ändra råfilen;
+3. geometrijämföra 21/43/85 mot historiska källor;
+4. bygga route/elevation-browserassets och checkpointprojektion;
+5. uppdatera readiness så att 2026-route inte automatiskt ger Replay före 2026-resultat/timing (loppet ligger i framtiden den 1 oktober 2026).
+
