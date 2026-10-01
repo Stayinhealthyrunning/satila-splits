@@ -1,44 +1,20 @@
 {
-  "schema_version": 1,
-  "source": "Sätila Trail official results page",
+  "schema_version": 2,
+  "source": "EQ Timing public event catalog and Sätila Trail official material",
   "provider": "EQ Timing",
   "events": [
-    {
-      "year": 2021,
-      "event_id": 57767,
-      "date": "2021-11-13",
-      "url": "https://live.eqtiming.com/57767"
-    },
-    {
-      "year": 2022,
-      "event_id": 62409,
-      "date": "2022-11-12",
-      "url": "https://live.eqtiming.com/62409"
-    },
-    {
-      "year": 2023,
-      "event_id": 67695,
-      "date": "2023-11-11",
-      "url": "https://live.eqtiming.com/67695"
-    },
-    {
-      "year": 2024,
-      "event_id": 72918,
-      "date": "2024-11-09",
-      "url": "https://live.eqtiming.com/72918"
-    },
-    {
-      "year": 2025,
-      "event_id": 77864,
-      "date": "2025-11-08",
-      "url": "https://live.eqtiming.com/77864"
-    }
+    {"year":2016,"event_id":25781,"date":"2016-11-12","url":"https://live.eqtiming.com/25781","catalog_status":"GotResults","historical_distances_km":[5,10,21,42,80,120]},
+    {"year":2017,"event_id":35491,"date":"2017-11-11","url":"https://live.eqtiming.com/35491","catalog_status":"GotResults","historical_distances_km":[5,10,21,42,80,120]},
+    {"year":2018,"event_id":43641,"date":"2018-11-10","url":"https://live.eqtiming.com/43641","catalog_status":"GotResults","historical_distances_km":[5,10,22,42,82]},
+    {"year":2019,"event_id":49225,"date":"2019-11-09","url":"https://live.eqtiming.com/49225","catalog_status":"GotResults","historical_distances_km":[5,10,22,42,85]},
+    {"year":2021,"event_id":57767,"date":"2021-11-13","url":"https://live.eqtiming.com/57767","catalog_status":"GotResults"},
+    {"year":2022,"event_id":62409,"date":"2022-11-12","url":"https://live.eqtiming.com/62409","catalog_status":"GotResults"},
+    {"year":2023,"event_id":67695,"date":"2023-11-11","url":"https://live.eqtiming.com/67695","catalog_status":"GotResults"},
+    {"year":2024,"event_id":72918,"date":"2024-11-09","url":"https://live.eqtiming.com/72918","catalog_status":"GotResults"},
+    {"year":2025,"event_id":77864,"date":"2025-11-08","url":"https://live.eqtiming.com/77864","catalog_status":"GotResults"}
   ],
-  "expected_distances_km": [
-    5,
-    10,
-    22,
-    43,
-    85
-  ]
+  "excluded_events":[
+    {"year":2016,"event_id":25707,"reason":"EQ catalog name 'Sätila Trail - används ej'; GotContestants=false; GotResults=false"}
+  ],
+  "scope":"Import every race/distance/class and every public timing station exposed by each event; do not infer modern distances for historical editions."
 }
