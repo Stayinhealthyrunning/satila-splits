@@ -10,6 +10,7 @@ on:
       - "docs/data/bootstrap.json"
       - "docs/data/races/**"
       - "docs/data/routes/**"
+      - "tools/build_satila.py"
       - "tests/browser_smoke.py"
 permissions:
   contents: read
