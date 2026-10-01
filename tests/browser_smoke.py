@@ -65,13 +65,37 @@ async def main():
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
    assert await page.locator('#segment-pacing circle[data-pacing-segment]').count()>0
+   assert await page.locator('#segment-sex-extra svg').count()==1
+   assert await page.locator('#segment-groups svg').count()==1
+   assert await page.locator('[data-class-series]:checked').count()<=5
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
    await page.locator("#runner-search").fill(runner["name"].split()[0])
    assert await page.locator(".suggestion").count()>0
    await page.locator(".suggestion").first.click()
    assert await page.locator("#profile-dialog").evaluate("e=>e.open")
    assert await page.locator(".insight").count()>0
+   assert any('Sedan föregående verifierade' in value for value in await page.locator('#profile-content th').all_text_contents())
+   assert await page.locator('#profile-content .insight small').count()>0
+   await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
+   second=next(r for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r['id']!=runner['id'] and r.get('name'))
+   await page.locator('#results-search').fill(second['name'])
+   await page.locator('#results-table [data-open="'+second['id']+'"]').first.click()
+   await page.locator('#profile-add-compare').click()
+   await page.locator('[data-close="profile-dialog"]').click()
+   await page.locator('#open-compare').click()
+   assert await page.locator('#compare-dialog').evaluate('e=>e.open')
+   assert any('A segment' in value for value in await page.locator('#compare-dialog th').all_text_contents())
+   assert await page.locator('#duel-map svg').count()==1
+   await page.locator('#duel-zoom').fill('2')
+   zoomed=await page.locator('#duel-map svg').get_attribute('viewBox')
+   assert float(zoomed.split()[2])<760
+   await page.locator('#duel-fit').click()
+   assert float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])==760
+   await page.locator('#duel-elevation svg').click(position={'x':120,'y':60})
+   assert float(await page.locator('#duel-range').input_value())>0
+   await page.locator('[data-close="compare-dialog"]').click()
+   await page.locator('#results-search').fill('')
    await page.locator('#goal-placement-time').fill('10:00:00')
    await page.locator('#goal-placement-run').click()
    assert 'placering' in (await page.locator('#goal-placement').inner_text()).lower()

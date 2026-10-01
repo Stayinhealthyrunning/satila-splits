@@ -132,7 +132,7 @@ function pointAtDistance(pts,d){if(!pts.length)return null;d=Math.max(pts[0][0],
 function nearestSegmentPath(path,p){let best={index:0,fraction:0,dist:Infinity};for(let i=1;i<path.length;i++){let [ax,ay]=path[i-1],[bx,by]=path[i],vx=bx-ax,vy=by-ay,len=vx*vx+vy*vy,f=len?Math.max(0,Math.min(1,((p[0]-ax)*vx+(p[1]-ay)*vy)/len)):0,d=(p[0]-ax-vx*f)**2+(p[1]-ay-vy*f)**2;if(d<best.dist)best={index:i,fraction:f,dist:d}}return best}
 function pathFor(path){return path.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ')}
 function elevationSvg(pts,d,interactive=true){if(!pts.length)return empty();let W=780,H=135,P=17,min=Math.min(...pts.map(p=>num(p[3])?p[3]:0)),max=Math.max(...pts.map(p=>num(p[3])?p[3]:0)),md=pts.at(-1)[0],x=p=>P+p[0]/md*(W-2*P),y=p=>H-P-(num(p[3])?(p[3]-min)/Math.max(1,max-min)*(H-2*P):0);let line=pts.map((p,i)=>(i?'L':'M')+x(p).toFixed(1)+' '+y(p).toFixed(1)).join(' '),dot=pointAtDistance(pts,d??0),xx=dot?x(dot):P,yy=dot?y(dot):H-P;return svg(W,H,`<path class="elev-area" d="${line}L${x(pts.at(-1))} ${H-P}L${P} ${H-P}Z"/><path class="elev-line" d="${line}"/><line class="chart-cursor" x1="${xx}" x2="${xx}" y1="${P}" y2="${H-P}"/><circle class="elev-dot" cx="${xx}" cy="${yy}" r="5"/><text x="${P}" y="12" fill="#526855" font-size="10">${Math.round(min)}–${Math.round(max)} m · GPX-höjd</text><text x="${W-P-80}" y="12" fill="#526855" font-size="10">${fmtKm(md)} km</text>${interactive?`<rect data-elev-hit="1" x="${P}" y="0" width="${W-2*P}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="${md}" aria-valuenow="${d??0}" aria-label="Välj position längs höjdprofilen"/>`:''}`,'Interaktiv höjdprofil')}
-function attachElevation(host,pts,callback){let el=$('[data-elev-hit]',host);if(!el)return;let md=pts.at(-1)[0];function seek(e){let box=el.ownerSVGElement.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*780,km=Math.max(0,Math.min(md,(x-17)/(780-34)*md));callback(km)}el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);seek(e)});el.addEventListener('pointermove',e=>{if(e.buttons)seek(e)});el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();let d=S.courseD??0,d2=e.key==='Home'?0:e.key==='End'?md:d+(e.key==='ArrowLeft'?-md/100:md/100);callback(Math.max(0,Math.min(md,d2)))}})}
+function attachElevation(host,pts,callback){let el=$('[data-elev-hit]',host);if(!el)return;let md=pts.at(-1)[0];function seek(e){let box=el.ownerSVGElement.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*780,km=Math.max(0,Math.min(md,(x-17)/(780-34)*md));callback(km)}el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);seek(e)});el.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)seek(e)});el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();let d=Number(el.getAttribute('aria-valuenow'))||0,d2=e.key==='Home'?0:e.key==='End'?md:d+(e.key==='ArrowLeft'?-md/100:md/100);callback(Math.max(0,Math.min(md,d2)))}})}
 function renderCourseMap(){let host=$('#course-map'),height=$('#course-elevation'),pts=routePoints();if(!pts.length){host.innerHTML=empty('Ingen godkänd lokal ruttskiss är registrerad för den historiska upplagan. Resultatanalysen är ändå komplett.');height.innerHTML='';$('#course-scrub-label').textContent='Ingen rutt kopplad till denna upplaga.';return}let W=800,H=340,path=project(pts,W,H,20),d=Number.isFinite(S.courseD)?S.courseD:0,mark=pointAtDistance(pts,d),midx=project(mark?[mark]:[pts[0]],W,H,20)[0]; // mark projected on same immutable bounds below
 let idx=1;while(idx<pts.length-1&&pts[idx][0]<d)idx++;let a=pts[idx-1],b=pts[idx],f=(d-a[0])/Math.max(1e-7,b[0]-a[0]),px=path[idx-1][0]+(path[idx][0]-path[idx-1][0])*f,py=path[idx-1][1]+(path[idx][1]-path[idx-1][1])*f;
 host.innerHTML=svg(W,H,`<defs><pattern id="map-lines" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M0 40Q26 5 48 40" stroke="#b2d1ac" opacity=".09" fill="none"/></pattern></defs><rect width="${W}" height="${H}" fill="url(#map-lines)"/><path class="route-base" d="${pathFor(path)}"/><path class="route-gold" d="${pathFor(path)}"/><circle class="map-crosshair" cx="${px}" cy="${py}" r="7"/><text class="map-label" x="25" y="27">SÄTILA · OFFICIELL REFERENSGEOMETRI</text><text class="map-label" x="25" y="${H-18}">${fmtKm(d)} / ${fmtKm(pts.at(-1)[0])} km</text><rect data-map-hit="course" x="0" y="0" width="${W}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-label="Välj position på banan" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}"/>`,'Interaktiv schematisk banöversikt med faktisk GPX-form');height.innerHTML=elevationSvg(pts,d);let seek=n=>{S.courseD=n;renderCourseMap()};let hit=$('[data-map-hit]',host);function locate(e){let rect=hit.ownerSVGElement.getBoundingClientRect(),xx=(e.clientX-rect.left)/rect.width*W,yy=(e.clientY-rect.top)/rect.height*H,spot=nearestSegmentPath(path,[xx,yy]),i=spot.index;seek(pts[i-1][0]+(pts[i][0]-pts[i-1][0])*spot.fraction)}hit.addEventListener('pointerdown',e=>{hit.setPointerCapture(e.pointerId);locate(e)});hit.addEventListener('pointermove',e=>{if(e.buttons)locate(e)});hit.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();seek(Math.max(0,Math.min(pts.at(-1)[0],(S.courseD??0)+(e.key==='ArrowRight'?1:-1)*pts.at(-1)[0]/80)))}});attachElevation(height,pts,seek);$('#course-scrub-label').textContent=`Illustrativ position ${fmtKm(d)} km längs GPX-displayrutt. Klicka i karta eller höjdprofil.`;}
@@ -148,22 +148,192 @@ function toggleFav(id){if(S.favorites.includes(id))S.favorites=S.favorites.filte
 function addCompare(id){if(!findRecord(id))return;if(S.compare.includes(id)){S.compare=S.compare.filter(x=>x!==id);renderCompareChips();return}S.compare=[...S.compare.slice(-1),id];renderCompareChips();}
 function renderCompareChips(){$('#compare-counter').textContent=`(${S.compare.length}/2)`;$('#open-compare').disabled=S.compare.length!==2;$('#compare-chips').innerHTML=S.compare.map(id=>{let r=findRecord(id);return `<span class="chip">${html(r?.name||id)} <button type="button" data-remove-compare="${html(id)}" aria-label="Ta bort ${html(r?.name||'')} från jämförelsen">×</button></span>`}).join('')||'<p class="small" style="color:#c3d5c7">Lägg till löpare från sökträffar eller deras profiler.</p>';$$('[data-remove-compare]').forEach(b=>b.addEventListener('click',()=>addCompare(b.dataset.removeCompare)))}
 function bindResultLinks(host=document){$$('[data-open]',host).forEach(el=>{const go=()=>openProfile(el.dataset.open);el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});}
-function profileInsights(r){let ps=pairs(r),out=[];if(!ps.length)return out;let ordered=ps.filter(p=>p.km>0);if(!ordered.length)return out;let fast=ordered.reduce((a,b)=>a.seconds/a.km<b.seconds/b.km?a:b),slow=ordered.reduce((a,b)=>a.seconds/a.km>b.seconds/b.km?a:b);out.push({label:'Snabbast delsträcka',value:`${fast.from.name} → ${fast.to.name}`,detail:pace(fast.seconds,fast.km,S.unit)});out.push({label:'Långsammast delsträcka',value:`${slow.from.name} → ${slow.to.name}`,detail:pace(slow.seconds,slow.km,S.unit)});let ranked=ordered.filter(x=>num(x.placeFrom)&&num(x.placeTo)).map(p=>({...p,delta:p.placeFrom-p.placeTo}));if(ranked.length){let up=ranked.reduce((a,b)=>a.delta>b.delta?a:b),down=ranked.reduce((a,b)=>a.delta<b.delta?a:b);out.push({label:'Största avancemang',value:(up.delta>=0?'+':'')+up.delta+' placeringar',detail:up.from.name+' → '+up.to.name});out.push({label:'Största placeringstapp',value:String(down.delta)+' placeringar',detail:down.from.name+' → '+down.to.name})}let last=ordered.at(-1);out.push({label:'Sista verifierade segmentet',value:pace(last.seconds,last.km,S.unit),detail:last.from.name+' → '+last.to.name});let segs=segmentStats(records()),relative=ordered.map(p=>{let field=segs.find(s=>s.index===p.index);return field&&num(field.median)?{p,delta:p.seconds-field.median}:null}).filter(Boolean);if(relative.length){let best=relative.reduce((a,b)=>a.delta<b.delta?a:b),worst=relative.reduce((a,b)=>a.delta>b.delta?a:b);out.push({label:'Starkast relativt fältmedian',value:best.delta<=0?'−'+time(-best.delta):'+'+time(best.delta),detail:best.p.to.name});out.push({label:'Största relativt tapp',value:worst.delta>0?'+'+time(worst.delta):'−'+time(-worst.delta),detail:worst.p.to.name})}let z=ordered.map(x=>x.seconds/x.km);if(z.length>=3){let mean=z.reduce((a,b)=>a+b,0)/z.length,cv=Math.sqrt(z.reduce((a,b)=>a+(b-mean)**2,0)/z.length)/mean;out.push({label:'Jämnhet i observerade segment',value:(cv*100).toFixed(1).replace('.',',')+' %',detail:'Variationskoefficient; lägre innebär jämnare tempo'})}return out.slice(0,8)}
+function profileInsights(r){
+  const parts=pairs(r).filter(p=>p.km>0),out=[];
+  if(!parts.length)return out;
+  const fastest=parts.reduce((a,b)=>a.seconds/a.km<b.seconds/b.km?a:b);
+  const slowest=parts.reduce((a,b)=>a.seconds/a.km>b.seconds/b.km?a:b);
+  out.push({label:'Snabbast delsträcka',value:`${fastest.from.name} → ${fastest.to.name}`,detail:pace(fastest.seconds,fastest.km,S.unit),method:'Egen segmenttid / timingdistans; två exakta passager.'});
+  out.push({label:'Långsammast delsträcka',value:`${slowest.from.name} → ${slowest.to.name}`,detail:pace(slowest.seconds,slowest.km,S.unit),method:'Egen segmenttid / timingdistans; två exakta passager.'});
+  const ranked=parts.filter(p=>num(p.placeFrom)&&num(p.placeTo)).map(p=>({...p,delta:p.placeFrom-p.placeTo}));
+  if(ranked.length){
+    const up=ranked.reduce((a,b)=>a.delta>b.delta?a:b),down=ranked.reduce((a,b)=>a.delta<b.delta?a:b);
+    out.push({label:'Största avancemang',value:`${up.delta>=0?'+':''}${up.delta} placeringar`,detail:`${up.from.name} → ${up.to.name}`,method:'Publicerad plats vid startkontroll minus plats vid slutkontroll.'});
+    out.push({label:'Största placeringstapp',value:`${down.delta} placeringar`,detail:`${down.from.name} → ${down.to.name}`,method:'Publicerad plats vid startkontroll minus plats vid slutkontroll.'});
+  }
+  const last=parts.at(-1);
+  out.push({label:'Sista verifierade segmentet',value:pace(last.seconds,last.km,S.unit),detail:`${last.from.name} → ${last.to.name}`,method:'Fart från två exakta passager; gäller bara senast observerade segment.'});
+  const field=segmentStats(records());
+  const relative=parts.map(p=>{const stat=field.find(s=>s.index===p.index);return stat&&num(stat.median)?{p,delta:p.seconds-stat.median,n:stat.n}:null}).filter(Boolean);
+  if(relative.length){
+    const best=relative.reduce((a,b)=>a.delta<b.delta?a:b),worst=relative.reduce((a,b)=>a.delta>b.delta?a:b);
+    out.push({label:'Starkast relativt fältmedian',value:signed(best.delta),detail:best.p.to.name,method:`Egen segmenttid minus median för fullföljare med exakt segmentpar; n=${best.n}.`});
+    out.push({label:'Största relativt tapp',value:signed(worst.delta),detail:worst.p.to.name,method:`Egen segmenttid minus median för fullföljare med exakt segmentpar; n=${worst.n}.`});
+  }
+  const speeds=parts.map(p=>p.seconds/p.km);
+  if(speeds.length>=3){
+    const mean=speeds.reduce((a,b)=>a+b,0)/speeds.length;
+    const cv=Math.sqrt(speeds.reduce((a,b)=>a+(b-mean)**2,0)/speeds.length)/mean;
+    out.push({label:'Variation i observerat tempo',value:`${(cv*100).toFixed(1).replace('.',',')} %`,detail:`${speeds.length} segment`,method:'Standardavvikelse / medeltempo på egna exakta segmentpar.'});
+  }
+  return out.slice(0,8);
+}
+
 let openId=null;
 function openProfile(id){let r=findRecord(id);if(!r)return;openId=id;$('#profile-title').textContent=r.name;renderProfile(r);let d=$('#profile-dialog');if(!d.open)d.showModal();}
 function renderProfileIfOpen(){if(openId&&$('#profile-dialog').open){let r=findRecord(openId);if(r)renderProfile(r)}}
-function renderProfile(r){let ps=pairs(r),sn=splitsFor(r.id),series=S.race.stations.filter(s=>sn.some(x=>x.station_uid===s.uid));let head=`<div class="profile-head"><div class="avatar" aria-hidden="true">${html(initial(r.name))}</div><div><h3>${html(r.name)}</h3><p class="muted small">#${html(r.bib)} · ${html(r.class_name||'')} · ${html(r.club||'Okänd klubb/ort')} · ${html(r.status)}</p></div><button class="btn green" type="button" id="profile-add-compare">${S.compare.includes(r.id)?'Ta bort från jämförelse':'Jämför detta resultat →'}</button></div>`;let kpis=[['Sluttid',time(r.finish_seconds)],['Totalplacering',r.place??'—'],['Snittfart',pace(r.finish_seconds,S.race.nominal_km,S.unit)],['Registrerade passager',sn.length]].map(([k,v])=>`<article><small>${html(k)}</small><strong>${html(v)}</strong></article>`).join('');let insight=profileInsights(r);$('#profile-content').innerHTML=head+`<div class="profile-kpis">${kpis}</div><div class="profile-actions"><button type="button" class="btn text-btn" id="profile-fav">${S.favorites.includes(r.id)?'★ Sparad · ta bort':'☆ Spara resultat'}</button></div><h3>Personliga insikter</h3><div class="insights">${insight.length?insight.map(x=>`<article class="insight"><span>${html(x.label)}</span><strong>${html(x.value)}</strong><span>${html(x.detail)}</span></article>`).join(''):empty('Fler individuella insikter blir tillgängliga där löparen har tillräckligt många verkliga kontrollpassager.')}</div><h3>Journey · från start till mål</h3><div class="table-scroll"><table><thead><tr><th>Kontroll</th><th>km*</th><th>Ackumulerad tid</th><th>Officiell position</th><th>Datakälla</th></tr></thead><tbody><tr><td>Start</td><td>0</td><td>0:00</td><td>—</td><td>Tidsnoll</td></tr>${S.race.stations.filter(s=>s.is_analysis_boundary).map(st=>{let v=observed(r,st);return `<tr><td>${html(st.name)}</td><td>${fmtKm(st.km)}</td><td>${time(v?.elapsed_seconds)}</td><td>${v?.place||'—'}</td><td>${v?'Observerad':'Passage saknas'}</td></tr>`}).join('')}</tbody></table></div>${ps.length?`<h3 style="margin-top:22px">Delsträckor och relativ prestation</h3><div class="table-scroll"><table><thead><tr><th>Segment</th><th>Distans</th><th>Segmenttid</th><th>Tempo</th><th>Fältmedian*</th><th>Avvikelse</th></tr></thead><tbody>${ps.map(p=>{let s=segmentStats(records()).find(x=>x.index===p.index);return `<tr><td>${html(p.from.name)} → ${html(p.to.name)}</td><td>${fmtKm(p.km)}</td><td>${time(p.seconds)}</td><td>${pace(p.seconds,p.km,S.unit)}</td><td>${time(s?.median)}</td><td>${num(s?.median)?signed(p.seconds-s.median):'—'}</td></tr>`}).join('')}</tbody></table></div><p class="muted small">* Fältmedian endast med minst fem exakta giltiga segmentobservationer.</p>`:''}<div id="profile-replay" style="margin-top:20px"></div>`;$('#profile-fav').addEventListener('click',()=>toggleFav(r.id));$('#profile-add-compare').addEventListener('click',()=>{addCompare(r.id);renderProfile(r)});renderProfileReplay(r);}
+function renderProfile(r){
+  const segments=pairs(r),passages=splitsFor(r.id),insights=profileInsights(r);
+  const head=`<div class="profile-head"><div class="avatar" aria-hidden="true">${html(initial(r.name))}</div><div><h3>${html(r.name)}</h3><p class="muted small">#${html(r.bib)} · ${html(r.class_name||'')} · ${html(r.club||'Okänd klubb/ort')} · ${html(r.status)}</p></div><button class="btn green" type="button" id="profile-add-compare">${S.compare.includes(r.id)?'Ta bort från jämförelse':'Jämför detta resultat →'}</button></div>`;
+  const kpis=[['Sluttid',time(r.finish_seconds)],['Totalplacering',r.place??'—'],['Snittfart',pace(r.finish_seconds,S.race.nominal_km,S.unit)],['Registrerade passager',passages.length]]
+    .map(([label,value])=>`<article><small>${html(label)}</small><strong>${html(value)}</strong></article>`).join('');
+  let previous={name:'Start',seconds:0};
+  const journey=S.race.stations.filter(st=>st.is_analysis_boundary&&num(st.km)&&st.km>0).sort((a,b)=>a.sort-b.sort||a.km-b.km).map(st=>{
+    const observation=observed(r,st),elapsed=observation?.elapsed_seconds;
+    const valid=num(elapsed)&&elapsed>previous.seconds;
+    const split=valid?time(elapsed-previous.seconds):'—';
+    const from=valid?previous.name:'—';
+    if(valid)previous={name:st.name,seconds:elapsed};
+    return `<tr><td>${html(st.name)}</td><td>${fmtKm(st.km)}</td><td>${time(elapsed)}</td><td>${split}${valid?` <small>från ${html(from)}</small>`:''}</td><td>${observation?.place??'—'}</td><td>${observation?'Observerad EQ TIME':'Passage saknas'}</td></tr>`;
+  }).join('');
+  const field=segmentStats(records());
+  const segmentRows=segments.map(p=>{
+    const stat=field.find(s=>s.index===p.index);
+    return `<tr><td>${html(p.from.name)} → ${html(p.to.name)}</td><td>${fmtKm(p.km)}</td><td>${time(p.seconds)}</td><td>${pace(p.seconds,p.km,S.unit)}</td><td>${time(stat?.median)}</td><td>${num(stat?.median)?signed(p.seconds-stat.median):'—'}</td><td>${stat?.n??0}</td></tr>`;
+  }).join('');
+  $('#profile-content').innerHTML=head+`<div class="profile-kpis">${kpis}</div><div class="profile-actions"><button type="button" class="btn text-btn" id="profile-fav">${S.favorites.includes(r.id)?'★ Sparad · ta bort':'☆ Spara resultat'}</button></div><h3>Personliga insikter</h3><div class="insights">${insights.length?insights.map(item=>`<article class="insight"><span>${html(item.label)}</span><strong>${html(item.value)}</strong><span>${html(item.detail)}</span><small>${html(item.method)}</small></article>`).join(''):empty('Fler individuella insikter blir tillgängliga där löparen har tillräckligt många verkliga kontrollpassager.')}</div><h3>Journey · verifierade passager</h3><div class="table-scroll"><table><thead><tr><th>Kontroll</th><th>km*</th><th>Ack. tid</th><th>Sedan föregående verifierade</th><th>Publicerad plats</th><th>Datakälla</th></tr></thead><tbody><tr><td>Start</td><td>0</td><td>0:00</td><td>—</td><td>—</td><td>Tidsnoll</td></tr>${journey}</tbody></table></div>${segments.length?`<h3 style="margin-top:22px">Delsträckor och relativ prestation</h3><div class="table-scroll"><table><thead><tr><th>Segment</th><th>Timing-km</th><th>Segmenttid</th><th>Tempo</th><th>Fältmedian*</th><th>Avvikelse</th><th>n</th></tr></thead><tbody>${segmentRows}</tbody></table></div><p class="muted small">* Median för fullföljare med två exakta segmentpassager i denna upplaga, minst fem observationer.</p>`:''}<div id="profile-replay" style="margin-top:20px"></div>`;
+  $('#profile-fav').addEventListener('click',()=>toggleFav(r.id));
+  $('#profile-add-compare').addEventListener('click',()=>{addCompare(r.id);renderProfile(r)});
+  renderProfileReplay(r);
+}
+
 function validRouteComparison(){return !!S.route&&routePoints().length>=2&&S.race.stations.filter(s=>s.is_analysis_boundary).length>=2}
 function renderProfileReplay(r){let host=$('#profile-replay');if(!validRouteComparison()||splitsFor(r.id).length<2){host.innerHTML=`<p class="empty">Ingen Replay för detta resultat: ${S.route?'för få verkliga tidsankare':'denna upplaga saknar separat verifierad publicerbar lokal rutt'}. Profilens publicerade passager påverkas inte.</p>`;return}let pts=routePoints(),d=0,scope='profile',control=`<div class="panel-heading"><div><p class="eyebrow">BERÄKNAD POSITION MELLAN KONTROLLER</p><h3>Personlig Replay · bana och höjd</h3></div></div><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><input class="duel-scrubber" id="profile-replay-range" type="range" min="0" max="${pts.at(-1)[0]}" step="0.1" value="0" aria-label="Spola genom löparens lopp"/><p class="muted small" id="profile-replay-readout"></p>`;host.innerHTML=control;let map=$('#profile-mini-map'),elev=$('#profile-mini-elev'),range=$('#profile-replay-range');function draw(km){d=km;range.value=km;let anchors=runnerAnchors(r),t=estimatedAt(anchors,km);drawSimpleRoute(map,pts,km,null);elev.innerHTML=elevationSvg(pts,km);attachElevation(elev,pts,draw);$('#profile-replay-readout').textContent=`${fmtKm(km)} km längs visningsrutten · ${num(t)?'Beräknad tävlingstid '+time(t):'Ingen säker interpolation vid vald punkt'} · Källa: officiella timingankare, inte uppmätt GPS-spår.`;}range.addEventListener('input',()=>draw(+range.value));draw(0)}
 function runnerAnchors(r){let arr=[{km:0,t:0,name:'Start'}];let cp=S.race.stations.filter(st=>st.is_analysis_boundary).sort((a,b)=>a.km-b.km);let factor=(routePoints().at(-1)?.[0]||S.race.nominal_km)/S.race.nominal_km;for(let st of cp){let s=observed(r,st);if(s&&num(s.elapsed_seconds)&&num(st.km)&&st.km>0){let last=arr.at(-1);if(s.elapsed_seconds>last.t&&st.km*factor>last.km){arr.push({km:Math.min(st.km*factor,routePoints().at(-1)?.[0]||Infinity),t:s.elapsed_seconds,name:st.name})}}}return arr}
 function estimatedAt(anchors,d){if(!anchors?.length)return null;d=Math.max(0,d);if(d>anchors.at(-1).km+1e-6)return null;for(let i=1;i<anchors.length;i++){let a=anchors[i-1],b=anchors[i];if(d>=a.km&&d<=b.km){let f=(d-a.km)/Math.max(1e-6,b.km-a.km);return a.t+(b.t-a.t)*f}}return d===0?0:null}
-function drawSimpleRoute(host,pts,d,other){let W=760,H=280,path=project(pts,W,H,18),ix=1;while(ix<pts.length-1&&pts[ix][0]<d)ix++;let a=pts[ix-1],b=pts[ix],f=(d-a[0])/Math.max(.000001,b[0]-a[0]),x=path[ix-1][0]+(path[ix][0]-path[ix-1][0])*f,y=path[ix-1][1]+(path[ix][1]-path[ix-1][1])*f;host.innerHTML=svg(W,H,`<path d="${pathFor(path)}" stroke="#d4a858" stroke-width="3" fill="none"/><circle cx="${x}" cy="${y}" r="7" fill="#fff" stroke="#d4a858" stroke-width="3"/>${other?`<circle cx="${x+1}" cy="${y+1}" r="3" fill="#497a57"/>`:''}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Lokal schematisk GPX-karta');let hit=$('[data-local-hit]',host);function seek(e){let rect=hit.ownerSVGElement.getBoundingClientRect(),spot=nearestSegmentPath(path,[(e.clientX-rect.left)/rect.width*W,(e.clientY-rect.top)/rect.height*H]),i=spot.index;let km=pts[i-1][0]+(pts[i][0]-pts[i-1][0])*spot.fraction;let parent=host.closest('#profile-replay');if(parent){let range=$('#profile-replay-range');range.value=km;range.dispatchEvent(new Event('input'))}else if(S._duelSeek)S._duelSeek(km)}hit.addEventListener('pointerdown',e=>{hit.setPointerCapture(e.pointerId);seek(e)});hit.addEventListener('pointermove',e=>{if(e.buttons)seek(e)});hit.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();let delta=e.key==='ArrowRight'?1:-1,km=Math.max(0,Math.min(pts.at(-1)[0],d+delta*pts.at(-1)[0]/80));let parent=host.closest('#profile-replay');if(parent){let range=$('#profile-replay-range');range.value=km;range.dispatchEvent(new Event('input'))}else S._duelSeek?.(km)}});}
+function drawSimpleRoute(host,pts,d,markers=null){
+  const W=760,H=280,path=project(pts,W,H,18);
+  const xyAt=km=>{
+    let i=1;
+    while(i<pts.length-1&&pts[i][0]<km)i++;
+    const a=pts[i-1],b=pts[i],f=(km-a[0])/Math.max(.000001,b[0]-a[0]);
+    return [path[i-1][0]+(path[i][0]-path[i-1][0])*f,path[i-1][1]+(path[i][1]-path[i-1][1])*f];
+  };
+  let routeSvg=host.querySelector('svg'),hit=host.querySelector('[data-local-hit]');
+  if(!routeSvg){
+    const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" stroke="#fff" stroke-width="2"><title>${html(marker.label)}</title></circle>`).join(''):'';
+    host.innerHTML=svg(W,H,`<path d="${pathFor(path)}" stroke="#d4a858" stroke-width="3" fill="none"/><circle data-route-cursor r="9" fill="#fff" stroke="#d4a858" stroke-width="3"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Lokal schematisk GPX-karta');
+    routeSvg=host.querySelector('svg');hit=host.querySelector('[data-local-hit]');
+    const seek=event=>{
+      const rect=routeSvg.getBoundingClientRect(),box=routeSvg.viewBox.baseVal;
+      const point=[box.x+(event.clientX-rect.left)/rect.width*box.width,box.y+(event.clientY-rect.top)/rect.height*box.height];
+      const spot=nearestSegmentPath(path,point),i=spot.index;
+      const km=pts[i-1][0]+(pts[i][0]-pts[i-1][0])*spot.fraction;
+      if(host.closest('#profile-replay')){
+        const range=$('#profile-replay-range');range.value=km;range.dispatchEvent(new Event('input'));
+      }else S._duelSeek?.(km);
+    };
+    hit.addEventListener('pointerdown',event=>{hit.setPointerCapture(event.pointerId);seek(event)});
+    hit.addEventListener('pointermove',event=>{if(event.pointerType==='mouse'||event.buttons)seek(event)});
+    hit.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      event.preventDefault();
+      const current=Number(hit.getAttribute('aria-valuenow'))||0,delta=pts.at(-1)[0]/80;
+      const km=event.key==='Home'?0:event.key==='End'?pts.at(-1)[0]:Math.max(0,Math.min(pts.at(-1)[0],current+(event.key==='ArrowRight'?delta:-delta)));
+      if(host.closest('#profile-replay')){
+        const range=$('#profile-replay-range');range.value=km;range.dispatchEvent(new Event('input'));
+      }else S._duelSeek?.(km);
+    });
+  }
+  const [x,y]=xyAt(d),cursor=host.querySelector('[data-route-cursor]');
+  cursor.setAttribute('cx',x);cursor.setAttribute('cy',y);
+  if(Array.isArray(markers))markers.forEach((marker,i)=>{
+    const point=xyAt(marker.km),node=host.querySelector('[data-runner-marker="'+i+'"]');
+    if(node){node.setAttribute('cx',point[0]+(i?5:-5));node.setAttribute('cy',point[1])}
+  });
+  const zoom=host.id==='duel-map'?(S.duelZoom||1):1,width=W/zoom,height=H/zoom;
+  const vx=Math.max(0,Math.min(W-width,x-width/2)),vy=Math.max(0,Math.min(H-height,y-height/2));
+  routeSvg.setAttribute('viewBox',`${vx} ${vy} ${width} ${height}`);
+  hit.setAttribute('aria-valuenow',d);
+}
+
 function openCompare(){if(S.compare.length!==2)return;let [x,y]=S.compare.map(findRecord);if(!x||!y)return;$('#compare-content').innerHTML=renderCompareContent(x,y);let d=$('#compare-dialog');if(!d.open)d.showModal();setupCompareInteractions(x,y);}
 function commonStationRows(x,y){let rows=[];for(const st of S.race.stations.filter(s=>s.is_analysis_boundary)){let a=observed(x,st),b=observed(y,st);rows.push({st,a,b,km:st.km,diff:a&&b?a.elapsed_seconds-b.elapsed_seconds:null});}return rows}
-function renderCompareContent(x,y){let fs=finish(x)&&finish(y),gap=fs?x.finish_seconds-y.finish_seconds:null,rows=commonStationRows(x,y),shared=rows.filter(r=>num(r.diff));return `<div class="compare-profiles"><article><p class="eyebrow">LOPP A</p><span class="avatar">${html(initial(x.name))}</span><h3>${html(x.name)}</h3><p class="muted small">${html(x.class_name)} · #${html(x.bib)}</p><strong>${time(x.finish_seconds)}</strong><p>Placering ${x.place??'—'} · ${html(x.status)}</p></article><div class="versus">VS${gap!==null?`<small style="display:block;font-size:12px">${signed(gap)}</small>`:''}</div><article><p class="eyebrow">LOPP B</p><span class="avatar">${html(initial(y.name))}</span><h3>${html(y.name)}</h3><p class="muted small">${html(y.class_name)} · #${html(y.bib)}</p><strong>${time(y.finish_seconds)}</strong><p>Placering ${y.place??'—'} · ${html(y.status)}</p></article></div><div class="panel-heading"><h3>Tidslucka genom loppet</h3><button class="info" type="button" id="compare-info" aria-label="Metod för jämförelsen">i</button></div><div id="duel-gap-chart" class="chart-host">${gapSvg(shared)}</div><h3>Verkliga passager sida vid sida</h3><div class="table-scroll"><table><thead><tr><th>Kontroll</th><th>km*</th><th>${html(x.name)}</th><th>${html(y.name)}</th><th>A minus B</th><th>Visa</th></tr></thead><tbody>${rows.map(o=>`<tr><td>${html(o.st.name)}</td><td>${fmtKm(o.km)}</td><td>${time(o.a?.elapsed_seconds)}</td><td>${time(o.b?.elapsed_seconds)}</td><td>${signed(o.diff)}</td><td><button type="button" data-duel-ck="${o.st.uid}">Följ ↗</button></td></tr>`).join('')}</tbody></table></div><p class="muted small">Lucka visas bara vid två faktiskt registrerade passager. Saknad data fylls inte ut.</p>${validRouteComparison()?`<h3 style="margin-top:18px">Interaktiv jämförelse · karta och höjdkurva</h3><div class="compare-dashboard"><div class="duel-map" id="duel-map"></div><div class="duel-elevation" id="duel-elevation"></div></div><label style="margin-top:12px">Välj position längs banan<input type="range" class="duel-scrubber" id="duel-range" min="0" max="${routePoints().at(-1)[0]}" value="0" step="0.1"/></label><div class="duel-readout" id="duel-readout"></div><p class="muted small">Gemensam visningsdistans. Löparnas tid mellan verkliga kontroller interpoleras endast för presentation; positionen är inte en uppmätt GPS-aktivitet. Klick i både karta, profil och passagetabell ska styra samma position.</p>`:empty('Direktjämförelse med officiella tider är tillgänglig, men interaktiv kartduell kräver en godkänd lokal bana för just detta loppår.')}`}
+function renderCompareContent(x,y){
+  const finishGap=finish(x)&&finish(y)?x.finish_seconds-y.finish_seconds:null;
+  const rows=commonStationRows(x,y),shared=rows.filter(r=>num(r.diff));
+  const xParts=pairs(x),yParts=pairs(y);
+  let leadChanges=0,previousLead=0;
+  for(const row of shared){
+    const lead=Math.sign(row.diff);
+    if(lead&&previousLead&&lead!==previousLead)leadChanges++;
+    if(lead)previousLead=lead;
+  }
+  const largest=shared.slice().sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff))[0];
+  const insights=[
+    finishGap===null?'Slutlig tidslucka saknas eftersom båda inte har en verifierad målgång.':`Verifierad sluttidsskillnad: ${signed(finishGap)} (A minus B).`,
+    `${shared.length} gemensamma exakta kontrollpassager. ${leadChanges} växlingar av vem som låg före vid dessa kontroller.`,
+    largest?`Största observerade lucka: ${signed(largest.diff)} vid ${largest.st.name}.`:'Minst en gemensam tidskontroll krävs för observerad lucka.'
+  ];
+  const routeReady=validRouteComparison();
+  return `<div class="compare-profiles"><article><p class="eyebrow">LOPP A</p><span class="avatar" aria-hidden="true">${html(initial(x.name))}</span><h3>${html(x.name)}</h3><p class="muted small">${html(x.class_name)} · #${html(x.bib)}</p><strong>${time(x.finish_seconds)}</strong><p>Placering ${x.place??'—'} · ${html(x.status)}</p></article><div class="versus">VS${finishGap!==null?`<small style="display:block;font-size:12px">${signed(finishGap)}</small>`:''}</div><article><p class="eyebrow">LOPP B</p><span class="avatar" aria-hidden="true">${html(initial(y.name))}</span><h3>${html(y.name)}</h3><p class="muted small">${html(y.class_name)} · #${html(y.bib)}</p><strong>${time(y.finish_seconds)}</strong><p>Placering ${y.place??'—'} · ${html(y.status)}</p></article></div><div class="panel-heading"><h3>Tidslucka genom loppet</h3><button class="info" type="button" id="compare-info" aria-label="Metod för jämförelsen">i</button></div><div id="duel-gap-chart" class="chart-host">${gapSvg(shared)}</div><div class="duel-insights"><h3>Vad hände mellan kontrollerna?</h3><ul>${insights.map(value=>`<li>${html(value)}</li>`).join('')}</ul></div><h3>Verkliga passager och delsträckor</h3><div class="table-scroll"><table><thead><tr><th>Kontroll</th><th>Timing-km</th><th>A ack.</th><th>B ack.</th><th>A segment</th><th>B segment</th><th>A plats</th><th>B plats</th><th>A−B</th><th>Visa</th></tr></thead><tbody>${rows.map(row=>{
+    const xa=xParts.find(p=>p.to.uid===row.st.uid),yb=yParts.find(p=>p.to.uid===row.st.uid);
+    return `<tr><td>${html(row.st.name)}</td><td>${fmtKm(row.km)}</td><td>${time(row.a?.elapsed_seconds)}</td><td>${time(row.b?.elapsed_seconds)}</td><td>${time(xa?.seconds)}</td><td>${time(yb?.seconds)}</td><td>${row.a?.place??'—'}</td><td>${row.b?.place??'—'}</td><td>${signed(row.diff)}</td><td><button type="button" data-duel-ck="${row.st.uid}">Följ ↗</button></td></tr>`;
+  }).join('')}</tbody></table></div><p class="muted small">Lucka visas enbart vid gemensamma exakta passager. Segmenttid visas endast när respektive löpare har två exakta, på varandra följande analysgränser. Saknad data fylls inte ut.</p>${routeReady?`<h3 style="margin-top:18px">Interaktiv jämförelse · karta och höjdkurva</h3><div class="compare-dashboard"><div class="duel-map" id="duel-map"></div><div class="duel-elevation" id="duel-elevation"></div></div><div class="duel-controls"><label>Välj position längs banan<input type="range" class="duel-scrubber" id="duel-range" min="0" max="${routePoints().at(-1)[0]}" value="0" step="0.1"/></label><label>Kartutsnitt<input type="range" id="duel-zoom" min="1" max="3" value="1" step="0.25" aria-label="Zooma jämförelsekartan"/></label><button type="button" class="btn text-btn" id="duel-fit">Visa hela banan</button></div><div class="duel-readout" id="duel-readout"></div><p class="muted small">Gemensam visningsdistans. Löparnas tider mellan verkliga kontroller interpoleras endast för presentation; positionen är inte uppmätt GPS. Klick eller för musen över karta och höjdprofil för att söka.</p>`:empty('Direktjämförelse med officiella tider är tillgänglig, men interaktiv kartduell kräver en godkänd lokal bana för just detta loppår.')}`;
+}
+
 function gapSvg(obs){if(obs.length<2)return empty('Minst två gemensamma exakta passager krävs för att rita en luckkurva.');let W=750,H=170,P=27,ys=obs.map(x=>x.diff),mx=Math.max(1,...ys.map(Math.abs)),xmin=Math.min(...obs.map(x=>x.km)),xmax=Math.max(...obs.map(x=>x.km)),p=obs.map(o=>[P+(o.km-xmin)/Math.max(1e-6,xmax-xmin)*(W-2*P),H/2-o.diff/mx*55]);let path=pathFor(p);return svg(W,H,`<line class="baseline" x1="${P}" x2="${W-P}" y1="${H/2}" y2="${H/2}"/><path d="${path}" fill="none" stroke="#b48b44" stroke-width="2.5"/>${obs.map((o,i)=>`<circle cx="${p[i][0]}" cy="${p[i][1]}" r="4.5" fill="#365f40" data-duel-ck="${o.st.uid}" tabindex="0" role="button" aria-label="Visa ${html(o.st.name)} i kartan"><title>${html(o.st.name)} · ${signed(o.diff)}</title></circle>`).join('')}<text x="${P}" y="14">A snabbare ↑ · B snabbare ↓</text>`,'Observerad tidslucka vid gemensamma kontroller');}
-function setupCompareInteractions(x,y){$('#compare-info')?.addEventListener('click',()=>{$('#help-title').textContent='Jämför två lopp';$('#help-content').textContent='Två publicerade resultat inom samma RaceEdition jämförs direkt. Segmentdata kräver samma två publicerade kontrolltider. Karta och höjdkurva söker på samma illustrativa displaydistans och beräknar tid mellan verkliga ankare, aldrig nya källpassager.';$('#help-dialog').showModal()});let pts=routePoints();function scrub(d){if(!pts.length)return;S.duelD=Math.max(0,Math.min(pts.at(-1)[0],d));$('#duel-range').value=S.duelD;drawCompareMap(x,y,S.duelD)}S._duelSeek=scrub;$$('[data-duel-ck]',$('#compare-dialog')).forEach(el=>{let go=()=>{let st=S.race.stations.find(s=>s.uid===+el.dataset.duelCk);if(!st||!pts.length){return}scrub(st.km/(S.race.nominal_km||1)*pts.at(-1)[0])};el.addEventListener('click',go);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});if(pts.length){$('#duel-range').addEventListener('input',e=>scrub(+e.target.value));scrub(0)} }
-function drawCompareMap(x,y,d){let pts=routePoints(),map=$('#duel-map'),elev=$('#duel-elevation');if(!map||!pts.length)return;drawSimpleRoute(map,pts,d,true);let a=estimatedAt(runnerAnchors(x),d),b=estimatedAt(runnerAnchors(y),d),gap=num(a)&&num(b)?a-b:null;elev.innerHTML=elevationSvg(pts,d);attachElevation(elev,pts,S._duelSeek);$('#duel-readout').innerHTML=`<strong>Vald GPX-distans: ${fmtKm(d)} km</strong> · <span style="color:#315f41">A ${html(x.name)}: ${time(a)}</span> · <span style="color:#a47b37">B ${html(y.name)}: ${time(b)}</span> · <strong>Tidslucka A−B: ${signed(gap)}</strong>${!num(a)||!num(b)?'<br>En av löparna saknar ett senare säkerställt timingankare; ingen extrapolerad tid visas.':''}`;}
+function setupCompareInteractions(x,y){
+  $('#compare-info')?.addEventListener('click',()=>{
+    $('#help-title').textContent='Jämför två lopp';
+    $('#help-content').textContent='Två publicerade resultat inom samma RaceEdition jämförs direkt. Segmentdata kräver två exakta passager per löpare. Karta och höjd söker på samma illustrativa displaydistans och skapar aldrig nya källpassager.';
+    $('#help-dialog').showModal();
+  });
+  const pts=routePoints();
+  S.duelZoom=1;
+  function scrub(distance){
+    if(!pts.length)return;
+    S.duelD=Math.max(0,Math.min(pts.at(-1)[0],distance));
+    $('#duel-range').value=S.duelD;
+    drawCompareMap(x,y,S.duelD);
+  }
+  S._duelSeek=scrub;
+  $$('[data-duel-ck]',$('#compare-dialog')).forEach(element=>{
+    const go=()=>{
+      const station=S.race.stations.find(s=>s.uid===+element.dataset.duelCk);
+      if(station&&pts.length)scrub(station.km/(S.race.nominal_km||1)*pts.at(-1)[0]);
+    };
+    element.addEventListener('click',go);
+    element.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();go()}});
+  });
+  if(pts.length){
+    $('#duel-range').addEventListener('input',event=>scrub(+event.target.value));
+    $('#duel-zoom').addEventListener('input',event=>{S.duelZoom=+event.target.value;drawCompareMap(x,y,S.duelD??0)});
+    $('#duel-fit').addEventListener('click',()=>{S.duelZoom=1;$('#duel-zoom').value='1';drawCompareMap(x,y,S.duelD??0)});
+    scrub(0);
+  }
+}
+function drawCompareMap(x,y,d){
+  const pts=routePoints(),map=$('#duel-map'),elev=$('#duel-elevation');
+  if(!map||!pts.length)return;
+  const xAnchors=runnerAnchors(x),yAnchors=runnerAnchors(y);
+  drawSimpleRoute(map,pts,d,[{km:Math.min(d,xAnchors.at(-1).km),color:'#315f41',label:'A · illustrativ position fram till sista säkra ankare'},{km:Math.min(d,yAnchors.at(-1).km),color:'#b48b44',label:'B · illustrativ position fram till sista säkra ankare'}]);
+  const a=estimatedAt(xAnchors,d),b=estimatedAt(yAnchors,d),gap=num(a)&&num(b)?a-b:null;
+  if(!elev.querySelector('svg')){
+    elev.innerHTML=elevationSvg(pts,d);
+    attachElevation(elev,pts,S._duelSeek);
+  }else{
+    const P=17,W=780,H=135,md=pts.at(-1)[0],dot=pointAtDistance(pts,d);
+    const heights=pts.map(p=>num(p[3])?p[3]:0),min=Math.min(...heights),max=Math.max(...heights);
+    const xx=P+d/md*(W-2*P),yy=H-P-((num(dot?.[3])?dot[3]:0)-min)/Math.max(1,max-min)*(H-2*P);
+    const cursor=elev.querySelector('.chart-cursor'),point=elev.querySelector('.elev-dot');
+    cursor.setAttribute('x1',xx);cursor.setAttribute('x2',xx);
+    point.setAttribute('cx',xx);point.setAttribute('cy',yy);
+    elev.querySelector('[data-elev-hit]').setAttribute('aria-valuenow',d);
+  }
+  $('#duel-readout').innerHTML=`<strong>Vald GPX-distans: ${fmtKm(d)} km</strong> · <span style="color:#315f41">A ${html(x.name)}: ${time(a)}</span> · <span style="color:#a47b37">B ${html(y.name)}: ${time(b)}</span> · <strong>Tidslucka A−B: ${signed(gap)}</strong>${!num(a)||!num(b)?'<br>En löpare saknar senare säkerställt timingankare; markören fryser vid sista observerade position och ingen tid extrapoleras.':''}`;
+}
+
 function renderPage(){renderAll();}
 /* Sätila Splits – blueprint completion layer. Uses the shared Engine 1.0 runtime above. */
 'use strict';
@@ -234,6 +404,8 @@ window.SatilaExtras=(()=>{
   function renderGroupTable(){const h=$('#group-table');if(!h)return;const rows=S.filtered,groups=[];for(const sex of ['F','M']){const rs=rows.filter(r=>r.sex===sex),fs=rs.filter(finish);groups.push({kind:'Kön',name:sex==='F'?'Kvinnor':'Män',n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}for(const cl of Object.entries(collections(rows.map(r=>r.class_name||'').filter(Boolean))).sort((a,b)=>b[1]-a[1])){const rs=rows.filter(r=>r.class_name===cl[0]),fs=rs.filter(finish);groups.push({kind:'Klass',name:cl[0],n:rs.length,finish:fs.length,med:fs.length>=5?median(fs.map(r=>r.finish_seconds)):null})}h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>Typ</th><th>Grupp</th><th>Resultat</th><th>Fullföljare</th><th>Median*</th></tr></thead><tbody>${groups.map(g=>`<tr><td>${g.kind}</td><td>${esc(g.name)}</td><td>${g.n}</td><td>${g.finish}</td><td>${time(g.med)}</td></tr>`).join('')}</tbody></table></div><p class="small muted">* Median visas först vid minst fem fullföljare.</p>`}
   function renderCoverage(){const h=$('#coverage-table');if(!h)return;const ed=historyEditions().slice().reverse();h.innerHTML=`<div class="table-scroll"><table><thead><tr><th>År</th><th>Resultat</th><th>Fullföljare</th><th>Splitobs.</th><th>Stationer</th><th>Rutt</th></tr></thead><tbody>${ed.map(e=>`<tr><td>${e.year}</td><td>${format(e.results)}</td><td>${format(e.finishers)}</td><td>${format(e.split_observations)}</td><td>${e.timing_stations}</td><td>${e.route_status&&e.route_status!=='none'?'Ja · '+esc(e.route_status):'Nej'}</td></tr>`).join('')}</tbody></table></div>`}
   extraHelp.pacing='Pacingindex = 100 × (egen sluttid / officiell timingdistans) / (egen segmenttid / kontrakterad segmentdistans). Över 100 betyder snabbare än löparens eget hel-loppssnitt. Diagrammet visar median av individuella index från minst fem fullföljare med två exakta segmentpassager.';
+  extraHelp.sexpace='Gemensam tidsaxel visar separata segmentmedianer för källstödda kvinnor och män. Varje punkt kräver minst fem exakta observationer i könsgruppen; en saknad punkt bryter linjen.';
+  extraHelp.groups='Välj högst fem publicerade klasser. Gruppkurvan är median av individuella pacingindex per segment; minst fem exakta observationer krävs per klass och punkt.';
   function renderPacingIndex(){
     const host=$('#segment-pacing');
     if(!host)return;
@@ -256,7 +428,66 @@ window.SatilaExtras=(()=>{
       node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select()}});
     });
   }
-  function renderSegments(){renderQ1090();renderRetention();renderPacingIndex();renderSegmentSex();renderSegmentGroups();renderHeatmap();renderCheckpointSpread();syncSegmentOverlay()}
+  function renderSexSeries(){
+    const host=$('#segment-sex-extra'),segments=segmentStats(S.filtered);
+    if(!host||!segments.length)return;
+    S.extraSexSelection ||= new Set(['F','M']);
+    const series=['F','M'].map((sex,i)=>({sex,label:sex==='F'?'Kvinnor':'Män',color:i?'#b48b44':'#3e7250',values:segments.map(s=>{
+      const times=s.obs.filter(o=>o.r.sex===sex).map(o=>o.seconds);
+      return {n:times.length,value:times.length>=5?median(times):null};
+    })}));
+    const all=series.flatMap(s=>s.values.map(v=>v.value)).filter(num);
+    if(!all.length)return;
+    const W=700,H=220,P=40,max=Math.max(...all),step=(W-2*P)/Math.max(1,segments.length);
+    const x=i=>P+(i+.5)*step,y=v=>H-P-v/max*(H-2*P);
+    const body=`<line class="axis" x1="${P}" x2="${W-P}" y1="${H-P}" y2="${H-P}"/><text x="5" y="${P}">${time(max)}</text>`+series.filter(s=>S.extraSexSelection.has(s.sex)).map(s=>{
+      let path='',previous=false;
+      const dots=s.values.map((v,i)=>{
+        if(!num(v.value)){previous=false;return ''}
+        path+=`${previous?'L':'M'}${x(i)},${y(v.value)} `;previous=true;
+        return `<circle cx="${x(i)}" cy="${y(v.value)}" r="4" fill="${s.color}"><title>${s.label} · ${html(segments[i].from.name)} → ${html(segments[i].to.name)} · ${time(v.value)} · n=${v.n}</title></circle>`;
+      }).join('');
+      return `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.5"/>${dots}`;
+    }).join('');
+    host.insertAdjacentHTML('beforeend',`<div class="series-choices">${series.map(s=>`<label><input type="checkbox" data-sex-series="${s.sex}" ${S.extraSexSelection.has(s.sex)?'checked':''}><i style="background:${s.color}"></i>${s.label}</label>`).join('')}</div>${svg(W,H,body,'Kvinna och man: segmentmedianer på gemensam tidsaxel')}<p class="small muted">Samma tidsaxel även när en serie döljs. Varje punkt kräver fem exakta segmentobservationer; saknad punkt bryter linjen.</p>`);
+    $$('[data-sex-series]',host).forEach(input=>input.addEventListener('change',()=>{
+      if(input.checked)S.extraSexSelection.add(input.dataset.sexSeries);else S.extraSexSelection.delete(input.dataset.sexSeries);
+      renderSegmentSex();renderSexSeries();
+    }));
+  }
+  function renderClassSeries(){
+    const host=$('#segment-groups'),segments=segmentStats(S.filtered);
+    if(!host||!segments.length)return;
+    const classes=Object.entries(collections(S.filtered.map(r=>r.class_name).filter(Boolean))).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
+    if(!classes.length)return;
+    if(!S.extraClassSelection||![...S.extraClassSelection].some(name=>classes.includes(name)))S.extraClassSelection=new Set(classes.slice(0,3));
+    const colors=['#315f41','#af8740','#6b7f9e','#a86659','#76639a','#638b7c','#9d7186','#697c43'];
+    const series=classes.map((name,i)=>({name,color:colors[i],values:segments.map(s=>{
+      const indices=s.obs.filter(o=>o.r.class_name===name&&finish(o.r)&&num(S.race.nominal_km)&&S.race.nominal_km>0)
+        .map(o=>100*(o.r.finish_seconds/S.race.nominal_km)/(o.seconds/s.km)).filter(v=>num(v)&&v>0);
+      return {n:indices.length,value:indices.length>=5?median(indices):null};
+    })}));
+    const all=series.flatMap(s=>s.values.map(v=>v.value)).filter(num);
+    if(!all.length)return;
+    const W=700,H=230,P=40,lo=Math.min(90,...all),hi=Math.max(110,...all),step=(W-2*P)/Math.max(1,segments.length);
+    const x=i=>P+(i+.5)*step,y=v=>H-P-(v-lo)/Math.max(1,hi-lo)*(H-2*P);
+    const body=`<line class="axis" x1="${P}" x2="${W-P}" y1="${y(100)}" y2="${y(100)}"/><text x="4" y="${y(100)-5}">100</text>`+series.filter(s=>S.extraClassSelection.has(s.name)).map(s=>{
+      let path='',previous=false;
+      const dots=s.values.map((v,i)=>{
+        if(!num(v.value)){previous=false;return ''}
+        path+=`${previous?'L':'M'}${x(i)},${y(v.value)} `;previous=true;
+        return `<circle cx="${x(i)}" cy="${y(v.value)}" r="4" fill="${s.color}"><title>${html(s.name)} · ${html(segments[i].to.name)} · ${v.value.toFixed(1)} · n=${v.n}</title></circle>`;
+      }).join('');
+      return `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.5"/>${dots}`;
+    }).join('');
+    host.insertAdjacentHTML('beforeend',`<p class="small muted">Välj högst fem källklasser. Median av individuellt pacingindex per segment; 100 = eget loppmedel.</p><div class="series-choices">${series.map(s=>`<label><input type="checkbox" data-class-series="${html(s.name)}" ${S.extraClassSelection.has(s.name)?'checked':''} ${S.extraClassSelection.size>=5&&!S.extraClassSelection.has(s.name)?'disabled':''}><i style="background:${s.color}"></i>${html(s.name)}</label>`).join('')}</div>${svg(W,H,body,'Klassers pacingindex på gemensam segmentaxel')}<p class="small muted">Varje punkt kräver fem exakta observationer i klassen; saknad punkt bryter linjen.</p>`);
+    $$('[data-class-series]',host).forEach(input=>input.addEventListener('change',()=>{
+      if(input.checked&&S.extraClassSelection.size<5)S.extraClassSelection.add(input.dataset.classSeries);
+      else if(!input.checked)S.extraClassSelection.delete(input.dataset.classSeries);
+      renderSegmentGroups();renderClassSeries();
+    }));
+  }
+  function renderSegments(){renderQ1090();renderRetention();renderPacingIndex();renderSegmentSex();renderSexSeries();renderSegmentGroups();renderClassSeries();renderHeatmap();renderCheckpointSpread();syncSegmentOverlay()}
   function renderFiltered(){renderSexCompletion();renderGoal();renderAge();renderClub();renderPlacementGain();renderFinishProgress();renderSegments();renderCourseIntel();renderGroupTable()}
   function wire(){if(wired)return;wired=true;document.addEventListener('click',e=>{const info=e.target.closest('[data-help-extra]');if(info){$('#help-title').textContent=info.closest('.panel')?.querySelector('h3')?.textContent||'Metod';$('#help-content').textContent=extraHelp[info.dataset.helpExtra]||'';$('#help-dialog').showModal();return}if(e.target.closest('[data-segment],[data-select-segment]'))setTimeout(renderSegments,0)});document.addEventListener('change',e=>{if(e.target.matches('#podium-segment'))setTimeout(renderSegments,0)});document.addEventListener('click',e=>{if(e.target.matches('#goal-placement-run'))renderGoal()});document.addEventListener('keydown',e=>{if(e.target.matches('#goal-placement-time')&&e.key==='Enter')renderGoal()})}
   function renderAll(){ensurePanels();wire();renderFiltered();renderCourseIntel();renderMapHistory();renderHistoryPerformance();renderSexHistory();renderFingerprint();renderProvenance();renderCoverage()}
