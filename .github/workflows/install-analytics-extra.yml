@@ -25,7 +25,7 @@ jobs:
           import base64,gzip,hashlib,pathlib
           root=pathlib.Path(".")
           specs=[
-            ("tools/payloads/analytics-extra.js.gz.b64","docs/assets/analytics-extra.js","48c5d4551a12296a85e7e0b929793e6d59e7172efdc0a3c2556411321c7d67b7"),
+            ("tools/payloads/analytics-extra.js.gz.b64","docs/assets/analytics-extra.js","b99f47737288d38fc1756e7a58ddda55110299b8037e9b75075cacd8d436deb4"),
             ("tools/payloads/style-extra.css.gz.b64","docs/assets/style-extra.css","f57e66ba4b1530cb4ef9c57100fcfd5958b7e1479d106ba850005bab90bf17a8"),
           ]
           for src,dst,expected in specs:
