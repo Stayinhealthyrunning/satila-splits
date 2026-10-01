@@ -41,6 +41,7 @@ def parse(root,out,source_cat):
    if not stations:continue
    stations.sort(key=lambda s:(s['sort'],float(s.get('km') or 0),s['station_uid']))
    edmap={eduid:(c,ed) for eduid,(c,ed) in byed.items() if int((ed.get('Etappe') or {}).get('UID',-1))==leg}
+   db.execute('INSERT OR REPLACE INTO editions VALUES(?,?,?,?,?,?,?,?)',(racekey,year,leg,e['event_id'],family,rv.get('Navn'),rv.get('Km'),e['url']))
    observations=collections.defaultdict(dict)
    for st in stations:
     p=d/'results'/str(leg)/str(st['station_uid'])
@@ -79,7 +80,6 @@ def parse(root,out,source_cat):
    station_list=[{'uid':s['station_uid'],'name':s['station_name'],'km':s.get('km'),'sort':s['sort'],'is_finish':bool(s['is_finish']),'is_start':False,'is_analysis_boundary':s['station_name'].upper() not in ('PRE','FV')} for s in stations]
    stats=collections.Counter(r['status'] for r in rows);finishers=[r['finish_seconds'] for r in rows if r['status']=='FINISHED']
    edition={'race_key':racekey,'family':family,'year':year,'event_id':e['event_id'],'leg_uid':leg,'name':rv.get('Navn'),'nominal_km':rv.get('Km'),'date':e['date'],'source_url':e['url'],'course_version':f'{family}-{year}-unverified','route_status':'none','stations':station_list,'results':rows,'splits':splits};js(out/'races'/f'{racekey}.json',edition)
-   db.execute('INSERT OR REPLACE INTO editions VALUES(?,?,?,?,?,?,?,?)',(racekey,year,leg,e['event_id'],family,rv.get('Navn'),rv.get('Km'),e['url']))
    entry={'race_key':racekey,'family':family,'year':year,'label':rv.get('Navn'),'nominal_km':rv.get('Km'),'date':e['date'],'event_id':e['event_id'],'results':len(rows),'finishers':stats['FINISHED'],'dnf':stats['DNF'],'dns':stats['DNS'],'dsq':stats['DSQ'],'unknown':stats['UNKNOWN'],'split_observations':len(splits),'timing_stations':len(stations),'median_seconds':round(statistics.median(finishers),2) if len(finishers)>=5 else None,'source_url':e['url'],'route_status':'none'};catalog.append(entry);coverage.append(entry.copy());db.commit()
  db.close();catalog.sort(key=lambda r:(-r['year'],FAMS.index(r['family'])))
  meta={'schema':'satila-first-draft-1','contract':'loppanalys-engine-1.0','event':'Sätila Trail Run','families':[{'id':'ultra85','label':'85 km','subtitle':'Ultra','color':'#d8ad62'},{'id':'trail43','label':'43 km','subtitle':'Maraton','color':'#85a18a'},{'id':'trail22','label':'22 km','subtitle':'Halvmaraton','color':'#becfc0'}],'editions':catalog,'source_archive':'EQ Timing full public-station pagination, workflow run 36818159977','coverage_note':'Public result API Items contains DNS placeholders; split_observations counts only TIME observations; unique results are deduplicated by EtappeDeltakerUID.'}
