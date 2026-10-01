@@ -46,12 +46,12 @@
       "evidence": "split-based personal goal plan and descriptive annual participation"
     },
     "S10": {
-      "status": "extended_first_draft_QA_green",
-      "evidence": "GitHub Actions 36838917833 (SUCCESS on c7a98d4a9); includes analytics extension panels, goal-placement interaction, post-filter viewport checks, independent Chromium 1440/900/390."
+      "status": "extended_first_draft_QA_green_with_a11y_budget_gates",
+      "evidence": "Chromium 36839581103 success; fast a11y/performance 36839729757 success"
     },
     "S11": {
-      "status": "review_artifact_ready_pending_owner_review",
-      "evidence": "Draft PR #2, independent extended browser run 36838917833 green; package run 36839244517 green, 44 static site files, artifact 11151105284, internal ZIP sha256 fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f"
+      "status": "review_archive_current_ready_pending_owner_review",
+      "evidence": "Draft PR #2; artifact 11151260943; Codex audit brief issue #3 (prepared, not started)."
     }
   },
   "verified_local_checkpoint": {
@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "REVIEW_ARTIFACT_PUBLISHED_AWAITING_OWNER_REVIEW",
+  "status": "FIRST_DRAFT_A11Y_PERF_QA_GREEN_REVIEW_ZIP_READY",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -90,7 +90,14 @@
       "inner_zip_bytes": 814751,
       "sha256": "fce478cb97fb0eb3812b7f7df01b96772412030406450df5785103f9ad9abf0f",
       "public_files": 44
-    }
+    },
+    "accessibility_release_gate": "tests/test_accessibility_performance.py PASS",
+    "dialog_labelling_commit": "8e82f6bb97771d6c599d226756bc08c7590e648c",
+    "latest_green_chromium": "36839581103",
+    "review_zip_workflow": "36839729757",
+    "review_zip_artifact_id": 11151260943,
+    "review_zip_digest": "sha256:ddf02a3e4ad28c90bdf7c644e497464c1cb1e174850688f3022a6b8bd95ff5e2",
+    "critical_initial_bytes": 335164
   },
   "known_limits": [
     "Blueprint-wide feature parity remains an explicit follow-up after first-draft owner review",
@@ -99,5 +106,5 @@
     "Review draft is not yet merged or added to Loppanalys production catalogue",
     "Full 27-diagram/10-table/6-map blueprint parity needs final component-level signoff; extended first-draft regression is green."
   ],
-  "next_action": "Review artefact from run 36839244517 and draft PR #2. Do not merge/publish before owner review. Once approved, complete remaining component parity/acceptance and publish through separate Loppanalys repository PR. Preserve checksum-locked source build and do not restart GPX investigation."
+  "next_action": "Project owner can review latest ZIP artifact 11151260943 in Actions run 36839729757. Optional: start Codex on issue #3 for isolated parity audit; it has not been started. Continue remaining component-specific parity after review. Do not merge/publish automatically."
 }
