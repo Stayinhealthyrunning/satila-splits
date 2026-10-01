@@ -88,6 +88,19 @@ async def main():
    assert await page.locator(".insight").count()>0
    assert any('Sedan föregående verifierade' in value for value in await page.locator('#profile-content th').all_text_contents())
    assert await page.locator('#profile-content .insight small').count()>0
+   assert await page.locator('#profile-replay-duration option').count()==4
+   await page.locator('#profile-replay-play').click()
+   await page.wait_for_timeout(550)
+   assert float(await page.locator('#profile-replay-range').input_value())>0
+   await page.locator('#profile-replay-play').click()
+   replay_position=await page.locator('#profile-replay-range').input_value()
+   await page.locator('#profile-replay-follow').click()
+   assert await page.locator('#profile-replay-follow').get_attribute('aria-pressed')=='true'
+   await page.locator('#profile-replay-fit').click()
+   assert await page.locator('#profile-replay-follow').get_attribute('aria-pressed')=='false'
+   assert await page.locator('#profile-replay-range').input_value()==replay_position
+   await page.locator('#profile-replay-reset').click()
+   assert float(await page.locator('#profile-replay-range').input_value())==0
    await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
    second=next(r for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r['id']!=runner['id'] and r.get('name'))
