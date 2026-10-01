@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       year:
-        description: "Optional single year (2021-2025); blank imports all"
+        description: "Optional single year for browser capture; blank imports all configured years"
         required: false
         type: string
   push:
@@ -11,6 +11,7 @@ on:
     paths:
       - ".github/workflows/import-eqtiming.yml"
       - "tools/fetch_eqtiming_archive.py"
+      - "tools/fetch_eqtiming_full.py"
       - "tools/inspect_eqtiming_archive.py"
       - "config/eqtiming-events.json"
 permissions:
@@ -26,7 +27,7 @@ jobs:
           python-version: "3.12"
       - run: pip install playwright
       - run: python -m playwright install --with-deps chromium
-      - name: Capture public EQ Timing result traffic
+      - name: Capture public EQ Timing browser traffic
         shell: bash
         run: |
           if [ -n "${{ inputs.year }}" ]; then
@@ -34,11 +35,16 @@ jobs:
           else
             python tools/fetch_eqtiming_archive.py
           fi
-      - name: Inspect captured payloads
+      - name: Inspect captured browser payloads
         run: python tools/inspect_eqtiming_archive.py
+      - name: Fetch every public race station and result page
+        if: ${{ inputs.year == '' }}
+        run: python tools/fetch_eqtiming_full.py
       - uses: actions/upload-artifact@v4
         with:
           name: satila-eqtiming-raw-${{ github.run_id }}
-          path: data/work/eqtiming/
+          path: |
+            data/work/eqtiming/
+            data/work/eqtiming-full/
           if-no-files-found: error
           retention-days: 30
