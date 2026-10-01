@@ -42,6 +42,24 @@
 
 **Viktig denominatorregel:** `results` är offentliga resultatrader, **inte antalet startande** och inte antalet fullföljare. Startande bör beräknas med separat statuspolicy där DNS inte felaktigt ingår. Fullföljandeandel ska ange vald nämnare och hantera den enda UNKNOWN separat. Inga procentandelar får bilda en skenprecision genom att utelämna dessa statusdefinitioner.
 
+### Faktisk täckning av publika tidtagningsstationer
+
+Antalet tillgängliga stationer varierar mellan år och distans. Detta ska styra vilka interaktiva delsträckor, individuella insikter och historiska loppplaner som kan presenteras:
+
+| År | 85 km | 43 km | 22 km |
+|---|---:|---:|---:|
+| 2016 | 3 | 5 | 5 |
+| 2017 | 4 | 6 | 4 |
+| 2018 | 5 | 5 | 4 |
+| 2019 | 6 | 6 | 5 |
+| 2021 | 5 | 7 | 5 |
+| 2022 | 9 | 9 | 7 |
+| 2023 | 9 | 9 | 7 |
+| 2024 | 9 | 9 | 7 |
+| 2025 | 9 | 10 | 7 |
+
+Dessa siffror innefattar även eventuella tekniska stationer (exempelvis `PRE` eller `FV`), som **inte automatiskt är analysgränser**. En edition med nio publika stationer har därför inte nödvändigtvis åtta meningsfulla analyssplitar. Antal giltiga *segmentpar* måste beräknas per löpare och per edition från exakta observerade passager.
+
 ## Omsatta QA-kontroller
 
 Testet läser de redan genererade browserbundlarna utan att ändra dem:
