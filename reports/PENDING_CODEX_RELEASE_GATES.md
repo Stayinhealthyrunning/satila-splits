@@ -45,6 +45,22 @@ Kör efter implementation:
 
 ```bash
 python tests/browser_release_navigation_acceptance.py
+python tests/browser_release_ux_acceptance.py
+```
+
+### 2B. Keyboard, fokus, mobilmeny och synligt felstate
+
+Releasekandidaten ska dessutom klara:
+- mobilmeny: Enter öppnar, Escape stänger och `aria-expanded` återställs,
+- löparsökning via tangentbord utan mus,
+- dialogstängning lämnar inte fokus på BODY/HTML,
+- metoddialog öppnas/stängs med tangentbord/Escape,
+- saknad race-bundle ger synligt felmeddelande eller `role="alert"`, inte bara `console.error`.
+
+Kör:
+
+```bash
+python tests/browser_release_ux_acceptance.py
 ```
 
 ### 3. Codex frontend måste testas på exakt integrationscommit
