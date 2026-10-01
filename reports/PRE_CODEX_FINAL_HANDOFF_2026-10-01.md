@@ -4,7 +4,9 @@ Denna fil är **aktuellt tillägg** till historiska `CODEX_PARITY_AUDIT.md` (var
 
 ## Baslinje och källkontrakt
 
-- Senast helt grön efter D11/D18/D19/D22/T07: `e3420bb5da7763e251e3e61c62f5b2765f411e4d`, [fyra gröna jobb #36868424098](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36868424098). Små efterföljande D07/D21-/metadata-only-korrigeringar kräver nytt **samma-SHA**-CI före slutlig checkpoint.
+- **Senaste fullt verifierade frontendkod:** `bdcf74f1c742ad7161ead8c7dbaae719c891f0d3`, [fyra gröna jobb #36869568573](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36869568573). Detta omfattar även D07, D21, metadata-only passagetäckning och alla tidigare D11/D18/D19/D22/T07-korrigeringar.
+- Review-package från exakt den kod-SHA:n: `satila-codex-integrated-review`, artifact ID **11166427650**. Browserbilder/loggar: `integration-browser-evidence`, artifact ID **11166422620**. Fyra helsidesbredder 1440/900/768/390 hade 0 px dokumentoverflow; all-edition-kontrollen och source-edge-browser-QA klarade desktop och mobil.
+- Den fortsatta HEAD kan vara några **dokumentationscommits** senare än den kod-SHA:n. Efter ändring av `BUILD_STATE.json` görs en extra hel CI på dokumentations-HEAD så att återstartspunkten och reviewpaketet är knutna till samma faktiska ref.
 - Nya funktionsförbättringar ligger efter denna commit i `integration/codex-independent-qa-2026-10-01`; kontrollera **senaste workflow-körning mot samma HEAD** innan en ny grön baslinje anges.
 - [Draft PR #7](https://github.com/Stayinhealthyrunning/satila-splits/pull/7) mot bevarad Codex-originalgren `a71a5ef`; `main` och Loppanalys.se är inte publicerade.
 - 27 editioner, 3 272 resultat, 2 649 FINISHED, 128 DNF, 494 DNS, 1 UNKNOWN, 16 525 verkliga TIME-passager, fem checksummeverifierade arrangörs-GPX. Inga historiska råa deltagarspår ligger i publik `docs/`.
