@@ -180,6 +180,15 @@ async def main():
             assert len(methods)==7 and all("Historisk" in s for s in methods),methods
             summary=await page.locator("#plan-summary").inner_text()
             assert "7/7" in summary,summary
+            # The native hidden property of the optional reference-class
+            # label must survive the responsive author CSS display rules.
+            optional_class=page.locator("#plan-class-label")
+            assert await page.locator("#plan-cohort").input_value()=="all"
+            assert await optional_class.is_hidden(),"Reference class shown in whole-field mode"
+            await page.locator("#plan-cohort").select_option("class")
+            assert await optional_class.is_visible(),"Class selector missing in class cohort mode"
+            await page.locator("#plan-cohort").select_option("all")
+            assert await optional_class.is_hidden(),"Reference class remained visible after reset"
             # T06: expose source confidence rather than fabricating segment D+/D-.
             plan_head=await page.locator('#plan-table thead th').all_text_contents()
             assert plan_head[-2:]==['D+/D−*','Underlag'],plan_head

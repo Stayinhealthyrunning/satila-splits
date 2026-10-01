@@ -36,3 +36,6 @@
 svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:none}
 #segment-heatmap [data-extra-segment].selected{outline:2px solid #d4a858;outline-offset:-2px}
 #segment-heatmap [data-extra-segment]:focus-visible{outline:3px solid #23563d;outline-offset:-2px}
+
+/* Keep the optional class reference invisible outside class-cohort mode. */
+#plan-class-label[hidden]{display:none!important}
