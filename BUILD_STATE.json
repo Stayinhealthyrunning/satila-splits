@@ -26,11 +26,11 @@
       "evidence": "approved Hero, branding, desktop/mobile UI, years and families"
     },
     "S5": {
-      "status": "first_draft_complete",
+      "status": "extended_first_draft_qa_green",
       "evidence": "overview, result filters, podiums and history"
     },
     "S6": {
-      "status": "first_draft_complete",
+      "status": "extended_first_draft_qa_green",
       "evidence": "observed timing segments and field dynamics"
     },
     "S7": {
@@ -38,20 +38,20 @@
       "evidence": "individual profile with additional insights, favorites and head-to-head"
     },
     "S8": {
-      "status": "first_draft_complete_with_route_gating",
+      "status": "extended_first_draft_qa_green",
       "evidence": "interactive 2025 route and synced map/elevation scrubbing; historical routes not fabricated"
     },
     "S9": {
-      "status": "first_draft_complete",
+      "status": "extended_first_draft_qa_green",
       "evidence": "split-based personal goal plan and descriptive annual participation"
     },
     "S10": {
-      "status": "first_draft_QA_green",
-      "evidence": "GitHub Actions 36835443117, 36835483334; local release and deep interaction tests"
+      "status": "extended_first_draft_QA_green",
+      "evidence": "GitHub Actions 36838917833 (SUCCESS on c7a98d4a9); includes analytics extension panels, goal-placement interaction, post-filter viewport checks, independent Chromium 1440/900/390."
     },
     "S11": {
-      "status": "review_pack_ready_awaiting_owner_review",
-      "evidence": "reports/S11_FIRST_DRAFT_REVIEW.md; static ZIP without internal SQLite"
+      "status": "review_pack_ready_pending_owner_review",
+      "evidence": "Draft PR #2; report reports/S11_FIRST_DRAFT_REVIEW.md; extended analytics CI run 36838917833."
     }
   },
   "verified_local_checkpoint": {
@@ -65,13 +65,13 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "FIRST_DRAFT_REVIEW_READY",
+  "status": "FIRST_DRAFT_EXTENDED_ANALYTICS_QA_GREEN_PENDING_OWNER_REVIEW",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
     "finishers": 2649,
     "observed_time_passages": 16525,
-    "latest_green_ci": 36835483334,
+    "latest_green_ci": 36838917833,
     "independent_data_ci": 36835282859,
     "browser_viewports": [
       "1440x900",
@@ -80,13 +80,17 @@
     ],
     "zero_browser_exceptions": true,
     "zero_horizontal_overflow": true,
-    "deep_map_elevation_scrub": true
+    "deep_map_elevation_scrub": true,
+    "extended_analytics_ci": 36838917833,
+    "verified_build_head": "c7a98d4a946590691131b523bf0e8a2503833c24",
+    "module": "docs/assets/analytics-extra.js integrated inside docs/assets/app.js"
   },
   "known_limits": [
     "Blueprint-wide feature parity remains an explicit follow-up after first-draft owner review",
     "Historical participant GPX not yet committed; no route borrowing",
     "Full-year course performance trend requires verified equivalence",
-    "Review draft is not yet merged or added to Loppanalys production catalogue"
+    "Review draft is not yet merged or added to Loppanalys production catalogue",
+    "Full 27-diagram/10-table/6-map blueprint parity needs final component-level signoff; extended first-draft regression is green."
   ],
-  "next_action": "Open draft PR for review, collect project-owner feedback, finish remaining blueprint parity in small CI-backed commits."
+  "next_action": "Await owner review of Draft PR #2; do not merge/publish before explicit instruction. Continue independent blueprint parity and accessibility/performance checks in separate commits. Do not re-fetch known GPX or EQ source."
 }
