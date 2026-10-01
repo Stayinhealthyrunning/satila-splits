@@ -105,6 +105,7 @@
     "local_release_candidate": {
       "base_sha": "e8a5be1fe542d669f8939bdc1186ef0e12cd55de",
       "tested_code_sha": "94268506bb36b40eb59f3a20f859e03230c2e958",
+      "draft_pr": "https://github.com/Stayinhealthyrunning/satila-splits/pull/9",
       "full_local_release_checks": "PASS",
       "browser_smoke_widths": [1440, 900, 768, 390],
       "browser_errors": 0,
@@ -147,7 +148,7 @@
     "Original private EQ Timing source archive needs owner-controlled long-term backup before artifact expiry 2026-10-31; issue #6.",
     "No merge of Draft PR #7 into main and no production publication on Loppanalys.se."
   ],
-  "next_action": "Review the Draft PR from codex/saetila-final-visual-qa-2026-10-01 into integration/codex-independent-qa-2026-10-01. After approved integration, require all four integration-candidate jobs and a review ZIP from that exact integrated SHA. Do not merge to main or publish before owner approval.",
+  "next_action": "Review Draft PR #9 from codex/saetila-final-visual-qa-2026-10-01 into integration/codex-independent-qa-2026-10-01. After approved integration, require all four integration-candidate jobs and a review ZIP from that exact integrated SHA. Do not merge to main or publish before owner approval.",
   "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
   "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md"
 }

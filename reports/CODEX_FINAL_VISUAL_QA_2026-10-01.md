@@ -2,7 +2,7 @@
 
 Datum: 2026-10-01  
 Status: **READY_FOR_INTEGRATION_QA**  
-Draft PR: skapas efter att denna rapport har committats och pushats.
+Draft PR: https://github.com/Stayinhealthyrunning/satila-splits/pull/9
 
 ## Bas och avgränsning
 
@@ -10,7 +10,7 @@ Draft PR: skapas efter att denna rapport har committats och pushats.
 - Exakt bas-SHA: `e8a5be1fe542d669f8939bdc1186ef0e12cd55de`.
 - Senast tidigare fullt integrerade funktionella kod-SHA: `790dcd7818781eaf405f0f5ef271f9b5ba0bdf9f`.
 - Ny isolerad gren: `codex/saetila-final-visual-qa-2026-10-01`.
-- Ny lokalt fulltestad implementations-SHA: `94268506bb36b40eb59f3a20f859e03230c2e958`.
+- Slutlig lokalt fulltestad feature-SHA: `94268506bb36b40eb59f3a20f859e03230c2e958`.
 - Den ursprungliga worktreen `C:\Git\satila-splits`, grenen `codex/saetila-complete-first-draft` och dess `reports/qa-local/` har lämnats orörda.
 - Ingen merge till `main`, publicering, ändring av issue #6 eller ändring av skyddade visuella original har gjorts.
 
