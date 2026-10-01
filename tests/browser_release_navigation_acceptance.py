@@ -74,7 +74,7 @@ async def main():
             await page.keyboard.press("Enter")
             await page.wait_for_timeout(50)
             assert await page.evaluate("location.hash.includes('main') || document.activeElement.id==='main'")
-            transition=await page.locator(".race-card").evaluate("e=>getComputedStyle(e).transitionDuration")
+            transition=await page.locator(".race-card").first.evaluate("e=>getComputedStyle(e).transitionDuration")
             assert transition in ("0s","0ms",""),transition
             await page.locator("#menu-toggle").focus()
             await page.keyboard.press("Enter")
