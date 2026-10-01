@@ -76,6 +76,8 @@ async def main():
    assert await page.locator('#segment-groups svg').count()==1
    assert await page.locator('[data-class-series]:checked').count()<=5
    assert await page.locator('#segment-heatmap .heat-cell small').count()>0
+   assert await page.locator('#history-table th').count()==12
+   assert await page.locator('#club-chart .club-choice').count()>0
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
    await page.locator("#runner-search").fill(runner["name"].split()[0])
    assert await page.locator(".suggestion").count()>0
