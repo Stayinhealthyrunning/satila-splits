@@ -8,9 +8,9 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | --- | --- | --- | --- |
 | D01 | Delvis | `renderKpis`, `#kpis` | Visa separata DNF/DNS/DSQ/UNKNOWN och explicit startnämnare i KPI-raden. |
 | D02 | Delvis | `renderFinishChart`, `#finish-chart` | Gör All/F/M-val tydligt; okänt kön och filtrerat n behöver tydligare serieetiketter. |
-| D03 | Delvis | `renderOverview`, `#percentile-chart` | Lägg till faktisk kumulativ målgång mot gemensam tidsaxel. |
+| D03 | Implementerad | `renderOverview`, `renderCumulativeFinish`, `#percentile-chart` | P10–P90 och kumulativ målgång på gemensam tidsaxel, med separata könsnämnare där n≥5. |
 | D04 | Implementerad | `renderSexCompletion`, `#sex-completion` | Kontrollera könstäckning för varje upplaga vid visuell QA. |
-| D05 | Delvis | `renderOverview`, `#group-bars` | Full klassfördelning måste vara åtkomlig från diagrammet. |
+| D05 | Implementerad | `renderOverview`, `renderClassDetails`, `#group-bars` | Toppklasser och utfällbar fullständig klasslista med filterval. |
 | D06 | Implementerad | `renderDynamics`, `#status-chart`, `#flow-chart` | Fältflödet anger registrerade passager, inte bortfall. |
 | D07 | Delvis | `renderDynamics`, `#placement-chart` | Zoom/reset och klass i punktens tooltip saknas. |
 | D08 | Implementerad | `renderGoal`, `#goal-placement` | Deskriptiv måltid mot vald editions observerade målgångar. |
@@ -24,8 +24,8 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | D16 | Implementerad | `renderPacingIndex`, `#segment-pacing` | Eget pacingindex hålls skilt från den äldre grafen för observerad passageretention. |
 | D17 | Implementerad | `renderSexSeries`, `#segment-sex-extra` | Gemensam tidsaxel, separata toggles och avbrott vid otillräckligt n. |
 | D18 | Implementerad | `renderClassSeries`, `#segment-groups` | Val av upp till fem källklasser, medianpacingindex per segment och n≥5. |
-| D19 | Delvis | `renderHeatmap`, `#segment-heatmap` | Visa även n i varje cell. |
-| D20 | Delvis | `#percentile-chart` | Tidsnivåerna finns som percentiler; kumulativ fältprogression med denominator saknas. |
+| D19 | Implementerad | `renderHeatmap`, `#segment-heatmap` | Gruppens relativa segmenttid samt n i varje cell. |
+| D20 | Implementerad | `renderCumulativeFinish`, `#percentile-chart` | Observerad kumulativ målgång med explicit fullföljarnämnare. |
 | D21 | Delvis | `renderCheckpointSpread`, `#checkpoint-spread` | Tydliggör varierande kohort mellan kontroller i kortet. |
 | D22 | Delvis | `renderCourseIntel`, `#course-intelligence` | Pacing loss, segmentvis spridning/placeringsrörelse och DNF-exit saknas. Rå GPX D+ är inte officiell. |
 | D23 | Delvis | `renderCourseMap`, `#course-elevation` | Verifierade checkpoint-ankare och explicit höjdavbrott saknas. |
