@@ -113,6 +113,26 @@ async def main():
             checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
             heat=await page.locator('#segment-heatmap .heat-label').all_text_contents()
             assert len(checked)==1 and heat==checked,("Heatmap ignored changed user class selection",heat,checked)
+            # T01: all varying source fields are selectable, and the native
+            # control responds to keyboard interaction on desktop and mobile.
+            sort=page.locator('#results-sort')
+            assert await sort.locator('option').count()==11
+            await sort.focus()
+            await sort.press('End')
+            assert await sort.input_value()=='status'
+            statuses=await page.locator('#results-table tbody tr td:nth-child(9)').all_text_contents()
+            assert statuses and all(v.strip()=='FINISHED' for v in statuses),statuses[:5]
+            await sort.select_option('time_desc')
+            shown=await page.locator('#results-table tbody tr td:nth-child(10)').all_text_contents()
+            def time_in_seconds(v):
+                parts=[int(x) for x in v.strip().split(':')]
+                return sum(x*(60**i) for i,x in enumerate(reversed(parts)))
+            seconds=[time_in_seconds(v) for v in shown if ':' in v]
+            assert len(seconds)>=5 and seconds==sorted(seconds,reverse=True),seconds[:8]
+            await sort.select_option('club')
+            club_cells=await page.locator('#results-table tbody tr td:nth-child(8)').all_text_contents()
+            assert club_cells and all(v.strip() for v in club_cells),"Missing clubs must sort after populated sources"
+            await sort.select_option('place')
             # T07: route publication and provenance reservation are explicitly separate.
             await page.wait_for_function("document.querySelector('#course-provenance')?.textContent.includes('Publik displayrutt')")
             assert "Verifieringsreservation" in await page.locator("#course-provenance").text_content()
