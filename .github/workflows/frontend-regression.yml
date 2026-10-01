@@ -5,13 +5,8 @@ on:
     branches: [build/full-first-draft-2026-10-01]
     paths:
       - ".github/workflows/frontend-regression.yml"
-      - "docs/index.html"
-      - "docs/assets/**"
-      - "docs/data/bootstrap.json"
-      - "docs/data/races/**"
-      - "docs/data/routes/**"
-      - "tools/build_satila.py"
-      - "tests/browser_smoke.py"
+      - "tests/**"
+      - "qa.trigger"
 permissions:
   contents: read
 jobs:
