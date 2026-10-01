@@ -17,6 +17,23 @@ Den kuraterade databunten i `docs/data/` och dess kontroller i Git-repot ger en 
 
 **Risk:** Det räcker inte att bara spara genererad `bootstrap.json`, 27 race-bundlar och källfingeravtryck för att exakt kunna återköra `tools/build_satila.py` senare. De fullständiga råa paginerade svaren, metadata och käll-GPX behövs.
 
+## Verifierad privat exportkopia (2026-10-01)
+
+En fullständig **privat** ZIP har nu skapats i samtalets filutrymme för projektägaren att ladda ner, men har **inte** publicerats eller checkats in i detta repository:
+
+- Paketnamn: `Satila_Splits_PRIVATE_SOURCE_BACKUP_2026-10-01.zip`
+- Paketstorlek: **6 692 068 byte**
+- Paket-SHA-256: `9360bf36cd7b042d13d536e8551c3d4c65da2911894d718475dd79090a439fd8`
+- Innehåller ursprungliga EQ Timing-arkivet `satila-eqtiming-raw.zip` (**560 ZIP-poster** inklusive `eqtiming/` och `eqtiming-full/`, nio historiska år).
+- Ingår även de **fem oförändrade** arrangörs-GPX-filerna (5, 10, 21, 43, 85 km) och `SOURCE_MANIFEST_PRIVATE.json` med respektive SHA-256.
+- Kontrollerat med full ZIP-integritetsverifiering och SHA-256 för samtliga sex ingående källfiler. Inget medlemselement rapporterades skadat.
+
+Den frysta EQ-käll-ZIP:ens egen SHA-256 är
+`b7b0b6ad97b504900d8dc06e749d7e9818312d88f37edb9424030c3847457b89`
+(6 626 914 byte).
+
+**Kvarstående manuella moment:** Projektägaren måste ladda ner den privata samtalsfilen och bevara den i sin egen åtkomstbegränsade, säkerhetskopierade lagringsplats. Att en fil för tillfället finns i samtalets arbetsmiljö är inte ett permanent långtidsarkiv. De tidigare fem autentiska Suunto 43-km-deltagarspåren från 2021–2025 ingår **inte** i detta paket och behöver bevaras separat om original-XML krävs för framtida ombearbetning. Inga råa personuppgifter har lagts till i Git-repot.
+
 ## Omedelbar åtgärd innan artifacten går ut
 
 En användare med åtkomst till repositoryt kör lokalt i en säker katalog, **inte** under `docs/` och **inte** i ett publikt Git-commit:
