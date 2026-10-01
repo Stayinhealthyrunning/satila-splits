@@ -14,6 +14,10 @@ async def main():
         fixtures["data/races/"+path.name]=json.loads(path.read_text(encoding="utf-8"))
     for path in (ROOT/"data/routes").glob("*.json"):
         fixtures["data/routes/"+path.name]=json.loads(path.read_text(encoding="utf-8"))
+    # Codex's coverage dashboard loads an additional valid public root JSON.
+    # Load ALL committed root manifests rather than hiding missing fetches.
+    for manifest in (ROOT/"data").glob("*.json"):
+        fixtures["data/"+manifest.name]=json.loads(manifest.read_text(encoding="utf-8"))
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
     markup=re.sub(r"<script[^>]*>\s*</script>","",markup)
@@ -69,7 +73,8 @@ async def main():
                         visited.append(ed["race_key"])
                 assert len(visited)==len(set(visited))==27,(width,len(visited))
                 assert not errors,(width,errors)
-                assert not await page.evaluate("window.__missing||[]")
+                missing=await page.evaluate("window.__missing||[]")
+                assert not missing,missing
                 print("PASS all 27 public editions, expected checkpoints, routes and UI:",width,height,flush=True)
                 await page.close()
         finally:
