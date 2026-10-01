@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Offline Chromium regression: committed Sätila results, no live EQ requests."""
-import asyncio,json,os,re
+import asyncio,base64,json,os,re
 from collections import Counter
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -21,6 +21,8 @@ async def main():
  html=re.sub(r"<link [^>]*>","",html)
  html=re.sub(r"<script[^>]*>\s*</script>","",html)
  css=(ROOT/"assets/style.css").read_text(encoding="utf-8")
+ hero=base64.b64encode((ROOT/"assets/hero.webp").read_bytes()).decode("ascii")
+ css=css.replace("url('hero.webp')","url('data:image/webp;base64,"+hero+"')")
  js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
  async with async_playwright() as p:
   opts={"headless":True}
@@ -169,10 +171,19 @@ async def main():
    await page.locator('#sex-filter').select_option('F')
    await page.locator('#sex-filter').select_option('all')
    await page.wait_for_timeout(120)
+   if width==390:
+    no_overlap=await page.evaluate("()=>document.querySelector('.race-cards').getBoundingClientRect().bottom<=document.querySelector('#race-context .context-main').getBoundingClientRect().top")
+    assert no_overlap,'Mobile race cards overlap the selected edition'
    overflow=await page.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth")
    assert overflow<=1,(width,overflow)
    assert not errors,(width,errors)
    assert not await page.evaluate("window.__missing||[]"),(width,"missing data")
+   await page.locator('#results-search').fill('')
+   await page.locator('#runner-search').fill('')
+   await page.locator('#clear-compare').click()
+   await page.locator('#clear-map-duel').click()
+   await page.evaluate("window.scrollTo(0,0)")
+   await page.wait_for_timeout(180)
    await page.screenshot(path=str(OUT/("satila-"+str(width)+".png")),full_page=True)
    print("PASS browser",width,height,"overflow",overflow,flush=True)
    await page.close()
