@@ -139,8 +139,8 @@
       "id": "D16",
       "name": "Pace retention",
       "status": "gated",
-      "evidence": "Requires valid timing-axis segment distance and finish; no GPX distance substitution.",
-      "test": "tests/test_course_comparability_contract.py",
+      "evidence": "Requires valid segment distance for pace. 2023 and 2024 trail43 Torrås→Almered fail the timing-km median-speed sanity screen (>20 km/h); keep TIME analytics but suppress unverified pace/retention there.",
+      "test": "tools/audit_segment_distance_capability.py",
       "frontend_verification": "pending_codex_candidate"
     },
     {
@@ -251,8 +251,8 @@
       "id": "T03",
       "name": "Runner segment + relative performance",
       "status": "gated",
-      "evidence": "Requires real positive pair; field median threshold enforced.",
-      "test": "tests/test_real_data_analysis_contract.py",
+      "evidence": "Segment TIME/relative performance is source-valid on real pairs; min/km only where segment-distance capability passes. 2023/2024 trail43 Torrås→Almered are time-only until distance evidence is improved.",
+      "test": "tools/audit_segment_distance_capability.py",
       "frontend_verification": "pending_codex_candidate"
     },
     {
