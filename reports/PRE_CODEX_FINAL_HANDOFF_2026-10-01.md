@@ -4,7 +4,7 @@ Denna fil är **aktuellt tillägg** till historiska `CODEX_PARITY_AUDIT.md` (var
 
 ## Baslinje och källkontrakt
 
-- Säker tidigare samlad grön commit: `241e42a6e24cffb37314ff170d4b8147709d7b91`, [fyra gröna jobb #36866808313](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36866808313).
+- Senast helt grön efter D11/D18/D19/D22/T07: `e3420bb5da7763e251e3e61c62f5b2765f411e4d`, [fyra gröna jobb #36868424098](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36868424098). Små efterföljande D07/D21-/metadata-only-korrigeringar kräver nytt **samma-SHA**-CI före slutlig checkpoint.
 - Nya funktionsförbättringar ligger efter denna commit i `integration/codex-independent-qa-2026-10-01`; kontrollera **senaste workflow-körning mot samma HEAD** innan en ny grön baslinje anges.
 - [Draft PR #7](https://github.com/Stayinhealthyrunning/satila-splits/pull/7) mot bevarad Codex-originalgren `a71a5ef`; `main` och Loppanalys.se är inte publicerade.
 - 27 editioner, 3 272 resultat, 2 649 FINISHED, 128 DNF, 494 DNS, 1 UNKNOWN, 16 525 verkliga TIME-passager, fem checksummeverifierade arrangörs-GPX. Inga historiska råa deltagarspår ligger i publik `docs/`.
@@ -15,12 +15,14 @@ Denna fil är **aktuellt tillägg** till historiska `CODEX_PARITY_AUDIT.md` (var
 | ID | Ändring i aktuell `docs/assets/app.js` | Evidensgräns |
 |---|---|---|
 | DNF / T04 | Kolumnen `DNF sist här` visar `Okänt` när urvalets DNF helt saknar källkopplad offentlig TIME; inte en falsk numerisk nolla. | Samtliga 128 nuvarande DNF saknar sådan publicerad observation; DNF:s faktiska avbrottsplats är okänd. |
+| D06/passagetäckning | Metadata-only Tostared ligger kvar i stations-/fältflödet, men markeras `endast metadata (0 TIME)` och exkluderas från själva passagetäckningskurvan, så ingen falsk noll-dipp/återhämtning ritas. | Endast editionsbrett verifierade TIME-stationer får ingå i kurvan; grafen visar observerad täckning, aldrig DNF/överlevnad. |
+| D07/D21 | Scatter-punkters tooltip visar källklass; kontrollspridningen märker att varje kontroll har eget verkligt observerat n och kan omfatta olika fullföljare. | Klass härleds inte från ålder och saknade TIME imputeras inte. |
 | D22 / K03 | Course Intelligence följer `selectedSegment` och visar n, TIME-median, Q25–Q75 när n≥10, pace när distans stöds, placeringsrörelse samt DNF-täckning. | Ingen påhittad segment-D+, exit-position eller officiell GPX-checkpointprojektion. |
 | D11 | Separat ranking av sista **verifierade positiva** TIME-segmentet mot just det segmentets fältmedian, n≥5; sista tredjedelens placeringsprogression behålls som separat mått. | Kvoten är tidsbaserad, fungerar även för time-only-distans. Sista verifierade segment behöver inte nå målet. |
 | D18/D19 | Heatmap visar samma valda klasser som klasspacingdiagrammet (max fem) och uppdateras vid kryssrutebyte; klassurval återställs vid editionsbyte. | Tom cell = n<5/saknad observation, inte nolltempo. |
 | T07 | Provenienstabellen får separata kolumner för publik sanerad displayrutt och faktisk verifieringsreservation ur `coverage.json`. | 2025/26-återanvändning är uttryckligt projektantagande, inte godkänd flerårig whole-course-prestationsgrupp. |
 
-De nya browserkraven är inlagda i `tests/browser_evidence_acceptance.py`: DNF-unknown, D22-selectedSegment, D11, D18↔D19 och T07. Den ursprungliga Tostared/n=8/2016-podium-testningen finns kvar. Senast rättat i testet: använd `text_content()` för lång horisontellt scrollad T07-tabell, eftersom `inner_text()` kan begränsas av viewport-klippning. Source-jobbet har även automatisk `node --check`.
+De nya browserkraven är inlagda i `tests/browser_evidence_acceptance.py`: metadata-only Tostared som falskt retentionstapp, DNF-unknown, D07/D21, D22-selectedSegment, D11, D18↔D19 och T07. Den ursprungliga Tostared/n=8/2016-podium-testningen finns kvar. Senast rättat i testet: använd `text_content()` för lång horisontellt scrollad T07-tabell, eftersom `inner_text()` kan begränsas av viewport-klippning. Source-jobbet har även automatisk `node --check`.
 
 ## Vad som redan fungerar och inte ska byggas om
 
