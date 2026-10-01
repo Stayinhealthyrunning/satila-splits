@@ -48,6 +48,7 @@ async def main():
                 page.set_default_timeout(6000)
                 errors=[]
                 page.on("pageerror",lambda e:errors.append(str(e)))
+                page.on("console",lambda msg:errors.append("console:"+msg.text) if msg.type=="error" else None)
                 await page.set_content(markup)
                 await page.add_style_tag(content=(ROOT/"assets/style.css").read_text(encoding="utf-8"))
                 extra=ROOT/"assets/style-extra.css"
