@@ -60,6 +60,12 @@ async def main():
             names=await seg.all_text_contents()
             assert any("Grind" in s and "Torrås" in s for s in names)
             assert all("Tostared" not in s for s in names)
+            # All published DNF records currently lack a linked public TIME passage.
+            # A numeric zero in the segment-exit column would incorrectly imply
+            # that actual last checkpoints are known and none exited here.
+            dnf_cells=await seg.locator("td:nth-child(9)").all_text_contents()
+            assert len(dnf_cells)==7 and all(value.strip()=="Okänt" for value in dnf_cells),dnf_cells
+            assert "inte noll avbrott" in await page.locator("#segments").inner_text()
             # A target plan should reflect all seven real measured segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
