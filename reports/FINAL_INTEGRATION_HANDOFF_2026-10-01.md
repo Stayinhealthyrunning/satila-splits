@@ -101,6 +101,18 @@ Två konkreta och oberoende jämförbarhetsrisker:
 
 [Fullständig tolknings- och acceptansrapport](https://github.com/Stayinhealthyrunning/satila-splits/blob/audit/satila-data-method-2026-10-01/reports/HISTORICAL_TIMING_AXIS_FINDINGS.md). Kontrollens källa är publicerad EQ-stationsmetadata och de redan frysta deltagarbaserade kurskandidaterna; inga nya individspår läggs i repot. [Grön CI på stationsmatrisen](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36846409896).
 
+## Slutligt återbyggnadsbevis: 36/36 publika JSON-byte reproducerbara
+
+[Separat, detaljerad kontrollrapport](https://github.com/Stayinhealthyrunning/satila-splits/blob/audit/satila-data-method-2026-10-01/reports/FULL_REBUILD_EQ_TIMING_VERIFICATION_2026-10-01.md) dokumenterar en ren lokal återbyggnad från privat fryst EQ Timing-source och fem ursprungliga arrangörs-GPX.
+
+**Resultat mot faktiskt GitHub-träd vid revisionscommit `c69c5c4`: 36 förväntade JSON, 36 återbyggda, 36 exakt samma Git-blob-SHA, 0 saknade, 0 extra, 0 avvikande.** Alla 27 editioner, fem sanerade GPX-displayrutter och fyra katalog-/manifestfiler ingår. Antal från oberoende normalisering: 3 272 resultat, 2 649 FINISHED, 16 525 verkliga publicerade TIME-passager.
+
+Vid jämförelsen behöver *endast arbetskopiorna* av de fem arrangörs-GPX:erna ges de kanoniska publiceringsfilnamnen `Sätila Trail X - 2026.gpx`. De originaluppladdade filerna kan innehålla den felkodade bokstavsföljden `Sa╠êtila`; originalbyte och SHA-256 ändras inte. Utan omdöpning av arbetskopior blir 35/36 JSON identiska och endast `source_filename` i `route-inventory.json` skiljer sig.
+
+För framtida körning har ett isolerat återbyggnadsverktyg checkats in: `tools/audit_rebuild_against_published.py --source PRIVATE/eqtiming-full --original-gpx PRIVATE/gpx --published docs/data`. Verktyget arbetar helt i en temporär katalog, verifierar fem GPX-byte via SHA-256 och jämför Git-blob-identiteter; den ordinarie PR-CI syntaxkontrollerar det utan att kräva tillgång till råa privata personuppgifter.
+
+**Denna granskning ersätter inte Codex funktionella browser-QA.** När frontend-/dataexporten ändras behöver 36/36 baslinjen omprövas mot avsiktliga nya datarevisioner och dåvarande GitHub-HEAD. Ändra aldrig gamla kontrollrapporter tyst.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
