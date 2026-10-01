@@ -1,0 +1,65 @@
+{
+  "schema": "satila-independent-qa-manifest-v1",
+  "project": "Sätila Splits",
+  "date": "2026-10-01",
+  "branch": "audit/satila-data-method-2026-10-01",
+  "purpose": "Independent read-only evidence bundle for later integration with Codex frontend; no automatic merge or publication.",
+  "source_baseline": {
+    "editions": 27,
+    "years": [2016,2017,2018,2019,2021,2022,2023,2024,2025],
+    "families": ["ultra85","trail43","trail22"],
+    "result_rows": 3272,
+    "finishers": 2649,
+    "dnf": 128,
+    "dns": 494,
+    "unknown": 1,
+    "public_time_observations": 16525,
+    "organizer_route_sources": 5
+  },
+  "explicit_method_edges": [
+    {
+      "id": "trail43-2025-tostared",
+      "fact": "Tostared 10.2 km, station UID 1416266, has zero public TIME observations.",
+      "required_behavior": "Preserve source metadata; exclude as observed analysis anchor. Use exact Grind 1.2 km -> Torrås 16.2 km source pair, n=130, as one 15.0 timing-km historical segment. Any planned Tostared passage must be labelled non-observed."
+    },
+    {
+      "id": "trail43-2023-sparse-middle",
+      "fact": "Almered->Skolan and Skolan->Ramhulta each have n=8 exact pairs, F=4/M=4.",
+      "required_behavior": "Pooled median allowed; no quartile/decile or sex-specific median. Observed sex podium may show up to available real results with visible n."
+    },
+    {
+      "id": "ultra85-2016-two-women",
+      "fact": "Two female FINISHED records.",
+      "required_behavior": "Show only two women in podium; never synthesize bronze; no female median at n<5."
+    }
+  ],
+  "independent_checks": [
+    "tests/test_published_data_integrity.py",
+    "tests/test_route_geometry_integrity.py",
+    "tests/test_publication_privacy.py",
+    "tests/test_statistics_contract.py",
+    "tests/test_course_comparability_contract.py",
+    "tests/test_real_data_analysis_contract.py",
+    "tests/test_golden_aggregate_regression.py",
+    "tests/test_population_denominators.py",
+    "tests/test_public_summary_reconciliation.py",
+    "tests/test_rebuild_parity_contract.py",
+    "tests/test_replay_source_contract.py",
+    "tests/test_source_chain_of_custody.py",
+    "tools/audit_segment_capabilities.py",
+    "tools/audit_station_coverage.py",
+    "tools/audit_ui_capabilities.py",
+    "tools/audit_historical_station_alignment.py",
+    "tests/browser_evidence_acceptance.py",
+    "tests/browser_synced_scrub_acceptance.py"
+  ],
+  "integration_rules": [
+    "Run source-integrity and browser-interaction workflows on the exact merged candidate commit.",
+    "A green audit of an older frontend is not evidence for a newer Codex frontend.",
+    "Do not merge or publish until project owner review.",
+    "Do not modify raw timing observations to make charts complete.",
+    "Do not borrow 2025/2026 display routes into older editions without explicit verified course evidence.",
+    "Keep timing-axis distance and GPX-display distance separately labelled.",
+    "Do not publish raw participant GPS or social-media runner portraits."
+  ]
+}
