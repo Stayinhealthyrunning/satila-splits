@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "project": "Sätila Splits",
+  "blueprint": "reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md",
+  "branch": "build/saetila-first-draft",
+  "sprint": "S0",
+  "status": "IN_PROGRESS",
+  "base_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
+  "head_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
+  "done": [],
+  "inputs": [
+    "EQ Timing raw artifact 11142571759 / run 36818159977",
+    "five organizer 2026 GPX files",
+    "PR #1 setup/foundation",
+    "approved hero and visual design"
+  ],
+  "checks": [],
+  "known_limits": [
+    "Original participant GPX 2021–2025 not present in current working directory",
+    "Raw archive retained as GitHub Actions artifact 30 days; local 6.4MB working copy obtained"
+  ],
+  "next_action": "Commit source reconciliation then build edition-split browser export."
+}

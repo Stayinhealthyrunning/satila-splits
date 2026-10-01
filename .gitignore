@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.env
+.env.*
+node_modules/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+dist/
+out/
+artifacts/
+playwright-report/
+test-results/
+
+# Generated/intermediate data
+data/derived/
+data/work/
+
+# Local secrets or manually supplied private source material
+data/private/

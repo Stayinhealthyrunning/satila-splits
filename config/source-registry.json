@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "race": "Satila Trail Run",
+  "timing": {
+    "provider": "EQ Timing",
+    "events": {
+      "2021": { "event_id": 57767, "status": "identified" },
+      "2022": { "event_id": 62409, "status": "identified" },
+      "2023": { "event_id": 67695, "status": "identified" },
+      "2024": { "event_id": 72918, "status": "identified" },
+      "2025": { "event_id": 77864, "status": "identified" }
+    }
+  },
+  "homologated_gpx": {
+    "ultra85": {
+      "2022": {
+        "provider": "Trace de Trail",
+        "source_class": "ITRA_TRACE",
+        "trace_id": 185745,
+        "source_url": "https://tracedetrail.fr/en/trace/185745",
+        "status": "uploaded_and_verified",
+        "sha256": "bd53faaf057fec781dbd9c6d94a915205de347b3b38f7264b89ca5f9bf0f15aa",
+        "point_count": 3515,
+        "raw_polyline_length_m": 84338.2
+      },
+      "2023": {
+        "provider": "Trace de Trail",
+        "source_class": "ITRA_TRACE",
+        "trace_id": 235369,
+        "source_url": "https://tracedetrail.fr/en/trace/235369",
+        "status": "uploaded_and_verified",
+        "sha256": "3892e7bd4e0dbf9c2a78825e40e6ceb685b4e97c9fb3e9e36d26074db56899e2",
+        "point_count": 3478,
+        "raw_polyline_length_m": 84907.4
+      }
+    }
+  },
+  "participant_gpx": {
+    "trail43": {
+      "2021": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2021-11-13",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "d07051fda67d4343ccf9ff49ec7ee8788b923965f14b127e5d7ffaac91a0c9d6",
+        "point_count": 14507,
+        "raw_polyline_length_m": 45235.5
+      },
+      "2022": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2022-11-12",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "b7bd4710327fae74d0478db5dbb1df80c3bb7f84c9d316fd9c2a86028486479c",
+        "point_count": 15246,
+        "raw_polyline_length_m": 45812.2
+      },
+      "2023": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2023-11-11",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "60b5f920d6f4e652db1760120f6d22bd1fcdea722edee46c83dc7d6f0c1e04da",
+        "point_count": 14146,
+        "raw_polyline_length_m": 42863.6
+      },
+      "2024": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2024-11-09",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "d83bfad962e94a69ed0ea53a0c063679478234cccd3a780d714900ae7640c4b4",
+        "point_count": 13810,
+        "raw_polyline_length_m": 42597.9
+      },
+      "2025": {
+        "provider": "Suunto/Sports Tracker",
+        "activity_date": "2025-11-08",
+        "source_class": "VERIFIED_PARTICIPANT",
+        "status": "uploaded_and_analyzed_raw_not_committed",
+        "sha256": "f090e7d461e0ae53e06561c340b1a87bab30f10454e49ebaface2cd19468502b",
+        "point_count": 13260,
+        "raw_polyline_length_m": 42599.0
+      }
+    }
+  }
+}
