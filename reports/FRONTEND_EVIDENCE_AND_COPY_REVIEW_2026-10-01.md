@@ -30,6 +30,20 @@ Verifieringslänkar: [grön första Chromium-körning](https://github.com/Stayin
 
 **Viktig begränsning:** Detta verifierar första utkastets konkreta UI samt en separat källbaserad Replay-orakel. När Codex levererar en ny frontend måste **samma** test köras mot den nya HTML-/JavaScript-strukturen, och justeras endast när komponentens kontrakt avsiktligt ändras. En grön gammal version är inte bevis för en ny, otestad design.
 
+## Hela historiska katalogen verifierad i webbläsare
+
+`tests/browser_all_editions_acceptance.py` har genomförts med riktiga kuraterade data i Chromium på **1440×900 och 390×844**. Samtliga **27 editioner** växlas via de faktiska användargränssnittets familje- och årsväljare, inte via fiktiva fixtures.
+
+För varje upplaga kontrolleras att:
+
+- rätt år och officiell EQ-källlänk visas,
+- publicerat stationsantal och resultatantal motsvarar katalogen,
+- resultat- och delsträckstabeller visas utan saknade dataresurser,
+- kartan bara visas om en för den upplagan uttryckligen godkänd lokal displayrutt finns,
+- inga JavaScript-undantag eller horisontell overflow uppstår.
+
+Testet har passerat lokalt för 27/27 editioner på båda bredderna och ingår nu i `.github/workflows/browser-interaction-audit.yml` efter det riktiga tvåvägsklicktestet för H2H. Det ersätter inte en fullständig manuell pixelgranskning av Codex slutliga grafiska bearbetning.
+
 ## Text som riskerar att missleda
 
 ### Hero – ändra inför release
