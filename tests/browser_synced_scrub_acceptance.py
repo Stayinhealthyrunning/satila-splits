@@ -19,6 +19,10 @@ def payload():
         data["data/races/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
     for p in (ROOT/"data/routes").glob("*.json"):
         data["data/routes/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
+    # Codex's coverage dashboard loads an additional valid public root JSON.
+    # Load ALL committed root manifests rather than hiding missing fetches.
+    for manifest in (ROOT/"data").glob("*.json"):
+        data["data/"+manifest.name]=json.loads(manifest.read_text(encoding="utf-8"))
     return data
 
 async def position(page,selector):
@@ -116,7 +120,8 @@ async def main():
                 await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2024')")
                 assert await page.locator("#course-map svg").count()==0
                 assert not errors,(width,errors)
-                assert not await page.evaluate("window.__missing||[]")
+                missing=await page.evaluate("window.__missing||[]")
+                assert not missing,missing
                 overflow=await page.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth")
                 assert overflow<=1,(width,overflow)
                 print("PASS synced map + elevation + H2H real-runner UI:",width,height,flush=True)
