@@ -36,6 +36,12 @@ async def main():
             errors=[]
             page.on("pageerror",lambda e:errors.append(str(e)))
             await page.set_content(markup)
+            # The acceptance must exercise REAL responsive styles; an unstyled
+            # long table makes a false-positive 390px overflow regression.
+            await page.add_style_tag(content=(ROOT/"assets/style.css").read_text(encoding="utf-8"))
+            extra=ROOT/"assets/style-extra.css"
+            if extra.exists():
+                await page.add_style_tag(content=extra.read_text(encoding="utf-8"))
             await page.evaluate("""data=>{
               window.__fixtures=data;
               window.fetch=async url=>{
