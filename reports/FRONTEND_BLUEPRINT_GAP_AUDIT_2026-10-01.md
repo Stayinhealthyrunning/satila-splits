@@ -15,6 +15,12 @@ Den här rapporten säger inte att komponenterna är visuellt dåliga. Den skilj
 
 ### D16 – Fartretention per segment: **PARTIAL / fel semantik i nuvarande kort**
 
+**Ny källkontroll:** `tools/audit_segment_distance_capability.py` visar att fartdelen dessutom måste vara capability-gated per segment. Två publicerade timing-km-segment ger uppenbart orimlig fältmedianfart och får därför vara **time-only** tills distansen verifierats:
+- 2023 43 km, Torrås→Almered: 16,0 timing-km, n=84, implicerad median 23,663 km/h.
+- 2024 43 km, Torrås→Almered: 16,0 timing-km, n=58, implicerad median 20,285 km/h.
+
+Detta underkänner **inte** TIME-observationerna. Segmenttiden är giltig; det är just omräkningen till fysisk fart/min/km som spärras.
+
 Nuvarande `renderRetention()` i `analytics-extra.js` räknar:
 
 > antal löpare med en faktisk TIME-observation vid kontrollen relativt den första analyserbara kontrollen
