@@ -10,7 +10,7 @@ OUT.mkdir(parents=True,exist_ok=True)
 async def main():
  b=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
  assert len(b["editions"])==27 and sum(e["results"] for e in b["editions"])==3272
- data={"data/bootstrap.json":b}
+ data={"data/bootstrap.json":b,"data/coverage.json":json.loads((ROOT/"data/coverage.json").read_text(encoding="utf-8"))}
  for e in b["editions"]:
   f=ROOT/"data/races"/(e["race_key"]+".json")
   assert f.is_file(),str(f)
@@ -54,6 +54,12 @@ async def main():
    assert await page.locator("#segment-table tbody tr").count()>0
    for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
+   try:
+    await page.wait_for_selector('#coverage-table table',timeout=5000)
+   except Exception:
+    print('COVERAGE_DIAGNOSTICS',width,await page.locator('#coverage-table').inner_text(),errors,await page.evaluate('window.__missing||[]'),flush=True)
+    raise
+   assert await page.locator('#coverage-table th').count()>=10
    for family in ("trail43","trail22","ultra85"):
     await page.locator('[data-family="'+family+'"]').click()
     await page.wait_for_function("""f=>document.querySelector('[data-family="'+f+'"]').classList.contains('selected')""",arg=family)
