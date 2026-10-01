@@ -75,6 +75,21 @@ async def main():
             chosen=await seg.nth(1).locator("td").first.inner_text()
             await seg.nth(1).click()
             await page.wait_for_function("(label) => document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka: '+label)",arg=chosen)
+            # D11: real last-segment strength is separate from last-third placing.
+            await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Styrka på sista verifierade delsträckan')")
+            assert "fältmedian" in await page.locator("#finish-progression").inner_text()
+            # D18/D19 use identical user-selected class groups, not separate top-N lists.
+            await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
+            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
+            heat=await page.locator('#segment-heatmap .heat-label').all_text_contents()
+            assert heat==checked,("Default class and heatmap selections diverged",heat,checked)
+            await page.locator('#segment-groups [data-class-series]').first.evaluate("(el)=>el.click()")
+            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
+            heat=await page.locator('#segment-heatmap .heat-label').all_text_contents()
+            assert len(checked)==1 and heat==checked,("Heatmap ignored changed user class selection",heat,checked)
+            # T07: route publication and provenance reservation are explicitly separate.
+            await page.wait_for_function("document.querySelector('#course-provenance')?.textContent.includes('Publik displayrutt')")
+            assert "Verifieringsreservation" in await page.locator("#course-provenance").inner_text()
             # A target plan should reflect all seven real measured segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
