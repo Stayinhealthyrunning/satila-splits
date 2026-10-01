@@ -7,20 +7,20 @@ ROOT=Path(os.getenv("SATILA_SITE","docs"))
 OUT=Path(os.getenv("SATILA_QA_OUTPUT","/tmp/satila-qa"))
 OUT.mkdir(parents=True,exist_ok=True)
 async def main():
- b=json.loads((ROOT/"data/bootstrap.json").read_text())
+ b=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
  assert len(b["editions"])==27 and sum(e["results"] for e in b["editions"])==3272
  data={"data/bootstrap.json":b}
  for e in b["editions"]:
   f=ROOT/"data/races"/(e["race_key"]+".json")
   assert f.is_file(),str(f)
-  data["data/races/"+f.name]=json.loads(f.read_text())
+  data["data/races/"+f.name]=json.loads(f.read_text(encoding="utf-8"))
  for f in (ROOT/"data/routes").glob("*.json"):
-  data["data/routes/"+f.name]=json.loads(f.read_text())
- html=(ROOT/"index.html").read_text()
+  data["data/routes/"+f.name]=json.loads(f.read_text(encoding="utf-8"))
+ html=(ROOT/"index.html").read_text(encoding="utf-8")
  html=re.sub(r"<link [^>]*>","",html)
  html=re.sub(r"<script[^>]*>\s*</script>","",html)
- css=(ROOT/"assets/style.css").read_text()
- js=(ROOT/"assets/app.js").read_text()
+ css=(ROOT/"assets/style.css").read_text(encoding="utf-8")
+ js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
  async with async_playwright() as p:
   opts={"headless":True}
   if Path("/usr/bin/chromium").exists():
@@ -33,7 +33,7 @@ async def main():
    page.on("console",lambda m:errors.append(m.text) if m.type=="error" else None)
    await page.set_content(html)
    await page.add_style_tag(content=css)
-   await page.add_style_tag(content=(ROOT/"assets/style-extra.css").read_text())
+   await page.add_style_tag(content=(ROOT/"assets/style-extra.css").read_text(encoding="utf-8"))
    await page.evaluate("""payload=>{
     window.__fixtures=payload;
     window.fetch=async url=>{
