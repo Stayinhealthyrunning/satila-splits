@@ -90,6 +90,17 @@ Nya kontroller på separat auditgren:
 
 Denna komplettering ändrar **inte** `docs/data/` eller någon fil i Codex arbetsgren. Vid framtida källdatarevision måste nytt fryst source-fingerprint-manifest och QA genereras och granskas tillsammans, inte tyst uppdateras oberoende av varandra.
 
+## Historisk stationsaxel och ruttparitet (senaste tillägg)
+
+`tools/audit_historical_station_alignment.py` framställer en separat, anonym maskinläsbar stationsmatris för **24 par av närliggande tillgängliga år**, tre huvudfamiljer. Den sparas som `satila-history-checkpoint-alignment.json` i source-integrity-artifact.
+
+Två konkreta och oberoende jämförbarhetsrisker:
+
+- **43 km, Torrås 2024→2025:** tidtagningsposition 8,0→16,2 km, alltså **+8,2 km** trots oförändrat stationsnamn.
+- **43 km, 2022→2023:** flera stationer behåller samma namn **och** kilometertal, men verifierade deltagarspår anger skilda banfamiljer. Alltså räcker inte ens identiska stationsetiketter för historisk banjämförbarhet.
+
+[Fullständig tolknings- och acceptansrapport](https://github.com/Stayinhealthyrunning/satila-splits/blob/audit/satila-data-method-2026-10-01/reports/HISTORICAL_TIMING_AXIS_FINDINGS.md). Kontrollens källa är publicerad EQ-stationsmetadata och de redan frysta deltagarbaserade kurskandidaterna; inga nya individspår läggs i repot. [Grön CI på stationsmatrisen](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36846409896).
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
