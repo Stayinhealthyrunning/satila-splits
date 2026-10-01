@@ -32,7 +32,7 @@ jobs:
           SATILA_SITE: docs
           SATILA_QA_OUTPUT: reports/qa-screenshots
         run: |
-          for f in docs/assets/app-{1..8}.js; do node --check "$f"; done
+          node --check docs/assets/app.js
           python tests/browser_smoke.py
       - name: Upload screenshots
         if: always()
