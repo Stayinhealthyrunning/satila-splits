@@ -8,7 +8,11 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tools"))
+from build_satila import build_route_asset_from_trackpoints
 
 ROOT=Path(__file__).resolve().parents[1]/"docs"/"data"
 CHECKSUMS={
@@ -28,6 +32,7 @@ def main():
     inventory=json.loads((ROOT/"route-inventory.json").read_text(encoding="utf-8"))
     assert len(inventory)==len(CHECKSUMS)
     assert {x["family"] for x in inventory}==set(CHECKSUMS)
+    total_bytes=0
     for route in inventory:
         family=route["family"]
         assert route["source_sha256"]==CHECKSUMS[family],f"{family}: raw provenance checksum changed"
@@ -45,7 +50,12 @@ def main():
         assert all(len(p)==4 for p in pts)
         assert abs(pts[0][0])<=0.001
         assert abs(pts[-1][0]-route["geometry_length_km"])<=0.002
-        assert len(pts)<=351,f"{family}: route exporter performance budget exceeded"
+        assert item.get("geometry_export_method")=="all_geometrically_unique_source_trackpoints"
+        assert route.get("published_points")==len(pts)
+        assert len(pts)>=route["source_points"]*.98,f"{family}: source geometry was unexpectedly discarded"
+        file_bytes=file.stat().st_size
+        total_bytes+=file_bytes
+        assert file_bytes<=256_000,f"{family}: individual route asset exceeds 256 kB"
         assert not any("time" in str(x).lower() for x in item.keys()),"No invented timestamps in display routes"
         for prev,current in zip(pts,pts[1:]):
             for p in (prev,current):
@@ -57,7 +67,24 @@ def main():
             direct=geo(prev,current)
             recorded=current[0]-prev[0]
             assert direct<=recorded+.035,f"{family}: impossible point-to-point distance in sampled path"
-        print(f"PASS {family}: {len(pts)} sanitized display points, {item['geometry_length_km']:.3f} km, official source sha256 {item['source_sha256'][:12]}…")
+        drawn=sum(geo(a,b) for a,b in zip(pts,pts[1:]))
+        retention=drawn/item["geometry_length_km"]
+        assert retention>=.998,f"{family}: rendered polyline retains only {retention:.3%} of source length"
+        assert abs(drawn-item["published_polyline_length_km"])<=.002
+        print(f"PASS {family}: {len(pts)} source-faithful display points, {drawn:.3f}/{item['geometry_length_km']:.3f} km ({retention:.3%}), {file_bytes} bytes, official source sha256 {item['source_sha256'][:12]}…")
+    assert total_bytes<=512_000,f"All route assets exceed 512 kB raw: {total_bytes}"
+
+    # A tight synthetic switchback verifies the exporter itself rather than only
+    # the already generated assets. Every real bend must survive publication.
+    coordinates=[(57.0000,12.0000,100),(57.0000,12.0005,100),(57.0003,12.0005,100),
+                 (57.0003,12.0001,100),(57.0006,12.0001,100),(57.0006,12.0006,100)]
+    asset,meta=build_route_asset_from_trackpoints(coordinates,"trail43",b"synthetic fixture","synthetic.gpx")
+    assert len(asset["points"])==len(coordinates)==meta["published_points"]
+    synthetic_drawn=sum(geo(a,b) for a,b in zip(asset["points"],asset["points"][1:]))
+    assert synthetic_drawn/asset["points"][-1][0]>=.998
+    assert asset["points"][2][1:3]==[57.0003,12.0005]
+    assert asset["points"][3][1:3]==[57.0003,12.0001]
+    print("PASS synthetic tight-turn route preserves every source bend")
     print("ALL FIVE CHECKSUM-LOCKED DISPLAY ROUTES PASSED")
 
 if __name__=="__main__":

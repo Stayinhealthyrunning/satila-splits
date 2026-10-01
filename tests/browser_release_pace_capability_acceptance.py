@@ -2,8 +2,9 @@
 """Release-only browser acceptance for pace-distance capability gating.
 
 2023 and 2024 trail43 have known timing-km metadata anomalies at Torrås -> Almered.
-TIME is valid and must remain visible; pace/min-km must be withheld or clearly
-marked non-physical/unverified until segment distance is independently verified.
+The 2019 and 2021 ultra editions also have an 82 km EQ Timing axis but an
+organizer-advertised 85 km distance. TIME remains valid, while physical pace is
+withheld wherever the required distance denominator is not source-safe.
 """
 import asyncio,json,os,re
 from pathlib import Path
@@ -110,6 +111,30 @@ async def main():
                 )
                 await page.locator('[data-close="profile-dialog"]').click()
                 print("RELEASE PACE-CAPABILITY ACCEPTANCE PASSED",year,"aggregate and profile",flush=True)
+
+            await page.locator('[data-family="ultra85"]').click()
+            for year in ("2019","2021"):
+                await page.locator("#year-select").select_option(year)
+                await page.wait_for_function("(y)=>document.querySelector('#race-title').textContent.includes('85 km · '+y)",arg=year)
+                await page.wait_for_timeout(150)
+                option_text=await page.locator(f'#year-select option[value="{year}"]').inner_text()
+                assert "85 km" in option_text and "82 km" not in option_text,option_text
+                assert await page.locator("#target-time").input_value()=="14:10:00"
+                intel=(await page.locator("#course-intelligence").inner_text()).replace("\n"," ")
+                assert "EQ Timing-distans 82,0 km" in intel,intel
+                assert "Arrangörsdistans 85,0 km" in intel,intel
+                pacing=(await page.locator("#segment-pacing").inner_text()).lower()
+                assert "olika helbanedistans" in pacing,pacing
+                result_row=page.locator("#results-table tbody tr").first
+                row_text=(await result_row.inner_text()).replace("\n"," ")
+                assert "85,0 km annonserat" in row_text and "EQ Timing 82,0 km" in row_text,row_text
+                await result_row.locator("button[data-open]").click()
+                profile=(await page.locator("#profile-content").inner_text()).replace("\n"," ")
+                assert "Snittfart Distanskonflikt" in profile,profile
+                assert "Helbanetempo visas inte" in profile,profile
+                await page.locator('[data-close="profile-dialog"]').click()
+                assert await page.locator("#course-map svg").count()==0
+                print("RELEASE DISTANCE-SEMANTICS ACCEPTANCE PASSED",year,flush=True)
         finally:
             await browser.close()
 
