@@ -4,6 +4,31 @@ Datum: 2026-10-01
 Kandidat: `integration/codex-independent-qa-2026-10-01`  
 Syfte: ett enda precist arbetsblock för nästa Codex-körning. Ändra inte EQ-källdata eller råa tider för att lösa UI-problem.
 
+## P0 – effective analysis boundaries / Tostared
+
+2025 43 km har stationen **Tostared 10,2 km (UID 1416266)** i metadata men **0 publicerade TIME-passager**.
+
+Nuvarande `boundaries()` i app.js tar fortfarande med alla `is_analysis_boundary` med numerisk km. Det skapar:
+- Grind → Tostared, n=0,
+- Tostared → Torrås, n=0,
+
+i stället för den källgiltiga sammanslagna tidssträckan:
+
+> **Grind 1,2 km → Torrås 16,2 km = 15,0 timing-km, n=130 exakta positiva par.**
+
+Fix:
+- behåll Tostared i rå stationsmetadata/proveniens,
+- bygg **effective analysis boundaries** från stationer som faktiskt har minst en publik TIME-observation i vald edition,
+- startpunkten är fortsatt explicit t=0,
+- skapa inga Tostared-passager,
+- efter fix ska 2025/43 ha **7** effektiva segment,
+- loppplanen ska få **7/7 historiska segment** på bred kohort och inte falla tillbaka runt Tostared.
+
+Kör:
+```bash
+python tests/browser_evidence_acceptance.py
+```
+
 ## P0 – gemensam pace-distance capability
 
 Oberoende source-QA har verifierat två segment där TIME är giltig men publicerad timing-km inte bör användas som fysisk segmentdistans:
@@ -106,6 +131,14 @@ Codex nuvarande gren har värdefulla förbättringar som inte ska backas ur:
 - rikare `coverage.json` härledd från race-bundles/route-inventory.
 
 Den riktade datagranskningen av Codex `coverage.json` är grön: [Actions 36855026565](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36855026565).
+
+### K04/K05 är redan implementerade – regressionssäkra, bygg inte om
+
+Aktuell integrationskod har:
+- K04 personlig Replay med 30/60/120/180 s, play/pause/reset, följ löpare, visa hela banan och tydlig interpolationsetikett,
+- K05 kartduell för **2–5 löpare**, gemensam tävlingsklocka, 0,5×/1×/2×/4×, kamera hela banan/följ ledare, leaderboard och uttrycklig märkning att ordningen mellan kontroller är illustrativ.
+
+Nästa Codex-pass ska **inte** ersätta detta. Kör regression och förbättra bara om test visar konkret fel.
 
 ## P1/P2 – kvarvarande blueprint-gap efter ovan
 
