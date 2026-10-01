@@ -12,3 +12,8 @@
 
 /* Historical fingerprints scroll within their card on narrow viewports. */
 #history-fingerprint{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+.kpi-note{grid-column:1/-1;margin:0;color:var(--muted)}
+#finish-series{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 10px}
+.series-button{border:1px solid var(--border);background:#fff;color:var(--forest);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:800}
+.series-button[aria-pressed="true"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.podium-group h4 small{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
