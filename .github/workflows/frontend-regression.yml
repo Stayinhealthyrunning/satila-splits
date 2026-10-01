@@ -1,0 +1,43 @@
+name: Sätila independent frontend regression
+on:
+  workflow_dispatch:
+  push:
+    branches: [build/saetila-first-draft]
+    paths:
+      - ".github/workflows/frontend-regression.yml"
+      - "docs/index.html"
+      - "docs/assets/**"
+      - "docs/data/bootstrap.json"
+      - "docs/data/races/**"
+      - "docs/data/routes/**"
+      - "tests/browser_smoke.py"
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Check static assets and actual browser flows
+        env:
+          SATILA_SITE: docs
+          SATILA_QA_OUTPUT: reports/qa-screenshots
+        run: |
+          node --check docs/assets/app.js
+          python tests/browser_smoke.py
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-qa
+          path: reports/qa-screenshots/
+          if-no-files-found: warn
+          retention-days: 30
