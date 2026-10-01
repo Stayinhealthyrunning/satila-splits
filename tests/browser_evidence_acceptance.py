@@ -89,7 +89,7 @@ async def main():
             assert len(checked)==1 and heat==checked,("Heatmap ignored changed user class selection",heat,checked)
             # T07: route publication and provenance reservation are explicitly separate.
             await page.wait_for_function("document.querySelector('#course-provenance')?.textContent.includes('Publik displayrutt')")
-            assert "Verifieringsreservation" in await page.locator("#course-provenance").inner_text()
+            assert "Verifieringsreservation" in await page.locator("#course-provenance").text_content()
             # A target plan should reflect all seven real measured segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
