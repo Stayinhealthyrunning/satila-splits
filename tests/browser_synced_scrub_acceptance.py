@@ -8,6 +8,8 @@ import asyncio,json,os,re
 from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT=Path(os.getenv("SATILA_SITE","docs"))
+OUT=Path(os.getenv("SATILA_INTERACTION_QA","/tmp/satila-interaction-qa"))
+OUT.mkdir(parents=True,exist_ok=True)
 
 def payload():
     boot=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
@@ -108,6 +110,7 @@ async def main():
                 info=await page.locator("#duel-readout").inner_text()
                 assert "GPX-distans" in info and "Tidslucka A−B" in info,info
                 # A modern 2025 display route must not appear in the 2024 edition.
+                await page.locator("#compare-dialog").screenshot(path=str(OUT/f"duel-{width}.png"),animations="disabled")
                 await page.locator('[data-close="compare-dialog"]').click()
                 await page.locator("#year-select").select_option("2024")
                 await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2024')")
