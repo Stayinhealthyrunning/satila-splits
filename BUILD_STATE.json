@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "Sätila Splits",
-  "branch": "build/full-first-draft-2026-10-01",
+  "branch": "codex/saetila-complete-first-draft",
   "updated": "2026-10-01",
   "resume_rule": "Resume from this exact branch and the first incomplete blueprint item. Preserve verified assets, data bundles and CI; do not restart source research unless evidence changes.",
   "sprints": {
@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "FIRST_DRAFT_A11Y_PERF_QA_GREEN_REVIEW_ZIP_READY",
+  "status": "PARITY_IMPLEMENTATION_IN_PROGRESS",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -76,6 +76,7 @@
     "browser_viewports": [
       "1440x900",
       "900x900",
+      "768x900",
       "390x844"
     ],
     "zero_browser_exceptions": true,
@@ -97,14 +98,16 @@
     "review_zip_workflow": "36839729757",
     "review_zip_artifact_id": 11151260943,
     "review_zip_digest": "sha256:ddf02a3e4ad28c90bdf7c644e497464c1cb1e174850688f3022a6b8bd95ff5e2",
-    "critical_initial_bytes": 335164
+    "critical_initial_bytes": 335164,
+    "latest_local_code_commit": "51392b8"
   },
   "known_limits": [
-    "Blueprint-wide feature parity remains an explicit follow-up after first-draft owner review",
+    "Blueprint-wide feature parity is actively being implemented on the Codex branch; component status is in reports/CODEX_PARITY_AUDIT.md",
     "Historical participant GPX not yet committed; no route borrowing",
     "Full-year course performance trend requires verified equivalence",
     "Review draft is not yet merged or added to Loppanalys production catalogue",
-    "Full 27-diagram/10-table/6-map blueprint parity needs final component-level signoff; extended first-draft regression is green."
+    "Full 27-diagram/10-table/6-map blueprint parity is not yet complete; four-width local Chromium regression is green after the P0.4 cohort update."
   ],
-  "next_action": "Project owner can review latest ZIP artifact 11151260943 in Actions run 36839729757. Optional: start Codex on issue #3 for isolated parity audit; it has not been started. Continue remaining component-specific parity after review. Do not merge/publish automatically."
+  "next_action": "Continue D16/D17/D18 segment parity, then T02/T03/T05 and P0.5; rerun Chromium and update this status after each component group. Do not merge or publish before owner review.",
+  "parity_audit": "reports/CODEX_PARITY_AUDIT.md"
 }
