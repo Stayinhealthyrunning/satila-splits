@@ -50,6 +50,18 @@ Tillägg efter `974ede95`:
   ```
   Det laddar endast committade, riktiga race-bundlar, testar desktop **1440×900** och mobil **390×844** och verifierar observerade Grind→Torrås i 2025/43, 7 av 7 historiska plansegment i samma edition, korrekt låg n i 2023/43 och två (inte tre) kvinnor på 2016/85:s podium. **Det första utkastet förväntas misslyckas på Tostared-punkten**; använd det som en faktisk acceptansgrind för Codex rättning, inte som ett tillfälligt krav att tysta eller förbigå.
 
+## DNF/bortfall: verifierad begränsning i nuvarande publicerade bundle
+
+**Oberoende dataregression:** [Actions 36845611057 (PASS)](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36845611057), `tests/test_population_denominators.py`.
+
+- 27 editioner: **3 272 officiella resultatrader = 2 649 FINISHED + 128 DNF + 494 DNS + 1 UNKNOWN**.
+- **Känd-startat-denominator:** FINISHED + DNF + DSQ (där förekommande). DNS får inte räknas som startande, och UNKNOWN ska bevaras som egen okänd kategori. Redovisa alltid vilken nämnare som används i andelar.
+- **Samtliga 128 DNF saknar publicerade, kopplingsbara TIME-observationer i de nuvarande normaliserade race-bundlarna.** Därför kan vi redovisa antal och andel DNF per edition, men inte deras *sista verkligt passerade kontroll* eller plats för avbrottet. Visa `Avbrottsplats saknar registrerad offentlig passage`; konstruera aldrig checkpoint, km-tal eller intervall ur måltid/beräknad fart.
+- Alla sluttidshistogram ska inkludera exakt de fullföljare som har verklig positiv sluttid. Alla FINISHED har sådan tid enligt verifierad källa.
+- Resultat-ID är unika över **samtliga 27 editioner**; en likalydande deltagare får inte automatiskt sammanslås till samma person över åren.
+
+Den här slutsatsen gäller **publicerade, normaliserade TIME-bundlar**, inte ett kategoriskt påstående om att annan intern arrangörsdata aldrig funnits. Om ett framtida källutdrag tillför verkliga DNF-passager måste testet bevara och redovisa dem, inte blockera en verklig utökning.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
