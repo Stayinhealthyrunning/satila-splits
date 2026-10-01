@@ -4,6 +4,7 @@ on:
     branches: [build/full-first-draft-2026-10-01]
     paths:
       - "tests/test_published_data_integrity.py"
+      - "tests/test_route_geometry_integrity.py"
       - "tools/audit_segment_capabilities.py"
       - "tools/audit_station_coverage.py"
       - ".github/workflows/source-integrity.yml"
@@ -15,6 +16,7 @@ on:
     branches: [audit/satila-data-method-2026-10-01]
     paths:
       - "tests/test_published_data_integrity.py"
+      - "tests/test_route_geometry_integrity.py"
       - ".github/workflows/source-integrity.yml"
       - "docs/data/**"
 permissions:
@@ -34,6 +36,8 @@ jobs:
         run: python tools/audit_segment_capabilities.py --output /tmp/satila-segment-capabilities.json
       - name: Detect unobserved source stations and verify real bridge pairs
         run: python tools/audit_station_coverage.py
+      - name: Verify all five sanitized GPX display geometries
+        run: python tests/test_route_geometry_integrity.py
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
