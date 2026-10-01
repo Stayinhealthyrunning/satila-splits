@@ -1,5 +1,11 @@
 name: Independent Sätila source integrity
 on:
+  pull_request:
+    branches: [build/full-first-draft-2026-10-01]
+    paths:
+      - "tests/test_published_data_integrity.py"
+      - ".github/workflows/source-integrity.yml"
+      - "docs/data/**"
   workflow_dispatch:
   push:
     branches: [audit/satila-data-method-2026-10-01]
