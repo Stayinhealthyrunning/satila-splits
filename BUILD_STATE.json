@@ -1,28 +1,92 @@
 {
-  "schema_version":1,
-  "project":"Sätila Splits",
-  "branch":"build/full-first-draft-2026-10-01",
-  "updated":"2026-10-01",
-  "resume_rule":"Continue from the first sprint not marked complete. Never redo completed import work unless a fingerprint changes.",
-  "sprints":{
-    "S0":{"status":"complete","note":"Build branch, provenance registry, EQ Timing artifact secured, organizer GPX checksums recorded, design decisions locked."},
-    "S1":{"status":"in_progress","note":"Normalize EQ Timing archive into RaceEdition/result/split bundles and reproducible SQLite/JSON outputs."},
-    "S2":{"status":"pending"},
-    "S3":{"status":"pending"},
-    "S4":{"status":"pending"},
-    "S5":{"status":"pending"},
-    "S6":{"status":"pending"},
-    "S7":{"status":"pending"},
-    "S8":{"status":"pending"},
-    "S9":{"status":"pending"},
-    "S10":{"status":"pending"},
-    "S11":{"status":"pending"}
+  "schema_version": 1,
+  "project": "Sätila Splits",
+  "branch": "build/full-first-draft-2026-10-01",
+  "updated": "2026-10-01",
+  "resume_rule": "Resume from this exact branch and the first incomplete blueprint item. Preserve verified assets, data bundles and CI; do not restart source research unless evidence changes.",
+  "sprints": {
+    "S0": {
+      "status": "complete",
+      "evidence": "reports/S0_SOURCE_LOCK.md; source registry; checksum-locked organizer GPX"
+    },
+    "S1": {
+      "status": "complete",
+      "evidence": "GitHub Actions 36835282859: 27 editions, 3272 results, 2649 FINISHED and 16525 TIME observations"
+    },
+    "S2": {
+      "status": "first_draft_complete_with_known_gaps",
+      "evidence": "2025/26 organizer GPX routes and explicit capability gates; historic GPX enrichment deferred"
+    },
+    "S3": {
+      "status": "complete",
+      "evidence": "docs/data/bootstrap.json and docs/data/races/ with 27 race bundles"
+    },
+    "S4": {
+      "status": "first_draft_complete",
+      "evidence": "approved Hero, branding, desktop/mobile UI, years and families"
+    },
+    "S5": {
+      "status": "first_draft_complete",
+      "evidence": "overview, result filters, podiums and history"
+    },
+    "S6": {
+      "status": "first_draft_complete",
+      "evidence": "observed timing segments and field dynamics"
+    },
+    "S7": {
+      "status": "first_draft_complete",
+      "evidence": "individual profile with additional insights, favorites and head-to-head"
+    },
+    "S8": {
+      "status": "first_draft_complete_with_route_gating",
+      "evidence": "interactive 2025 route and synced map/elevation scrubbing; historical routes not fabricated"
+    },
+    "S9": {
+      "status": "first_draft_complete",
+      "evidence": "split-based personal goal plan and descriptive annual participation"
+    },
+    "S10": {
+      "status": "first_draft_QA_green",
+      "evidence": "GitHub Actions 36835443117, 36835483334; local release and deep interaction tests"
+    },
+    "S11": {
+      "status": "review_pack_ready_awaiting_owner_review",
+      "evidence": "reports/S11_FIRST_DRAFT_REVIEW.md; static ZIP without internal SQLite"
+    }
   },
-  "verified_local_checkpoint":{
-    "editions":27,
-    "result_appearances":3272,
-    "browser_viewports_passed":[1440,900,390],
-    "browser_errors":0,
-    "horizontal_overflow_px":0
-  }
+  "verified_local_checkpoint": {
+    "editions": 27,
+    "result_appearances": 3272,
+    "browser_viewports_passed": [
+      1440,
+      900,
+      390
+    ],
+    "browser_errors": 0,
+    "horizontal_overflow_px": 0
+  },
+  "status": "FIRST_DRAFT_REVIEW_READY",
+  "verified": {
+    "editions": 27,
+    "result_appearances": 3272,
+    "finishers": 2649,
+    "observed_time_passages": 16525,
+    "latest_green_ci": 36835483334,
+    "independent_data_ci": 36835282859,
+    "browser_viewports": [
+      "1440x900",
+      "900x900",
+      "390x844"
+    ],
+    "zero_browser_exceptions": true,
+    "zero_horizontal_overflow": true,
+    "deep_map_elevation_scrub": true
+  },
+  "known_limits": [
+    "Blueprint-wide feature parity remains an explicit follow-up after first-draft owner review",
+    "Historical participant GPX not yet committed; no route borrowing",
+    "Full-year course performance trend requires verified equivalence",
+    "Review draft is not yet merged or added to Loppanalys production catalogue"
+  ],
+  "next_action": "Open draft PR for review, collect project-owner feedback, finish remaining blueprint parity in small CI-backed commits."
 }
