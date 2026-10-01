@@ -51,7 +51,7 @@
     },
     "S11": {
       "status": "feature_branch_ready_for_integration_qa",
-      "evidence": "Local full release candidate checks PASS at 94268506bb36b40eb59f3a20f859e03230c2e958; reports/CODEX_FINAL_VISUAL_QA_2026-10-01.md. The previous integrated 4/4 workflow remains baseline evidence only."
+      "evidence": "Local full release candidate checks PASS at e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9; reports/CODEX_FINAL_VISUAL_QA_2026-10-01.md and reports/CODEX_FINAL_SOURCE_AND_ROUTE_QA_2026-10-01.md. The previous integrated 4/4 workflow remains baseline evidence only."
     }
   },
   "verified_local_checkpoint": {
@@ -101,16 +101,18 @@
     "review_zip_artifact_id": 11165319775,
     "review_zip_digest": "sha256:bbdb308224132c4f360df53ba6cec39f6d0943ebcddb967a99ac3df8659bda05",
     "critical_initial_bytes": 335164,
-    "latest_local_code_commit": "94268506bb36b40eb59f3a20f859e03230c2e958",
+    "latest_local_code_commit": "e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9",
     "local_release_candidate": {
       "base_sha": "e8a5be1fe542d669f8939bdc1186ef0e12cd55de",
-      "tested_code_sha": "94268506bb36b40eb59f3a20f859e03230c2e958",
+      "tested_code_sha": "e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9",
       "draft_pr": "https://github.com/Stayinhealthyrunning/satila-splits/pull/9",
       "full_local_release_checks": "PASS",
       "browser_smoke_widths": [1440, 900, 768, 390],
       "browser_errors": 0,
       "document_horizontal_overflow_px": 0,
-      "source_or_provenance_changes": false,
+      "source_or_provenance_changes": true,
+      "source_change_note": "Verified organizer route re-export only; raw SHA-256 unchanged. EQ 82 km preserved with separate organizer 85 km metadata for 2019/2021 ultra.",
+      "route_geometry_retention": "100.000% within published coordinate precision for all five organizer routes",
       "integration_workflow_status": "NOT_RUN_ON_FEATURE_BRANCH"
     },
     "integration": {
@@ -143,7 +145,7 @@
     "Organizer 21/43 km 2025/2026 route reuse is an explicit project assumption; separate 85 km 2026 geometry does not validate 2025 ultra.",
     "No linked public TIME passages for the current 128 DNF; cannot infer withdrawal checkpoint, location or km.",
     "D23/K01 physical checkpoint anchors and T06 segment D+/D- require validated physical anchoring/elevation; no synthetic route interpolation may be presented as measured.",
-    "Owner visual approval is still required. T01, K03, K04, K05 and T06 pass local Chromium regression at 94268506bb36b40eb59f3a20f859e03230c2e958.",
+    "Owner visual approval is still required. T01, K03, K04, K05 and T06 pass local Chromium regression at e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9.",
     "The feature branch has not run the integration-only four-job workflow; READY_FOR_INTEGRATION_QA is not an integrated green claim.",
     "Original private EQ Timing source archive needs owner-controlled long-term backup before artifact expiry 2026-10-31; issue #6.",
     "No merge of Draft PR #7 into main and no production publication on Loppanalys.se."
