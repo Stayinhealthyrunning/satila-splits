@@ -1,5 +1,7 @@
 # Sätila Splits – komponentgranskning 2026-10-01
 
+> **HISTORISK FÖRSTA DRAFT-SNAPSHOT, EJ AKTUELL GAPLISTA.** För verifierad frontend 217439a4 och uppdaterad D07/K03/T01/T04/T06/T07/K04/K05, läs [VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md](VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md) innan ny Codex-körning.
+
 Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saetila-complete-first-draft`. Jämförelsen gäller blueprintens faktiska funktioner, inte enbart närvaro av rubriker. `Gated` betyder att källdata för den begärda presentationen inte finns som godkänd lokal tillgång.
 
 ## Diagram D01–D27
