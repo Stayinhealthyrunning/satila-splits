@@ -122,6 +122,22 @@ För framtida körning har ett isolerat återbyggnadsverktyg checkats in: `tools
 - Resultatet är ett metod-/datakontrakt, **inte** ett godkännande av Codex slutliga DOM eller att fysisk karta/höjd klickas korrekt. Browser-E2E för detta ska köras efter integrering. Både karta och höjdkurva måste skriva till **en** delad, klampad displaydistans. Tillhörande tidsangivelser är observerade vid verkliga kontroller och uttryckligen illustrativa *mellan* två kontroller.
 - Aktuellt första utkast har `runnerAnchors`, `estimatedAt`, `drawCompareMap` och `attachElevation` i `docs/assets/app.js`; granska dem mot ovanstående oberoende kontrakt i Codex slutleverans. Om någon löpare saknar senare bekräftat ankare visas **ingen** H2H-lucka vid sådan position. Klassa inte en illustrativ GPS-position som löparens verkliga spår.
 
+## Ny visualiserad frontendacceptans inför Codex-merge
+
+Utöver det läsande data-/metodtestet finns nu en separat GitHub Action:
+
+- Workflow: `.github/workflows/browser-interaction-audit.yml`.
+- Test: `tests/browser_synced_scrub_acceptance.py`.
+- Fullständig första PASS: [Actions 36852479937](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36852479937).
+- Utökad till tre brytpunkter: **1440×900, 900×900 och 390×844**.
+- Verifierar **riktiga Chromium-klick** höjdprofil→karta och kartlinje→höjdprofil i individuell banöversikt och H2H, tangentbordsnavigering, två olika offentliga 2025/43-km-löpare, en gemensam jämförelseposition, UI-text om GPX-displaydistans, samt bortkoppling av 2025-rutten vid byte till 2024.
+- Kompletterat med skärmbilder `duel-1440.png`, `duel-900.png`, `duel-390.png` som Actions-artifact **satila-interaction-screenshots**; använd dem som revisionsmaterial mot godkänd designskiss.
+- CI-kadens: **en** PR-körning per ändring samt explicit `workflow_dispatch`; inte två parallella Chromium-installationer vid samma push.
+
+En separat text- och evidensgranskning finns i `reports/FRONTEND_EVIDENCE_AND_COPY_REVIEW_2026-10-01.md`. Där flaggas särskilt att nuvarande Hero-frasen **”Samma stigar”** är missvisande med hänsyn till verifierade banändringar. Föreslagen utformning: **”Tre distanser. Nio resultatår. Djupare insikter.”** Detta är ett redaktionellt förslag till Codex, inte en ändring i dess frontendgren.
+
+**Integration:** Samma frontendtest ska köras mot Codex nya webbfiler efter merge. Ändra selektorer endast om den grafiska/semantiska komponentstrukturen medvetet ändras; kravet på tvåvägssynkronisering, riktiga data och inga otillåtna GPX-rutter får inte försvagas.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
