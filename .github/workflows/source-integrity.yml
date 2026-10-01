@@ -4,6 +4,8 @@ on:
     branches: [build/full-first-draft-2026-10-01]
     paths:
       - "tests/test_published_data_integrity.py"
+      - "tests/test_statistics_contract.py"
+      - "tools/audit_statistics_reference.py"
       - "tests/test_route_geometry_integrity.py"
       - "tests/test_publication_privacy.py"
       - "tools/audit_segment_capabilities.py"
@@ -19,6 +21,8 @@ on:
     branches: [audit/satila-data-method-2026-10-01]
     paths:
       - "tests/test_published_data_integrity.py"
+      - "tests/test_statistics_contract.py"
+      - "tools/audit_statistics_reference.py"
       - "tests/test_route_geometry_integrity.py"
       - "tests/test_publication_privacy.py"
       - ".github/workflows/source-integrity.yml"
@@ -46,6 +50,8 @@ jobs:
         run: python tools/audit_ui_capabilities.py --output /tmp/satila-ui-capabilities.json
       - name: Block unsafe raw or personal data in public static bundle
         run: python tests/test_publication_privacy.py
+      - name: Independent statistical edge-case regression
+        run: python -m unittest discover -s tests -p test_statistics_contract.py -v
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
