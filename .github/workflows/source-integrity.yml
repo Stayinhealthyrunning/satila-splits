@@ -5,6 +5,8 @@ on:
     paths:
       - "tests/test_published_data_integrity.py"
       - "tests/test_statistics_contract.py"
+      - "tests/test_course_comparability_contract.py"
+      - "config/course-versions.json"
       - "tools/audit_statistics_reference.py"
       - "tests/test_route_geometry_integrity.py"
       - "tests/test_publication_privacy.py"
@@ -22,6 +24,8 @@ on:
     paths:
       - "tests/test_published_data_integrity.py"
       - "tests/test_statistics_contract.py"
+      - "tests/test_course_comparability_contract.py"
+      - "config/course-versions.json"
       - "tools/audit_statistics_reference.py"
       - "tests/test_route_geometry_integrity.py"
       - "tests/test_publication_privacy.py"
@@ -52,6 +56,8 @@ jobs:
         run: python tests/test_publication_privacy.py
       - name: Independent statistical edge-case regression
         run: python -m unittest discover -s tests -p test_statistics_contract.py -v
+      - name: Course version and historic comparison regression
+        run: python -m unittest discover -s tests -p test_course_comparability_contract.py -v
       - name: Preserve full audit evidence
         if: always()
         uses: actions/upload-artifact@v4
