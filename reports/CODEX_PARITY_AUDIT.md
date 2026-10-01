@@ -21,9 +21,9 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | D13 | Delvis | `renderClub`, `#club-chart` | Väljbara max fyra grupper samt full tabell saknas. |
 | D14 | Implementerad | `renderSegmentGraph`, `#segment-chart` | Median n≥5 och kvartil n≥10. |
 | D15 | Implementerad | `renderQ1090`, `#segment-q1090` | Q10–Q90 kräver n≥20. |
-| D16 | Saknas | `#segment-retention` | Befintlig graf är **passageretention**, inte pacing index 100 mot eget helsnitt. |
-| D17 | Delvis | `renderSegmentSex`, `#segment-sex-extra` | Endast valt segments två mediankort; gemensam flersegmentsaxel/toggles saknas. |
-| D18 | Delvis | `renderSegmentGroups`, `#segment-groups` | Endast klassmedian för valt segment; val av upp till fem grupper över alla segment saknas. |
+| D16 | Implementerad | `renderPacingIndex`, `#segment-pacing` | Eget pacingindex hålls skilt från den äldre grafen för observerad passageretention. |
+| D17 | Implementerad | `renderSexSeries`, `#segment-sex-extra` | Gemensam tidsaxel, separata toggles och avbrott vid otillräckligt n. |
+| D18 | Implementerad | `renderClassSeries`, `#segment-groups` | Val av upp till fem källklasser, medianpacingindex per segment och n≥5. |
 | D19 | Delvis | `renderHeatmap`, `#segment-heatmap` | Visa även n i varje cell. |
 | D20 | Delvis | `#percentile-chart` | Tidsnivåerna finns som percentiler; kumulativ fältprogression med denominator saknas. |
 | D21 | Delvis | `renderCheckpointSpread`, `#checkpoint-spread` | Tydliggör varierande kohort mellan kontroller i kortet. |
@@ -39,10 +39,10 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | ID | Grad | Kod/DOM | Kvarvarande acceptansgap |
 | --- | --- | --- | --- |
 | T01 | Delvis | `renderResults`, `#results-table` | År/distans ligger i sidkontext, inte i raden; fulla sortmöjligheter och tangentbords-QA återstår. |
-| T02 | Delvis | `renderProfile`, `#profile-dialog` | Ackumulerad tid och plats visas, men föregående verifierade splittid saknas. |
-| T03 | Delvis | `renderProfile`, profilens segmenttabell | Visa fältmedianens n per segment och kohort. |
+| T02 | Implementerad | `renderProfile`, `#profile-dialog` | Ackumulerad tid, tid sedan föregående verifierade passage, publicerad plats och källstatus. |
+| T03 | Implementerad | `renderProfile`, profilens segmenttabell | Segmenttid, timingdistans, tempo, fältmedian, avvikelse och n från denna upplagas fullföljare. |
 | T04 | Delvis | `renderSegmentTable`, `#segment-table` | Retention, placeringsrörelse, DNF och proveniens per rad saknas. |
-| T05 | Delvis | `renderCompareContent`, `#compare-dialog` | Delsträckstid, position och automatiska duellinsikter saknas. |
+| T05 | Implementerad | `renderCompareContent`, `#compare-dialog` | Ackumulerade tider, segmenttider, publicerad plats, lucka och insikter från gemensamma exakta passager. |
 | T06 | Delvis | `renderPlan`, `#plan-table` | Kohort/segmentval finns; D+/D− och särskild evidenskolumn återstår. |
 | T07 | Delvis | `renderProvenance`, `#course-provenance` | Fil/checksum, verifieringsgrad och olösta konflikter saknas. |
 | T08 | Delvis | `renderHistory`, `#history-table` | Banjämförbarhet/route-status och alla statusar saknas i årstabellen. |
@@ -60,9 +60,9 @@ Bas: `origin/build/full-first-draft-2026-10-01@c739b10`. Arbetsgren: `codex/saet
 | K05 | Saknas | `#compare-dialog` stöder två löpare | Kartduell för 2–5 med tävlingsklocka/leaderboard/kamera saknas. |
 | K06 | Implementerad | SVG-rutt i `renderCourseMap` | Lokal interaktiv SVG fungerar utan tiles; källlös edition visar saklig tomstatus. |
 | P0.2 | Delvis | `podiumPair`, `#overall-podium`, `#segment-podium`, `#standouts` | Sidvidsida och medaljer finns; n/täckning per kön/segment behöver bli synliga. |
-| P0.3 | Delvis | `renderProfile`, `profileInsights`, `renderProfileReplay` | Verkliga passager/insikter finns; vissa insikter behöver n/formel och rikare replay. |
+| P0.3 | Delvis | `renderProfile`, `profileInsights`, `renderProfileReplay` | Personinsikter visar nu metod/n där relevant. Tidsstyrd Replay återstår. |
 | P0.4 | Delvis | `renderPlan`, `#plan-table` | Hel/kön/klass/nära måltid, n-grind och öppet fallback finns i arbetsgrenen. D+/D− och tydlig planprofil återstår. |
-| P0.5 | Delvis | `renderCompareContent`, `drawCompareMap` | Två personer och gemensam karta/höjd-scrub finns; passage-/segmentrad, placeringsresa, hover, passningsmarkörer och fit saknas. |
+| P0.5 | Delvis | `renderCompareContent`, `drawCompareMap` | Klick/hover, tangentbord, zoom/fit, två markörer och komplett passagetabell fungerar. Gemensam tävlingsklocka för kartduell 2–5 hör till K05. |
 
 ## Källgränser och kontroll
 
