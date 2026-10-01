@@ -374,3 +374,10 @@ S0/S2 ska nu uttryckligen:
 4. bygga en gemensam sanerad route/elevation-browserasset per återanvänd 2025/2026-bana (5/10/21/43) och separat 85 km 2026, med editionsspecifik checkpointprojektion/timing;
 5. uppdatera readiness så att 2026-route inte automatiskt ger Replay före 2026-resultat/timing (loppet ligger i framtiden den 1 oktober 2026).
 
+
+
+## 14. Beslut om profilbilder – avstå extern insamling
+
+**Projektägarbeslut:** Sätila Splits ska inte söka, skrapa, hotlinka, ladda ned eller publicera deltagares profilbilder från sociala medier eller andra publika konton. Funktionen prioriteras bort på grund av osäker återpubliceringsrätt och risk för felaktig personkoppling. Detta gäller pallistor, resultatdatabas, löparprofil och jämförelsevyer.
+
+**Visuell ersättning:** använd konsekventa, typografiska initialavatarer eller neutrala siluetter som inte antyder ett faktiskt fotografi. Guld/silver/brons och kvinna/man-kolumner kvarstår oförändrade. Bilderna på namngivna personer i den genererade designskissen är enbart illustrativ mockup och ska inte implementeras som verkliga löparbilder. Ingen extern socialmedieprofilkoppling ska byggas för detta ändamål. Hero-bilden och tillåtet generellt natur-/eventbildmaterial påverkas inte.
