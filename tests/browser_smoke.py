@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline Chromium regression: committed Sätila results, no live EQ requests."""
 import asyncio,json,os,re
+from collections import Counter
 from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT=Path(os.getenv("SATILA_SITE","docs"))
@@ -26,7 +27,7 @@ async def main():
   if Path("/usr/bin/chromium").exists():
    opts.update(executable_path="/usr/bin/chromium",args=["--no-sandbox"])
   browser=await p.chromium.launch(**opts)
-  for width,height in [(1440,900),(900,900),(390,844)]:
+  for width,height in [(1440,900),(900,900),(768,900),(390,844)]:
    page=await browser.new_page(viewport={"width":width,"height":height})
    errors=[]
    page.on("pageerror",lambda e:errors.append(str(e)))
@@ -73,6 +74,18 @@ async def main():
    await page.locator('#goal-placement-time').fill('10:00:00')
    await page.locator('#goal-placement-run').click()
    assert 'placering' in (await page.locator('#goal-placement').inner_text()).lower()
+   await page.locator('#target-time').fill('10:00:00')
+   await page.locator('#calculate-plan').click()
+   assert await page.locator('#plan-table tbody tr').count()>0
+   assert '10:00:00' in await page.locator('#plan-table tbody tr').last.inner_text()
+   classes=Counter(r['class_name'] for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r.get('class_name'))
+   await page.locator('#plan-cohort').select_option('class')
+   await page.locator('#plan-class').select_option(classes.most_common(1)[0][0])
+   assert 'klassen' in await page.locator('#plan-summary').inner_text()
+   assert '10:00:00' in await page.locator('#plan-table tbody tr').last.inner_text()
+   await page.locator('[data-plan-segment]').first.click()
+   assert 'Illustrativ position' in await page.locator('#course-scrub-label').inner_text()
+   await page.locator('#plan-cohort').select_option('all')
    await page.locator('#sex-filter').select_option('F')
    await page.locator('#sex-filter').select_option('all')
    await page.wait_for_timeout(120)

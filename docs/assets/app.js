@@ -54,7 +54,77 @@ function renderSegmentGraph(segs){let valid=segs.filter(s=>num(s.median));if(!va
 function renderSegmentTable(){let segs=segmentStats(S.filtered);$('#segment-table tbody').innerHTML=segs.map((s,i)=>`<tr data-select-segment="${i}" tabindex="0" class="${i===S.selectedSegment?'selected':''}"><td>${html(s.from.name)} → ${html(s.to.name)}</td><td>${fmtKm(s.km)}</td><td>${s.n}</td><td>${time(s.median)}</td><td>${num(s.q25)?time(s.q25)+' – '+time(s.q75):'n &lt; 10'}</td><td>${pace(s.median,s.km,S.unit)}</td></tr>`).join('');$$('[data-select-segment]',$('#segment-table')).forEach(n=>{let go=()=>{S.selectedSegment=+n.dataset.selectSegment;$('#podium-segment').value=String(S.selectedSegment);renderSegmentTable();renderSegmentPodium();renderSegmentGraph(segs);renderCourse()};n.addEventListener('click',go);n.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}})});}
 function renderSegmentPodium(){let s=currentSeg();$('#segment-podium').innerHTML=s?podiumPair(s.obs.slice().sort((a,b)=>a.seconds-b.seconds).map(o=>({r:o.r,value:pace(o.seconds,s.km,S.unit)}))):empty();bindResultLinks($('#segment-podium'))}
 function parseTarget(){let s=$('#target-time').value.trim(),p=s.split(':').map(Number);if(p.some(x=>!Number.isFinite(x)||x<0)||p.length<2||p.length>3||p.slice(1).some(x=>x>59))return null;let n=p.length===2?p[0]*3600+p[1]*60:p[0]*3600+p[1]*60+p[2];return n>0?n:null}
-function renderPlan(){if(!S.race)return;let target=parseTarget(),out=$('#plan-table tbody'),summary=$('#plan-summary');if(!target){summary.textContent='Ange en giltig måltid som HH:MM eller HH:MM:SS.';out.innerHTML='';return}let cohort=$('#plan-cohort').value,rows=records().filter(finish);if(cohort==='F'||cohort==='M')rows=rows.filter(r=>r.sex===cohort);else if(cohort==='near')rows=rows.filter(r=>Math.abs(r.finish_seconds-target)<=target*.25);let allSegments=segmentStats(rows),parts=allSegments.map(s=>{let ratios=s.obs.map(o=>o.seconds/o.r.finish_seconds).filter(x=>num(x)&&x>0),n=ratios.length,w=n>=5?median(ratios):null,method=n>=5?'Historisk median':num(s.km)&&s.km>0?'Distansfallback':'Saknas';if(w===null&&method==='Distansfallback')w=s.km/(S.race.nominal_km||allSegments.reduce((a,b)=>a+b.km,0));return {...s,ratios,n,w,method}});let sum=parts.reduce((a,p)=>a+(p.w||0),0);if(!sum||parts.some(p=>p.w==null)){out.innerHTML='';summary.textContent='Loppplanen är ofullständig: en eller flera delsträckor saknar både historisk andel och kontrakterad distans.';return}let elapsed=0,render=parts.map(p=>{let allocation=target*p.w/sum;elapsed+=allocation;return `<tr><td>${html(p.from.name)} → ${html(p.to.name)}</td><td>${fmtKm(p.km)}</td><td>${p.n}</td><td>${html(p.method)}</td><td><strong>${time(allocation)}</strong></td><td>${time(elapsed)}</td><td>${pace(allocation,p.km,S.unit)}</td></tr>`});out.innerHTML=render.join('');let sampled=parts.filter(p=>p.method==='Historisk median').length;summary.textContent=`${time(target)} · ${rows.length} fullföljare i vald referenskohort · ${sampled}/${parts.length} segment med tillräcklig historisk tidsandel. Övriga bygger på öppet märkt timingdistansfallback. Ej personlig prognos.`;}
+function renderPlan(){
+  if(!S.race)return;
+  const cohortSelect=$('#plan-cohort');
+  if(!cohortSelect.querySelector('[value="class"]'))cohortSelect.add(new Option('Vald klass','class'));
+  cohortSelect.querySelector('[value="near"]').textContent='Nära min måltid (±10 %)';
+  let classSelect=$('#plan-class');
+  if(!classSelect){
+    const label=document.createElement('label');
+    label.id='plan-class-label';
+    label.textContent='Klass för referens';
+    classSelect=document.createElement('select');
+    classSelect.id='plan-class';
+    classSelect.addEventListener('change',renderPlan);
+    label.appendChild(classSelect);
+    cohortSelect.closest('label').after(label);
+  }
+  const oldClass=classSelect.value;
+  const classes=[...new Set(records().map(r=>r.class_name).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'sv'));
+  classSelect.replaceChildren(...classes.map(name=>new Option(name,name)));
+  if(classes.includes(oldClass))classSelect.value=oldClass;
+  classSelect.closest('label').hidden=cohortSelect.value!=='class';
+  const target=parseTarget(),out=$('#plan-table tbody'),summary=$('#plan-summary');
+  if(!target){summary.textContent='Ange en giltig måltid som HH:MM eller HH:MM:SS.';out.innerHTML='';return}
+  const cohort=cohortSelect.value;
+  let rows=records().filter(finish);
+  if(cohort==='F'||cohort==='M')rows=rows.filter(r=>r.sex===cohort);
+  if(cohort==='class')rows=rows.filter(r=>r.class_name===classSelect.value);
+  if(cohort==='near')rows=rows.filter(r=>Math.abs(r.finish_seconds-target)<=target*.10);
+  if(rows.length<5){
+    out.innerHTML='';
+    summary.textContent=`Den valda referenskohorten har ${rows.length} fullföljare. Minst fem behövs; välj en bredare grupp eller annan måltid.`;
+    return;
+  }
+  const allSegments=segmentStats(rows);
+  const distanceTotal=allSegments.reduce((sum,s)=>sum+(num(s.km)&&s.km>0?s.km:0),0);
+  const parts=allSegments.map(s=>{
+    const ratios=s.obs.map(o=>o.seconds/o.r.finish_seconds).filter(x=>num(x)&&x>0);
+    const n=ratios.length;
+    const observedWeight=n>=5?median(ratios):null;
+    const fallbackWeight=distanceTotal>0&&num(s.km)&&s.km>0?s.km/distanceTotal:null;
+    return {...s,n,w:observedWeight??fallbackWeight,method:observedWeight!==null?'Historisk median':fallbackWeight!==null?'Distansfallback':'Saknas'};
+  });
+  const sum=parts.reduce((value,p)=>value+(p.w||0),0);
+  if(!sum||parts.some(p=>p.w===null)){
+    out.innerHTML='';
+    summary.textContent='Loppplanen är ofullständig: en eller flera delsträckor saknar både historisk andel och kontrakterad distans.';
+    return;
+  }
+  let elapsed=0;
+  out.innerHTML=parts.map(p=>{
+    const allocation=target*p.w/sum;
+    elapsed+=allocation;
+    return `<tr><td><button type="button" data-plan-segment="${p.index}" aria-label="Visa ${html(p.from.name)} till ${html(p.to.name)} på banan">${html(p.from.name)} → ${html(p.to.name)} ↗</button></td><td>${fmtKm(p.km)}</td><td>${p.n}</td><td>${html(p.method)}</td><td><strong>${time(allocation)}</strong></td><td>${time(elapsed)}</td><td>${pace(allocation,p.km,S.unit)}</td></tr>`;
+  }).join('');
+  $$('[data-plan-segment]',out).forEach(button=>button.addEventListener('click',()=>{
+    const i=+button.dataset.planSegment;
+    $('#segment-table [data-select-segment="'+i+'"]')?.click();
+    const segment=allSegments.find(s=>s.index===i);
+    const points=routePoints();
+    if(segment&&points.length){
+      S.courseD=((segment.from.km+segment.to.km)/2)/(S.race.nominal_km||1)*points.at(-1)[0];
+      renderCourseMap();
+      $('#course-map').scrollIntoView({block:'center',behavior:'smooth'});
+    }
+  }));
+  const sampled=parts.filter(p=>p.method==='Historisk median').length;
+  const cohortText=cohort==='near'?' inom ±10 % av måltiden':cohort==='class'?` i klassen ${classSelect.value}`:cohort==='all'?' i hela fältet':` med källkön ${cohort}`;
+  const highest=parts.slice().sort((a,b)=>b.w-a.w)[0];
+  summary.textContent=`${time(target)} · ${rows.length} fullföljare${cohortText} · ${sampled}/${parts.length} segment med minst fem verkliga tidsandelar. Övriga använder öppet märkt timingdistansfallback. Störst historisk tidsandel: ${highest?highest.from.name+' → '+highest.to.name:'—'}. Planen är en pacingreferens, inte en prognos.`;
+}
+
 function renderCourse(){renderCourseMap();renderPlan()}
 function routePoints(){return S.route?.points||[]}
 function project(points,W,H,pad=17){let lon=points.map(p=>p[2]),lat=points.map(p=>p[1]),xmin=Math.min(...lon),xmax=Math.max(...lon),ymin=Math.min(...lat),ymax=Math.max(...lat),dy=Math.max(1e-6,(ymax-ymin)),dx=Math.max(1e-6,(xmax-xmin)*Math.cos((ymin+ymax)*Math.PI/360)),scale=Math.min((W-pad*2)/dx,(H-pad*2)/dy);return points.map(p=>[W/2+((p[2]-(xmin+xmax)/2)*Math.cos((ymin+ymax)*Math.PI/360))*scale,H/2-((p[1]-(ymin+ymax)/2))*scale]);}
