@@ -99,7 +99,7 @@
     "review_zip_artifact_id": 11151260943,
     "review_zip_digest": "sha256:ddf02a3e4ad28c90bdf7c644e497464c1cb1e174850688f3022a6b8bd95ff5e2",
     "critical_initial_bytes": 335164,
-    "latest_local_code_commit": "511dd2b"
+    "latest_local_code_commit": "9deb6f4"
   },
   "known_limits": [
     "Blueprint-wide feature parity is actively being implemented on the Codex branch; component status is in reports/CODEX_PARITY_AUDIT.md",
@@ -108,6 +108,6 @@
     "Review draft is not yet merged or added to Loppanalys production catalogue",
     "Full 27-diagram/10-table/6-map blueprint parity is not yet complete; four-width local Chromium regression is green after segment, profile and comparison updates."
   ],
-  "next_action": "Continue D03/D05/D07/D19/D20 history and coverage parity, then K04/K05 and full visual/accessibility QA. Rerun Chromium and update this status after each component group. Do not merge or publish before owner review.",
+  "next_action": "Continue D07/D13/D24/D27 and T07-T10, then K04/K05 and full visual/accessibility QA. Rerun Chromium and update this status after each component group. Do not merge or publish before owner review.",
   "parity_audit": "reports/CODEX_PARITY_AUDIT.md"
 }
