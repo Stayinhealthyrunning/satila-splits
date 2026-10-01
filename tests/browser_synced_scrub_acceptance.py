@@ -88,6 +88,25 @@ async def main():
                 advanced=await position(page,course_map)
                 assert advanced>distance
                 near(advanced,await position(page,course_elev))
+                # Independent interaction regression: source-allowed K03
+                # segment highlight must NOT intercept clicks on the drawn
+                # route. Test the precise overlay stroke, not background space.
+                await page.wait_for_function("document.querySelector('#course-map .segment-route-overlay')")
+                overlay=page.locator("#course-map .segment-route-overlay")
+                assert await overlay.evaluate("(el)=>getComputedStyle(el).pointerEvents")=="none",(
+                    width,"segment overlay unexpectedly captures map pointer")
+                await page.locator("#course-map").scroll_into_view_if_needed()
+                point=await overlay.evaluate("""path=>{
+                    const p=path.getPointAtLength(path.getTotalLength()*.5),m=path.getScreenCTM();
+                    return {x:m.a*p.x+m.c*p.y+m.e,y:m.b*p.x+m.d*p.y+m.f};
+                }""")
+                before_overlay=await position(page,course_map)
+                await page.mouse.click(point["x"],point["y"])
+                after_overlay=await position(page,course_map)
+                assert after_overlay>0 and abs(after_overlay-before_overlay)>.01,(
+                    width,"route click intercepted by highlighted segment",
+                    before_overlay,after_overlay)
+                near(after_overlay,await position(page,course_elev))
                 # Pick two DIFFERENT real 2025 trail43 finishers via actual UI.
                 race=data["data/races/2025-trail43.json"]
                 finishers=sorted((r for r in race["results"] if r["status"]=="FINISHED"),key=lambda r:r["finish_seconds"])[:2]
