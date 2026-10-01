@@ -41,10 +41,21 @@ class PublicSummaryReconciliation(unittest.TestCase):
                 self.assertIn(field,ed,(ed["race_key"],field))
                 self.assertIn(field,race,(ed["race_key"],field))
                 self.assertEqual(ed[field],race[field],(ed["race_key"],field))
-            # Older editions correctly OMIT absent optional route descriptors;
-            # do not interpret a missing property as an absent course proof.
-            for field in ("route_status","route_file","course_version"):
+            # Browser bootstrap intentionally omits unverified *internal*
+            # course-version labels: internal evidence is not automatically
+            # promoted to a publicly comparable course version.
+            for field in ("route_status","route_file"):
                 self.assertEqual(ed.get(field),race.get(field),(ed["race_key"],field))
+            version=ed.get("course_version")
+            if version is not None:
+                self.assertEqual(version,race.get("course_version"),ed["race_key"])
+            else:
+                internal=race.get("course_version")
+                self.assertTrue(internal is None or any(flag in internal for flag in
+                                ("unverified","candidate","pending")),
+                                (ed["race_key"],internal))
+                self.assertNotIn(ed.get("route_status"),("official_verified",
+                    "organizer_2025_2026_reuse_assumption"),ed["race_key"])
 
     def test_every_catalogue_median_is_from_exact_finished_times(self):
         for ed in self.catalog:
