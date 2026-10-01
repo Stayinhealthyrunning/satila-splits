@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Syntax-check optional private-source rebuild tool
+        run: python -m py_compile tools/audit_rebuild_against_published.py
       - name: Independent structural, status and GPX provenance validation
         run: python tests/test_published_data_integrity.py --output /tmp/satila-source-integrity.json
       - name: Verify segment and goal-plan observation coverage
