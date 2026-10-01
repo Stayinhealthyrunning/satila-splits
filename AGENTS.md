@@ -7,7 +7,7 @@ The original AGENTS.md previously described the source-discovery phase. That is 
 - Continue from origin/integration/codex-independent-qa-2026-10-01, Draft PR #7. Not from main or the older first-draft build.
 - First read reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md, current BUILD_STATE.json, reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md, and latest GitHub Actions result for the actual current code SHA.
 - reports/CODEX_PARITY_AUDIT.md refers to an older Codex checkpoint; K04 Replay, K05 map duel and T09 pagination have since been implemented. Do not rebuild them.
-- Preserve original Codex branch codex/saetila-complete-first-draft at a71a5ef and owner's C:\\Git\\satila-splits\\reports\\qa-local. No reset --hard, clean -fd, checkout -f, force push, overwrite or reclone.
+- Preserve original Codex branch codex/saetila-complete-first-draft at a71a5ef and owner's C:\Git\satila-splits\reports\qa-local. No reset --hard, clean -fd, checkout -f, force push, overwrite or reclone.
 - For work after quota reset, inspect git status, existing worktrees and branches; create a NEW dedicated Git worktree based on the latest origin/integration/codex-independent-qa-2026-10-01, then a Draft PR back to that integration branch. No automatic merge to main or publication.
 
 ## Fixed verified source contract
