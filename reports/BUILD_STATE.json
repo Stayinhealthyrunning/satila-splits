@@ -1,23 +1,47 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "project": "Sätila Splits",
   "blueprint": "reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md",
   "branch": "build/saetila-first-draft",
-  "sprint": "S0",
-  "status": "IN_PROGRESS",
+  "sprint": "S3",
+  "status": "IMPLEMENTED_NOT_YET_VALIDATED",
   "base_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
-  "head_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
-  "done": [],
+  "verified_code_head_sha": "e3b836fb90971dd8a06ef8b21694231d4879b932",
+  "done": [
+    {
+      "sprint": "S0",
+      "scope": "Selective merge of source foundation, official EQ event catalog retained; artifact fetched in original working session",
+      "status": "PARTIAL"
+    },
+    {
+      "sprint": "S1",
+      "scope": "Parser tools/build_satila.py implemented; local source count 27 selected editions, 3272 appearances, 2649 finishers, 16525 TIME passage observations",
+      "status": "LOCAL_CHECK_ONLY"
+    },
+    {
+      "sprint": "S2",
+      "scope": "Official organizer GPX parser implemented, actual route files not committed; participant GPX not available",
+      "status": "PARTIAL"
+    },
+    {
+      "sprint": "S3-S8",
+      "scope": "Static page and app.js/CSS, approved hero.webp and design-reference.webp committed",
+      "status": "CODE_ONLY"
+    }
+  ],
   "inputs": [
-    "EQ Timing raw artifact 11142571759 / run 36818159977",
-    "five organizer 2026 GPX files",
-    "PR #1 setup/foundation",
-    "approved hero and visual design"
+    "EQ artifact 11142571759 run 36818159977 (expires after 30 days)",
+    "Five organizer GPX attached to conversation but not yet in GitHub",
+    "PR #1 source foundation integrated on branch"
   ],
-  "checks": [],
+  "checks": [
+    "GitHub tree inspected; docs/index.html, docs/assets/app.js, style.css, hero.webp, design-reference.webp and tools/build_satila.py present",
+    "docs/data/ is absent on verified_code_head_sha, so web app is NOT YET RUNNABLE"
+  ],
   "known_limits": [
-    "Original participant GPX 2021–2025 not present in current working directory",
-    "Raw archive retained as GitHub Actions artifact 30 days; local 6.4MB working copy obtained"
+    "Original participant GPX 2021–2025 not in GitHub",
+    "Five official GPX 2026 not yet repository/CI backed",
+    "Source ZIP only persisted in previous session and in GitHub Actions artifact"
   ],
-  "next_action": "Commit source reconciliation then build edition-split browser export."
+  "next_action": "Execute GitHub Actions workflow to download EQ artifact, run tools/build_satila.py, run data/browser smoke checks, and commit generated docs/data to this branch. Then do honest per-sprint browser QA and route ingestion."
 }
