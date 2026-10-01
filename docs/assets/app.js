@@ -224,7 +224,74 @@ function renderProfile(r){
 }
 
 function validRouteComparison(){return !!S.route&&routePoints().length>=2&&S.race.stations.filter(s=>s.is_analysis_boundary).length>=2}
-function renderProfileReplay(r){let host=$('#profile-replay');if(!validRouteComparison()||splitsFor(r.id).length<2){host.innerHTML=`<p class="empty">Ingen Replay för detta resultat: ${S.route?'för få verkliga tidsankare':'denna upplaga saknar separat verifierad publicerbar lokal rutt'}. Profilens publicerade passager påverkas inte.</p>`;return}let pts=routePoints(),d=0,scope='profile',control=`<div class="panel-heading"><div><p class="eyebrow">BERÄKNAD POSITION MELLAN KONTROLLER</p><h3>Personlig Replay · bana och höjd</h3></div></div><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><input class="duel-scrubber" id="profile-replay-range" type="range" min="0" max="${pts.at(-1)[0]}" step="0.1" value="0" aria-label="Spola genom löparens lopp"/><p class="muted small" id="profile-replay-readout"></p>`;host.innerHTML=control;let map=$('#profile-mini-map'),elev=$('#profile-mini-elev'),range=$('#profile-replay-range');function draw(km){d=km;range.value=km;let anchors=runnerAnchors(r),t=estimatedAt(anchors,km);drawSimpleRoute(map,pts,km,null);elev.innerHTML=elevationSvg(pts,km);attachElevation(elev,pts,draw);$('#profile-replay-readout').textContent=`${fmtKm(km)} km längs visningsrutten · ${num(t)?'Beräknad tävlingstid '+time(t):'Ingen säker interpolation vid vald punkt'} · Källa: officiella timingankare, inte uppmätt GPS-spår.`;}range.addEventListener('input',()=>draw(+range.value));draw(0)}
+function updateReplayElevation(host,pts,d,callback){
+  if(!host.querySelector('svg')){
+    host.innerHTML=elevationSvg(pts,d);
+    attachElevation(host,pts,callback);
+    return;
+  }
+  const P=17,W=780,H=135,md=pts.at(-1)[0],dot=pointAtDistance(pts,d);
+  const heights=pts.map(p=>num(p[3])?p[3]:0),min=Math.min(...heights),max=Math.max(...heights);
+  const xx=P+d/md*(W-2*P),yy=H-P-((num(dot?.[3])?dot[3]:0)-min)/Math.max(1,max-min)*(H-2*P);
+  const cursor=host.querySelector('.chart-cursor'),point=host.querySelector('.elev-dot');
+  cursor.setAttribute('x1',xx);cursor.setAttribute('x2',xx);
+  point.setAttribute('cx',xx);point.setAttribute('cy',yy);
+  host.querySelector('[data-elev-hit]').setAttribute('aria-valuenow',d);
+}
+function renderProfileReplay(r){
+  cancelAnimationFrame(S._replayFrame);
+  const host=$('#profile-replay');
+  if(!validRouteComparison()||splitsFor(r.id).length<2){
+    host.innerHTML=`<p class="empty">Ingen Replay för detta resultat: ${S.route?'för få verkliga tidsankare':'denna upplaga saknar separat verifierad publicerbar lokal rutt'}. Profilens publicerade passager påverkas inte.</p>`;
+    return;
+  }
+  const pts=routePoints(),anchors=runnerAnchors(r),maxDistance=anchors.at(-1)?.km||0;
+  if(anchors.length<3||maxDistance<=0){
+    host.innerHTML=empty('Replay kräver minst två verkliga timingankare efter start och en godkänd lokal rutt.');
+    return;
+  }
+  let d=0,playing=false,startedAt=0,startedKm=0;
+  S.profileFollow=false;
+  host.innerHTML=`<div class="panel-heading"><div><p class="eyebrow">BERÄKNAD POSITION MELLAN KONTROLLER</p><h3>Personlig Replay · bana och höjd</h3></div></div><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><div class="replay-controls"><button type="button" class="btn green" id="profile-replay-play">Spela</button><button type="button" class="btn text-btn" id="profile-replay-reset">Börja om</button><label>Uppspelningstid<select id="profile-replay-duration"><option value="30">30 s</option><option value="60">60 s</option><option value="120" selected>120 s</option><option value="180">180 s</option></select></label><button type="button" class="btn text-btn" id="profile-replay-follow" aria-pressed="false">Följ löpare</button><button type="button" class="btn text-btn" id="profile-replay-fit">Visa hela banan</button></div><label>Position längs visningsrutten<input class="duel-scrubber" id="profile-replay-range" type="range" min="0" max="${maxDistance}" step="0.1" value="0" aria-label="Spola genom löparens lopp"/></label><p class="muted small" id="profile-replay-readout"></p>`;
+  const map=$('#profile-mini-map'),elev=$('#profile-mini-elev'),range=$('#profile-replay-range'),playButton=$('#profile-replay-play');
+  const stop=()=>{playing=false;cancelAnimationFrame(S._replayFrame);playButton.textContent='Spela'};
+  function draw(km){
+    d=Math.max(0,Math.min(maxDistance,km));
+    range.value=d;
+    const elapsed=estimatedAt(anchors,d);
+    drawSimpleRoute(map,pts,d);
+    updateReplayElevation(elev,pts,d,draw);
+    $('#profile-replay-readout').textContent=`${fmtKm(d)} km på visningsrutten · ${num(elapsed)?'Beräknad tävlingstid '+time(elapsed):'Ingen säker interpolation'} · Sista exakta ankare: ${anchors.at(-1).name}. Positionen är illustrativ, inte uppmätt GPS.`;
+  }
+  function frame(now){
+    if(!playing)return;
+    const duration=Number($('#profile-replay-duration').value)*1000;
+    const next=startedKm+(now-startedAt)/duration*maxDistance;
+    draw(next);
+    if(next>=maxDistance)stop();
+    else S._replayFrame=requestAnimationFrame(frame);
+  }
+  playButton.addEventListener('click',()=>{
+    if(playing){stop();return}
+    if(d>=maxDistance)draw(0);
+    playing=true;startedKm=d;startedAt=performance.now();playButton.textContent='Pausa';
+    S._replayFrame=requestAnimationFrame(frame);
+  });
+  $('#profile-replay-reset').addEventListener('click',()=>{stop();draw(0)});
+  range.addEventListener('input',()=>{if(playing)stop();draw(+range.value)});
+  $('#profile-replay-duration').addEventListener('change',()=>{if(playing){startedKm=d;startedAt=performance.now()}});
+  $('#profile-replay-follow').addEventListener('click',event=>{
+    S.profileFollow=!S.profileFollow;
+    event.currentTarget.setAttribute('aria-pressed',String(S.profileFollow));
+    draw(d);
+  });
+  $('#profile-replay-fit').addEventListener('click',()=>{
+    S.profileFollow=false;$('#profile-replay-follow').setAttribute('aria-pressed','false');draw(d);
+  });
+  $('#profile-dialog').addEventListener('close',stop,{once:true});
+  draw(0);
+}
+
 function runnerAnchors(r){let arr=[{km:0,t:0,name:'Start'}];let cp=S.race.stations.filter(st=>st.is_analysis_boundary).sort((a,b)=>a.km-b.km);let factor=(routePoints().at(-1)?.[0]||S.race.nominal_km)/S.race.nominal_km;for(let st of cp){let s=observed(r,st);if(s&&num(s.elapsed_seconds)&&num(st.km)&&st.km>0){let last=arr.at(-1);if(s.elapsed_seconds>last.t&&st.km*factor>last.km){arr.push({km:Math.min(st.km*factor,routePoints().at(-1)?.[0]||Infinity),t:s.elapsed_seconds,name:st.name})}}}return arr}
 function estimatedAt(anchors,d){if(!anchors?.length)return null;d=Math.max(0,d);if(d>anchors.at(-1).km+1e-6)return null;for(let i=1;i<anchors.length;i++){let a=anchors[i-1],b=anchors[i];if(d>=a.km&&d<=b.km){let f=(d-a.km)/Math.max(1e-6,b.km-a.km);return a.t+(b.t-a.t)*f}}return d===0?0:null}
 function drawSimpleRoute(host,pts,d,markers=null){
@@ -267,7 +334,7 @@ function drawSimpleRoute(host,pts,d,markers=null){
     const point=xyAt(marker.km),node=host.querySelector('[data-runner-marker="'+i+'"]');
     if(node){node.setAttribute('cx',point[0]+(i?5:-5));node.setAttribute('cy',point[1])}
   });
-  const zoom=host.id==='duel-map'?(S.duelZoom||1):1,width=W/zoom,height=H/zoom;
+  const zoom=host.id==='duel-map'?(S.duelZoom||1):host.id==='profile-mini-map'&&S.profileFollow?2.2:1,width=W/zoom,height=H/zoom;
   const vx=Math.max(0,Math.min(W-width,x-width/2)),vy=Math.max(0,Math.min(H-height,y-height/2));
   routeSvg.setAttribute('viewBox',`${vx} ${vy} ${width} ${height}`);
   hit.setAttribute('aria-valuenow',d);
