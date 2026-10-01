@@ -66,6 +66,15 @@ async def main():
             dnf_cells=await seg.locator("td:nth-child(9)").all_text_contents()
             assert len(dnf_cells)==7 and all(value.strip()=="Okänt" for value in dnf_cells),dnf_cells
             assert "inte noll avbrott" in await page.locator("#segments").inner_text()
+            # D22 Course Intelligence must follow the SAME selected real segment
+            # as the timing table, without inventing a DNF exit or segment ascent.
+            intel=page.locator("#course-intelligence")
+            await page.wait_for_function("document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka:')")
+            assert "Okänt" in await intel.inner_text()
+            assert "Segmentets D+/D−" in await intel.inner_text()
+            chosen=await seg.nth(1).locator("td").first.inner_text()
+            await seg.nth(1).click()
+            await page.wait_for_function("(label) => document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka: '+label)",chosen)
             # A target plan should reflect all seven real measured segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
