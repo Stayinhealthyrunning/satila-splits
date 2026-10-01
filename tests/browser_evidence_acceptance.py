@@ -74,7 +74,7 @@ async def main():
             assert "Segmentets D+/D−" in await intel.inner_text()
             chosen=await seg.nth(1).locator("td").first.inner_text()
             await seg.nth(1).click()
-            await page.wait_for_function("(label) => document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka: '+label)",chosen)
+            await page.wait_for_function("(label) => document.querySelector('#course-intelligence')?.textContent.includes('Vald delsträcka: '+label)",arg=chosen)
             # A target plan should reflect all seven real measured segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
