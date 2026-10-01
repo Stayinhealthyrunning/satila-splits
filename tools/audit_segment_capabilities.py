@@ -19,8 +19,8 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--data",default=str(Path(__file__).resolve().parents[1]/"docs"/"data"))
     p.add_argument("--output",default=None,help="Optional JSON output (CI artifact)")
-    a=p.parse_args()
-    root=Path(a.data)
+    args=p.parse_args()
+    root=Path(args.data)
     catalog=load(root/"bootstrap.json")["editions"]
     report=[]
     for ed in sorted(catalog,key=lambda e:(e["year"],e["family"])):
@@ -75,8 +75,8 @@ def main():
             "thresholds":{"median":5,"q25_q75":10,"q10_q90":20,
                           "sex_specific_median_each":5,"sex_podium_each":3,"goal_fraction":5},
             "editions":report}
-    if a.output:
-        path=Path(a.output)
+    if args.output:
+        path=Path(args.output)
         path.parent.mkdir(parents=True,exist_ok=True)
         path.write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     print("race_key | finishers | observed TIME | analysis segments | median-ready | Q25/Q75 | Q10/Q90 | both-sex median | all pooled plan")
