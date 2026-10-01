@@ -62,6 +62,22 @@ Tillägg efter `974ede95`:
 
 Den här slutsatsen gäller **publicerade, normaliserade TIME-bundlar**, inte ett kategoriskt påstående om att annan intern arrangörsdata aldrig funnits. Om ett framtida källutdrag tillför verkliga DNF-passager måste testet bevara och redovisa dem, inte blockera en verklig utökning.
 
+## Slutlig katalog- och dashboardavstämning
+
+[Fullständigt grönt integritets-/metod-/summary-CI: Actions 36845998989](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36845998989).
+
+`tests/test_public_summary_reconciliation.py` tillför fem oberoende regressioner genom att läsa och jämföra hela `bootstrap.json` mot varje motsvarande riktig upplagefil:
+
+1. Resultat-, finish-, DNF-, DNS-, DSQ-, UNKNOWN-, stations- och observationstal.
+2. Varje editions historiska `median_seconds` omräknad ur samtliga verkliga positiva FINISHED-sluttider (tolerans 0,011 sek för exporterad avrundning).
+3. Separata könsbaserade fullföljandeandelar över **bekräftat startande** (FINISHED + DNF + DSQ), aldrig DNS. Saknat/annat kön tilldelas inte F/M.
+4. 15-minuters histogram: varje fullföljare exakt en gång, även på bucketgräns; DNS/DNF ingår inte.
+5. Samtliga 9 års- och 3 distansfamiljers historiska summeringar med UNKNOWN och DNS bevarade.
+
+**Viktigt proveniensfall fångat i testutvecklingen:** `2025-ultra85` har intern metadata `course_version: ultra85-2025-unverified`, men **publika bootstrap utelämnar avsiktligt `course_version`** eftersom ingen verifierad jämförbar version är promoverad. Detta är korrekt. För en publikt godkänd version måste intern och publik version däremot stämma. Historiska frånvarande frivilliga `route_file` får inte tolkas som avsaknad av intern proveniens.
+
+Resultatet ovan avser den befintliga auditbaslinjen; verifiera om efter Codex merge och eventuell förändring av dataexportern. Testet ändrar inga källdata.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
