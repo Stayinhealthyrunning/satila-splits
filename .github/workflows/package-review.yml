@@ -1,0 +1,51 @@
+name: Package Sätila first-draft review
+on:
+  workflow_dispatch:
+  push:
+    branches: ["build/full-first-draft-2026-10-01"]
+    paths:
+      - ".github/workflows/package-review.yml"
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and package only static published site
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,zipfile
+          site=pathlib.Path("docs")
+          boot=json.loads((site/"data/bootstrap.json").read_text(encoding="utf-8"))
+          assert len(boot["editions"])==27
+          assert sum(e["results"] for e in boot["editions"])==3272
+          assert (site/"index.html").exists()
+          assert (site/"assets/app.js").exists()
+          assert (site/"assets/style-extra.css").exists()
+          assert (site/"assets/hero.webp").exists()
+          assert len(list((site/"data/races").glob("*.json")))==27
+          forbidden={".sqlite",".db",".zip",".gpx",".b64",".py"}
+          files=sorted(p for p in site.rglob("*") if p.is_file())
+          for f in files:
+              assert f.suffix not in forbidden, f
+              assert "work" not in f.parts and "source" not in f.parts, f
+          output=pathlib.Path("satila-splits-first-draft-review.zip")
+          with zipfile.ZipFile(output,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in files:z.write(p,"site/"+p.relative_to(site).as_posix())
+              guide=("Sätila Splits: review-only static website\\n"
+                     "Unzip and run: cd site && python -m http.server 8080\\n"
+                     "Open: http://localhost:8080/\\n"
+                     "Source code/QA: https://github.com/Stayinhealthyrunning/satila-splits/pull/2\\n")
+              z.writestr("README.txt",guide)
+          digest=hashlib.sha256(output.read_bytes()).hexdigest()
+          print("PACKAGED",len(files),"static files",output.stat().st_size,"bytes")
+          print("SHA256",digest)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: satila-first-draft-review
+          path: satila-splits-first-draft-review.zip
+          if-no-files-found: error
+          retention-days: 30
