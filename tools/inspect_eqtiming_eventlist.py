@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect EQ Timing's public historical event list for Sätila Trail."""
+"""Discover Sätila Trail editions through EQ Timing's own public event catalog."""
 import asyncio, json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -12,21 +12,26 @@ async def main():
     async with async_playwright() as p:
         browser=await p.chromium.launch(headless=True)
         page=await browser.new_page(locale="sv-SE")
-        responses=[]
-        async def on_response(r):
-            if "eqtiming" in r.url.lower() and ("event" in r.url.lower() or "api/" in r.url.lower()):
-                responses.append({"url":r.url,"status":r.status,"content_type":r.headers.get("content-type","")})
-        page.on("response",on_response)
         await page.goto("https://events.eqtiming.com/eventlist",wait_until="domcontentloaded",timeout=60000)
-        await page.wait_for_timeout(5000)
-        inputs=await page.locator("input").evaluate_all("""els => els.map(e => ({type:e.type,name:e.name,id:e.id,placeholder:e.placeholder,value:e.value,outer:e.outerHTML}))""")
-        selects=await page.locator("select").evaluate_all("""els => els.map(e => ({name:e.name,id:e.id,outer:e.outerHTML}))""")
-        links=await page.locator("a").evaluate_all("""els => els.map(e => ({text:(e.innerText||'').trim(),href:e.href})).filter(x=>/sätila|satila/i.test(x.text+x.href))""")
-        body=await page.locator("body").inner_text()
-        (OUT/"eventlist.html").write_text(await page.content(),encoding="utf-8")
-        (OUT/"eventlist.txt").write_text(body,encoding="utf-8")
-        (OUT/"diagnostic.json").write_text(json.dumps({"inputs":inputs,"selects":selects,"satila_links":links,"responses":responses},ensure_ascii=False,indent=2),encoding="utf-8")
-        print(json.dumps({"inputs":inputs,"selects":selects,"satila_links":links,"responses":responses[-30:]},ensure_ascii=False,indent=2))
+        await page.wait_for_timeout(2500)
+        # Use exactly the public API request shape used by EQ's own event-list UI.
+        data=await page.evaluate("""async () => {
+          const u = new URL('/api/Events', location.origin);
+          const p = {query:'Sätila Trail',dateFrom:'2015-01-01',dateTo:'2026-12-31',
+            organizationId:'0',regionIds:'',levelIds:'',sportIds:'',take:'1500',
+            dateSort:'true',desc:'true',onlyValidated:'false',onlyshowfororganizer:'false',
+            organizerIds:'',graded:'false',racequality:'false'};
+          Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,v));
+          const r=await fetch(u); if(!r.ok) throw new Error('EQ Events '+r.status);
+          return await r.json();
+        }""")
+        (OUT/"satila-events-raw.json").write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+        # Keep only records whose serialized public catalog data actually identifies Sätila.
+        rows=data if isinstance(data,list) else next((v for v in data.values() if isinstance(v,list)),[])
+        matches=[x for x in rows if "sätila" in json.dumps(x,ensure_ascii=False).lower() or "satila" in json.dumps(x,ensure_ascii=False).lower()]
+        (OUT/"satila-events.json").write_text(json.dumps(matches,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+        print(json.dumps(matches,ensure_ascii=False,indent=2))
+        if not matches: raise SystemExit("EQ public event catalog returned no Sätila matches")
         await browser.close()
 
 asyncio.run(main())
