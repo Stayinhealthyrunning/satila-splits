@@ -78,6 +78,10 @@ async def main():
             # D11: real last-segment strength is separate from last-third placing.
             await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Styrka på sista verifierade delsträckan')")
             assert "fältmedian" in await page.locator("#finish-progression").inner_text()
+            # D07/D21: public class in scatter tooltip and honest changing checkpoint n.
+            scatter_titles=await page.locator('#placement-chart circle title').all_text_contents()
+            assert scatter_titles and all((' · Man · ' in t or ' · Kvinna · ' in t) for t in scatter_titles),scatter_titles[:3]
+            await page.wait_for_function("document.querySelector('#checkpoint-spread')?.textContent.includes('Varje kontroll använder sitt eget observerade n')")
             # D18/D19 use identical user-selected class groups, not separate top-N lists.
             await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
             checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
