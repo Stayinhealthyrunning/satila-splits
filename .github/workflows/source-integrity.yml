@@ -1,0 +1,30 @@
+name: Independent Sätila source integrity
+on:
+  workflow_dispatch:
+  push:
+    branches: [audit/satila-data-method-2026-10-01]
+    paths:
+      - "tests/test_published_data_integrity.py"
+      - ".github/workflows/source-integrity.yml"
+      - "docs/data/**"
+permissions:
+  contents: read
+jobs:
+  source-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Independent structural, status and GPX provenance validation
+        run: python tests/test_published_data_integrity.py --output /tmp/satila-source-integrity.json
+      - name: Preserve full audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-source-integrity
+          path: /tmp/satila-source-integrity.json
+          if-no-files-found: warn
+          retention-days: 30
