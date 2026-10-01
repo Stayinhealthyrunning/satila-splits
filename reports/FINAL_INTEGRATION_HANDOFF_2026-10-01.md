@@ -36,6 +36,20 @@ Maskinläsbara `satila-source-integrity.json`, `satila-segment-capabilities.json
 
 **Viktig metodregel vid Codex-integration:** Kontrollera att pacing inte byggs som en mekanisk fördelning över stationsmetadata när en publikt angiven station helt saknar tidtagning. Eliminera bara den oobserverade analysgränsen (inte källstationen), bygg verkliga positiva grannankare och markera eventuell interpolerad Tostared-planering som icke observerad. För utvecklaren är statistisk referensimplementation i `tools/audit_statistics_reference.py` tillgänglig att jämföra mot faktisk JS.
 
+## Verkligt-data-regression och Codex-browseracceptans
+
+Tillägg efter `974ede95`:
+
+- `tests/test_real_data_analysis_contract.py`: sju **datadrivna** regressioner över hela uppsättningen av 27 officiella editioner. Till skillnad från de syntetiska fallen provar dessa varje faktisk katalog, observerat segmentpar, per-segment-n/grupp, 81 målplansvarianter (tre måltider per edition), 2025/43 Grind→Torrås med n=130, 2023/43:s två n=8-segment, 2016/85:s två kvinnor och placeringsutveckling ur verkligt registrerade platser.
+- Testet hittade och vi rättade ett för strikt antagande i **testet**: vissa gamla upplagor kan ha en officiell registrerad tidtagningsstation som heter Start och också har en källregistrerad placering. Den får användas *endast om den finns på riktig källa*, inte konstrueras för saknade startpassager. Kontrollgränsen är nu källobservation, inte en spärr på textetiketten.
+- [Grön verkligt-data-regression för alla 27 upplagor](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36845227231).
+- `.github/workflows/source-integrity.yml` har förenklats så att audit körs **en gång** som PR-check i stället för både push och PR vid samma kodändring. Manuell `workflow_dispatch` kvarstår för integrationsprov.
+- `tests/browser_evidence_acceptance.py`: separat **Codex-acceptanstest**, ej inkluderat i den gröna käll-CI:n innan fixen finns. Kräver installerad Playwright/Chromium och körs med:
+  ```bash
+  python tests/browser_evidence_acceptance.py
+  ```
+  Det laddar endast committade, riktiga race-bundlar, testar desktop **1440×900** och mobil **390×844** och verifierar observerade Grind→Torrås i 2025/43, 7 av 7 historiska plansegment i samma edition, korrekt låg n i 2023/43 och två (inte tre) kvinnor på 2016/85:s podium. **Det första utkastet förväntas misslyckas på Tostared-punkten**; använd det som en faktisk acceptansgrind för Codex rättning, inte som ett tillfälligt krav att tysta eller förbigå.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
