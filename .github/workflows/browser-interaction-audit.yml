@@ -1,0 +1,34 @@
+name: Sätila independent interaction acceptance
+on:
+  workflow_dispatch:
+  push:
+    branches: [audit/satila-data-method-2026-10-01]
+    paths:
+      - "tests/browser_synced_scrub_acceptance.py"
+      - ".github/workflows/browser-interaction-audit.yml"
+  pull_request:
+    branches: [build/full-first-draft-2026-10-01]
+    paths:
+      - "tests/browser_synced_scrub_acceptance.py"
+      - ".github/workflows/browser-interaction-audit.yml"
+      - "docs/assets/app.js"
+      - "docs/index.html"
+permissions:
+  contents: read
+jobs:
+  synced-map-and-duel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Exercise actual map/elevation clicks, H2H and route gating
+        env:
+          SATILA_SITE: docs
+        run: python tests/browser_synced_scrub_acceptance.py
