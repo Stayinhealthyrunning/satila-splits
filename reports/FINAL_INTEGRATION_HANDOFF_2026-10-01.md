@@ -78,6 +78,18 @@ Den här slutsatsen gäller **publicerade, normaliserade TIME-bundlar**, inte et
 
 Resultatet ovan avser den befintliga auditbaslinjen; verifiera om efter Codex merge och eventuell förändring av dataexportern. Testet ändrar inga källdata.
 
+## Publicerade sammanfattningar, källkedja och råarkiv (komplettering)
+
+Nya kontroller på separat auditgren:
+
+- `tests/test_public_summary_reconciliation.py` stämmer av varje katalograd och historiska totaler mot de verkliga 27 resultatuppsättningarna, medianer, antal fullföljare, DNS/DNF/UNKNOWN och 15-minutersintervall. **Det kompakta bootstrap-kontraktet får utelämna en oklassificerad intern `course_version`**; racebundeln behåller korrekt `*-unverified`. Sådan metadata är inte upphöjd till jämförbar officiell bana.
+- `tests/test_source_chain_of_custody.py` binder nio EQ event-ID/år till SHA-256 för frysta `event.json`, och alla fem arrangörs-GPX till frysta källhashar. Inga råfiler eller onödiga personuppgifter publiceras av manifestkontrollen.
+- **[Grön komplett körning av båda nya kontrollerna och hela befintliga auditkedjan](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36845998989).**
+- `reports/SOURCE_ARCHIVE_RETENTION_AND_RESTORE.md` dokumenterar varför det ursprungliga arkivet måste säkerhetskopieras privat innan Actions-artifactens 30-dagarslagring löper ut, och ger ett verifierbart återställningsförfarande. Det är inte ett påstående om att långtidskopian redan finns.
+- Bevarandet är synligt som [GitHub issue #5](https://github.com/Stayinhealthyrunning/satila-splits/issues/5), utan att publicera arkivets råa deltagardata.
+
+Denna komplettering ändrar **inte** `docs/data/` eller någon fil i Codex arbetsgren. Vid framtida källdatarevision måste nytt fryst source-fingerprint-manifest och QA genereras och granskas tillsammans, inte tyst uppdateras oberoende av varandra.
+
 ## Integration i rekommenderad ordning
 
 1. Låt Codex färdigställa sin egen kod-/designgren och köra dess browser QA. Mergea aldrig en pågående arbetsgren.
