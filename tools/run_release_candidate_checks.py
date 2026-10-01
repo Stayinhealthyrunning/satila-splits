@@ -13,6 +13,7 @@ SOURCE=[
  ["python","tests/test_published_data_integrity.py"],
  ["python","tools/audit_segment_capabilities.py"],
  ["python","tools/audit_station_coverage.py"],
+ ["python","tools/audit_segment_distance_capability.py"],
  ["python","tests/test_route_geometry_integrity.py"],
  ["python","tools/audit_ui_capabilities.py"],
  ["python","tests/test_publication_privacy.py"],
@@ -39,6 +40,7 @@ BROWSER=[
  ["python","tests/browser_evidence_acceptance.py"],
  ["python","tests/browser_release_navigation_acceptance.py"],
  ["python","tests/browser_release_ux_acceptance.py"],
+ ["python","tests/browser_release_pace_capability_acceptance.py"],
 ]
 
 def execute(commands):
