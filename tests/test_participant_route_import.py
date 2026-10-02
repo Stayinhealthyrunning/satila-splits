@@ -48,7 +48,9 @@ class HistoricalRouteImport(unittest.TestCase):
                 self.assertFalse(any("timestamp" in str(key).lower() for key in route))
                 audited=audit(module.DATA)
                 self.assertEqual(audited["failures"],[],audited["failures"])
-                self.assertEqual(audited["summary"]["participant_display_routes"],1)
+                original_inventory=json.loads((target/"docs/data/route-inventory.json").read_text(encoding="utf-8"))
+                participant_count=sum(x.get("type")=="VERIFIED_PARTICIPANT" for x in original_inventory)
+                self.assertEqual(audited["summary"]["participant_display_routes"],participant_count)
             finally:
                 module.ROOT,module.DATA=original_root,original_data
 
