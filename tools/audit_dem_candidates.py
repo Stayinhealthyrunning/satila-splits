@@ -14,6 +14,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from enrich_route_elevation import GeoTiffSampler
+from refine_dem_profile import smooth_route
 
 def percentile(v, q):
     if not v:
@@ -76,6 +77,18 @@ def main():
                 "dsm_100m_resampled_positive_gain_m":hills([[km,0,0,v] for _,v,km in pairs]),
                 "reference_100m_resampled_positive_gain_m":hills([[km,0,0,v] for v,_,km in pairs])
             }
+            # Same horizontal coordinates, identical along-track filtering
+            # as proposed for the historical DSM display.
+            fake={"points":[[km,0.,0.,v] for _,v,km in pairs],"elevation_provenance":{}}
+            filtered=smooth_route(fake)
+            filtered_values=[p[3] for p in filtered["points"]]
+            filtered_res=[v-ref for (ref,_,_),v in zip(pairs,filtered_values)]
+            f_med=statistics.median(filtered_res)
+            row["filtered_dsm_minus_source_median_m"]=round(f_med,2)
+            row["filtered_abs_residual_p90_m"]=round(percentile([abs(v) for v in filtered_res],.9),2)
+            row["filtered_centered_abs_residual_p90_m"]=round(percentile([abs(v-f_med) for v in filtered_res],.9),2)
+            row["filtered_dsm_100m_resampled_positive_gain_m"]=hills(filtered["points"])
+            print("FILTERED_REFERENCE",json.dumps({k:v for k,v in row.items() if k.startswith("filtered_") or k=="reference"}),flush=True)
             if len(pairs)<100:
                 raise SystemExit("Too few independent comparison coordinates")
             result["source_reference_validation"].append(row)
