@@ -151,6 +151,13 @@ async def main():
                     await page.locator('#help-dialog [data-close="help-dialog"]').click()
                     await page.evaluate("location.hash='#family=trail22&year=2024'")
                     await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('22 km · 2024')")
+                    await page.wait_for_function("document.querySelector('#year-select')?.value==='2024'")
+                    # Clicking an ordinary anchor like #dynamics must NOT reset
+                    # the chosen historical edition to the latest available year.
+                    await page.locator('#primary-nav a[href="#dynamics"]').click()
+                    await page.wait_for_timeout(300)
+                    assert await page.locator("#year-select").input_value()=="2024",("navigation anchor reset selected year",width)
+                    assert "22 km · 2024" in await page.locator("#race-title").inner_text()
                 print("PASS prepublish polish",width,height,"overflow",overflow,flush=True)
                 await page.close()
         finally:
