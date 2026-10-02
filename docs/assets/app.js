@@ -515,7 +515,7 @@ function drawSimpleRoute(host,pts,d,markers=null){
     return [path[i-1][0]+(path[i][0]-path[i-1][0])*f,path[i-1][1]+(path[i][1]-path[i-1][1])*f];
   };
   let routeSvg=host.querySelector('svg'),hit=host.querySelector('[data-local-hit]');
-  if(routeSvg&&Math.abs(Number(routeSvg.dataset.fullMapWidth||W)-W)>2){routeSvg.remove();routeSvg=null;hit=null}
+  if(routeSvg&&Math.abs(Number(routeSvg.dataset.fullMapWidth||W)-W)>2){routeSvg.remove();host.querySelectorAll('.osm-attribution').forEach(node=>node.remove());routeSvg=null;hit=null}
   if(!routeSvg){
     const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" stroke="#173b2a" stroke-width="1.5"><title>${html(marker.label)}</title></circle>`).join(''):'';
     host.insertAdjacentHTML('beforeend',svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/><circle data-route-cursor r="5" fill="#d4a858" stroke="#173b2a" stroke-width="1" opacity=".65"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Interaktiv GPX-rutt över OpenStreetMap')+osmAttribution());
