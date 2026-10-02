@@ -67,6 +67,7 @@ jobs:
           python tests/browser_evidence_acceptance.py 2>&1 | tee /tmp/satila-browser-evidence.log
           python tests/browser_smoke.py 2>&1 | tee /tmp/satila-browser-full-page.log
           python tests/browser_release_selection_state_acceptance.py 2>&1 | tee /tmp/satila-browser-selection-state.log
+          python tests/browser_prepublish_polish_acceptance.py 2>&1 | tee /tmp/satila-browser-prepublish-polish.log
       - name: Save browser logs and actual screenshots
         if: always()
         uses: actions/upload-artifact@v4
