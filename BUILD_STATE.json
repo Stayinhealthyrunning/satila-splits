@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "FIRST_STANDALONE_RELEASE_MERGED_HOSTING_PENDING",
+  "status": "SOURCE_ARCHIVED_RELEASE_QA_PASS_PAGES_ENABLEMENT_REQUIRED",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -153,7 +153,7 @@
     "Original independent source package must be verified in main/data/source-archive, not assumed committed just because the preservation workflow was created.",
     "Portal PR #8 remains deliberately unmerged; standalone Pages must be activated and verified first."
   ],
-  "next_action": "Verify source-preservation workflow success and ZIP hash in Git; enable Pages using GitHub Actions in repository Settings > Pages if necessary; verify live deployed URL, then get owner visual approval. Keep portal PR #8 draft until then.",
+  "next_action": "Enable repository Pages with GitHub Actions in Settings > Pages; manually Run workflow 'Deploy standalone Sätila Splits review site' on main; verify URL and user review. Keep portal PR #8 draft.",
   "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
   "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md",
   "release": {
@@ -163,9 +163,10 @@
     "release_pr": 13,
     "release_main_commit": "c1aaf81c1636c19fbcdcf05deb1fc1de2e078795",
     "pages_workflow": ".github/workflows/deploy-pages.yml",
-    "pages_status": "Configuration and live URL must be verified. GitHub Pages requires Settings > Pages > Source: GitHub Actions if not enabled.",
+    "pages_status": "BLOCKED_BY_REPOSITORY_SETTING: site not enabled; configure-pages 404, while source release QA PASS. Owner must enable Pages via Settings > Pages > Source: GitHub Actions, then manually run Deploy standalone Sätila Splits review site workflow.",
     "source_archive_workflow": ".github/workflows/preserve-eqtiming-source.yml",
-    "source_archive_status": "Workflow installed; verify archived ZIP is committed to data/source-archive/ and verify 422 original eqtiming-full source members.",
-    "portal_pr": "Stayinhealthyrunning/Stayinhealthyrunning.github.io#8 - keep draft/unmerged"
+    "source_archive_status": "VERIFIED_COMMITTED on main: ZIP 5,181,913 bytes, 422 original files + manifest; SHA256 25b28550ea4b5ae1f2464f150ba8a16439b8cec4e9d9b1b4168d7dba4b288217; Actions run 36983880198 completed SUCCESS.",
+    "portal_pr": "Stayinhealthyrunning/Stayinhealthyrunning.github.io#8 - keep draft/unmerged",
+    "source_archive_commit": "GitHub Actions bot archive commit (see main history; exact blob sha cf87ffb9cff2eae737e7dd05146127ab23ba916c)"
   }
 }
