@@ -1,0 +1,147 @@
+name: Build vetted historical Ultra85 surface elevations
+on:
+  push:
+    branches:
+      - "release/ultra85-filtered-copernicus-elevation-20261002"
+    paths:
+      - ".github/workflows/ultra85-elevation-release.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reconstruct-and-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install local raster reader
+        run: python -m pip install "rasterio>=1.3,<2"
+      - name: Pin the public Copernicus GLO30 2021 source tile
+        run: |
+          mkdir -p /tmp/satila-release/raw
+          curl --fail --show-error --silent --location --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 480 \
+            "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N57_00_E012_00_DEM/Copernicus_DSM_COG_10_N57_00_E012_00_DEM.tif" \
+            -o /tmp/satila-release/COP30_N57E012.tif
+          echo "4a5eef5035a20fc434ea64af82e0565f52777cb36016ae209223bee024404eba  /tmp/satila-release/COP30_N57E012.tif" | sha256sum -c -
+      - name: Reconstruct and smooth seven year-specific participant display geometries
+        run: |
+          python tools/enrich_route_elevation.py \
+            --routes docs/data/routes/*-ultra85-participant.json \
+            --dem /tmp/satila-release/COP30_N57E012.tif \
+            --source-id "COPERNICUS_DEM_GLO30_PUBLIC_2021_DSM_N57E012" \
+            --vertical-datum "EGM2008 (EPSG:3855)" \
+            --output-dir /tmp/satila-release/raw
+          python tools/audit_dem_candidates.py \
+            --candidate-dir /tmp/satila-release/raw \
+            --dem /tmp/satila-release/COP30_N57E012.tif \
+            --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
+            --report /tmp/satila-release/raw/DEM_RAW_QUALITY.json
+          python tools/refine_dem_profile.py \
+            --input-dir /tmp/satila-release/raw \
+            --output-dir /tmp/satila-release/refined
+          python tools/audit_dem_candidates.py \
+            --candidate-dir /tmp/satila-release/refined \
+            --dem /tmp/satila-release/COP30_N57E012.tif \
+            --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
+            --report /tmp/satila-release/refined/DEM_FILTERED_QUALITY.json
+      - name: Fail-closed production acceptance and copy approved display profiles
+        run: |
+          python - <<'PY'
+          import json,math,shutil
+          from pathlib import Path
+          oldroot=Path("docs/data/routes")
+          rawroot=Path("/tmp/satila-release/raw")
+          filtered=Path("/tmp/satila-release/refined")
+          rawreport=json.loads((rawroot/"DEM_RAW_QUALITY.json").read_text())
+          report=json.loads((filtered/"DEM_FILTERED_QUALITY.json").read_text())
+          before={r["route"]:r for r in rawreport["historical_candidate_checks"]}
+          after={r["route"]:r for r in report["historical_candidate_checks"]}
+          assert len(after)==7
+          assert {int(name[:4]) for name in after}=={2018,2019,2021,2022,2023,2024,2025}
+          expected_source={
+            2018:"5f0864fba534b23d48ac2adde73240bd58d48946d4a2cb092757a9b4304175ec",
+            2019:"4b508c9071480feea7823ca8df371cf39030b74d62370851df8de485fbce9510",
+            2021:"13c033f0e4a336334f9030ea322f4df3df226415c850896fd511e980e36ed294",
+            2022:"0b6cd4a39ecce9fe6262f03b8c9be15c59c6428277c0b67497402d95d95207b0",
+            2023:"e363954507767a4a06f74f4547d4e5b7216849452317f4359c368ecd28636e81",
+            2024:"042ddbb7d32862fbcc415f284577f3dad8225adec47f1240e9dd9caa7f7f18c6",
+            2025:"d54db03d752dd1e6679492f595aa6121c4396d94ed13c9903f5a974b11380d47",
+          }
+          inventory_path=Path("docs/data/route-inventory.json")
+          inventory=json.loads(inventory_path.read_text(encoding="utf-8"))
+          rows={r.get("race_key"):r for r in inventory}
+          report_summary=[]
+          for year,sha in expected_source.items():
+              key=f"{year}-ultra85"
+              name=key+"-participant.json"
+              old=json.loads((oldroot/name).read_text())
+              new=json.loads((filtered/name).read_text())
+              q=after[name]
+              original=before[name]
+              assert new["source_sha256"]==old["source_sha256"]==sha
+              assert new["race_key"]==old["race_key"]==key
+              assert new["edition_references"]==old["edition_references"]==[year]
+              assert new["geometry_length_km"]==old["geometry_length_km"]
+              assert len(new["points"])==len(old["points"])
+              assert [p[:3] for p in old["points"]]==[p[:3] for p in new["points"]],key
+              assert all(isinstance(p[3],(int,float)) and math.isfinite(p[3]) for p in new["points"])
+              assert q["short_step_abs_jump_p95_m"] < .78*original["short_step_abs_jump_p95_m"]
+              assert q["short_step_abs_jump_max_m"]<=21
+              assert q["very_steep_pairs_over_80_percent"]==0
+              assert -10 < q["min_m"] < q["max_m"] < 250
+              provenance=new["elevation_provenance"]
+              assert provenance["type"]=="DSM_RECONSTRUCTED_SURFACE"
+              assert provenance["surface_not_ground"] is True
+              assert provenance["not_official_ascent_or_runner_altitude"] is True
+              assert provenance["vertical_datum"]=="EGM2008 (EPSG:3855)"
+              assert "produced using Copernicus WorldDEM-30" in provenance["source_notice"]
+              assert "raw_positive_gain_m_not_official" not in new
+              new["evidence_note"]=(
+                  old["evidence_note"].replace("Elevation samples unavailable.","Original participant recording lacks elevation.")
+                  +" Additional altitude is FILTERED, APPROXIMATE Copernicus GLO-30 digital SURFACE model (EGM2008, nominal 30m); not measured runner elevation, bare-earth terrain or official ascent."
+              )
+              (oldroot/name).write_text(json.dumps(new,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+              inv=rows[key]
+              assert inv["source_sha256"]==sha
+              inv["source_elevation_available"]=False
+              inv["elevation_available"]=True
+              inv["elevation_provenance"]=provenance
+              inv["evidence_note"]=new["evidence_note"]
+              report_summary.append({"year":year,"source_sha256":sha, "raw_p95_step_m":original["short_step_abs_jump_p95_m"],"filtered_p95_step_m":q["short_step_abs_jump_p95_m"],"filtered_max_step_m":q["short_step_abs_jump_max_m"],"filter":provenance["filter"],"model":"SURFACE_NOT_GROUND","not_official_ascent":True})
+              print("ACCEPTED",key,"p95",original["short_step_abs_jump_p95_m"],"->",q["short_step_abs_jump_p95_m"],"max",q["short_step_abs_jump_max_m"])
+          inventory_path.write_text(json.dumps(inventory,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+          release=Path("reports/ULTRA85_FILTERED_DSM_RELEASE_QA.json")
+          release.write_text(json.dumps({"status":"TECHNICAL_QA_PASSED","dem_tile_sha256":"4a5eef5035a20fc434ea64af82e0565f52777cb36016ae209223bee024404eba","source":"COPERNICUS_GLO30_PUBLIC_2021_DSM","vertical_reference":"EGM2008","notes":"Filtered digital SURFACE model; vegetation/buildings can affect elevations. Visual replay only; not official measured runner elevation or cumulative ascent.","references":report["source_reference_validation"],"years":report_summary},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          assert "produced using Copernicus WorldDEM-30" in Path("docs/index.html").read_text()
+          PY
+      - name: Validate all seven source-locked new routes, public metadata and deterministic release
+        run: |
+          node --check docs/assets/app.js
+          python tests/test_ultra85_historical_routes.py
+          python tests/test_route_geometry_integrity.py
+          python tests/test_publication_privacy.py
+          python tools/run_release_candidate_checks.py --source
+      - name: Commit vetted sanitized route JSON and QA report to release branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/routes/*-ultra85-participant.json docs/data/route-inventory.json reports/ULTRA85_FILTERED_DSM_RELEASE_QA.json
+          git diff --cached --check
+          git commit -m "data: publish seven filtered Copernicus GLO30 historical Ultra85 elevation profiles"
+          git push origin HEAD:release/ultra85-filtered-copernicus-elevation-20261002
+      - name: Preserve release computation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ultra85-filtered-dsm-release-qa
+          path: |
+            /tmp/satila-release/raw/DEM_QA.json
+            /tmp/satila-release/raw/DEM_RAW_QUALITY.json
+            /tmp/satila-release/refined/DEM_FILTERED_QUALITY.json
+          if-no-files-found: warn
+          retention-days: 30
