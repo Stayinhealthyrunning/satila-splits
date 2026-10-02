@@ -32,10 +32,14 @@ def haversine(a,b):
 def points_from_gpx(raw):
     root=ET.fromstring(raw)
     pts=[]
-    # Prefer actual recorded track points, never waypoints or a planning route.
-    for node in root.iter():
-        if node.tag.rsplit("}",1)[-1]!="trkpt":
-            continue
+    # Suunto's activity "*-route.gpx" exports its genuine recorded sequence
+    # as rtept rather than trkpt. Prefer track samples where available;
+    # otherwise use that documented Suunto route-point sequence. Never use
+    # stand-alone waypoints (wpt) or combine two independent geometries.
+    trk=[node for node in root.iter() if node.tag.rsplit("}",1)[-1]=="trkpt"]
+    rte=[node for node in root.iter() if node.tag.rsplit("}",1)[-1]=="rtept"]
+    source=trk if trk else rte
+    for node in source:
         lat=float(node.attrib["lat"]);lon=float(node.attrib["lon"])
         if not (-90<=lat<=90 and -180<=lon<=180):
             raise ValueError("GPX coordinates out of bounds")
