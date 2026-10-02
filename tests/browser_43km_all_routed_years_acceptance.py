@@ -77,9 +77,16 @@ async def main():
                 if year in (2021,2022,2023):
                     assert "NORMALISERAD DELTAGARBANA" in label,(width,year,label)
                     assert "Normaliserad deltagarbaserad bana" in note,(width,year,note)
+                if year==2023:
+                    provenance=route["elevation_provenance"]
+                    assert provenance["type"]=="SPATIALLY_TRANSFERRED_PARTICIPANT_GPX",(width,year,provenance)
+                    label_text=await page.locator("#course-elevation").inner_text()
+                    assert "Överförd GPX-höjd (2024)" in label_text,(width,year,label_text)
+                    assert "Inte originalhöjd från 2023" in label_text,(width,year,label_text)
+                    assert "överförd från 2024" in note,(width,year,note)
                 elif year==2024:
                     assert "DELTAGARSPÅR" in label,(width,year,label)
-                else:
+                elif year==2025:
                     assert "ARRANGÖRSRUTT" in label,(width,year,label)
                 route=fixtures["data/"+editions[f"{year}-trail43"]["route_file"]]
                 length=float(await page.locator("#course-map [data-map-hit]").get_attribute("aria-valuemax"))
