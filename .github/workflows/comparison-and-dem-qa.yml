@@ -1,0 +1,45 @@
+name: Two-runner clock and DEM engine acceptance
+on:
+  pull_request:
+    paths:
+      - "docs/assets/app.js"
+      - "tests/browser_synced_scrub_acceptance.py"
+      - "tools/enrich_route_elevation.py"
+      - "tests/test_dem_elevation_enrichment.py"
+      - "tools/run_release_candidate_checks.py"
+      - ".github/workflows/comparison-and-dem-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  comparison-and-dem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check JavaScript and Python syntax
+        run: |
+          node --check docs/assets/app.js
+          python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py
+      - name: Test deterministic elevation safeguards without external rasters
+        run: python tests/test_dem_elevation_enrichment.py -v
+      - name: Install offline Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Confirm divergence on shared clock and preserve legacy synchronized map interaction
+        env:
+          SATILA_SITE: docs
+          SATILA_INTERACTION_QA: /tmp/satila-comparison-qa
+        run: python tests/browser_synced_scrub_acceptance.py
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-two-runner-shared-clock-screenshots
+          path: /tmp/satila-comparison-qa/
+          if-no-files-found: warn
+          retention-days: 30

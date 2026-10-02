@@ -16,6 +16,7 @@ SOURCE=[
  ["python","tools/audit_segment_distance_capability.py"],
  ["python","tests/test_route_geometry_integrity.py"],
  ["python","tests/test_ultra85_historical_routes.py"],
+ ["python","tests/test_dem_elevation_enrichment.py"],
  ["python","tests/test_participant_route_import.py"],
  ["python","tests/test_restored_43km_gpx.py"],
  ["python","tools/audit_ui_capabilities.py"],
