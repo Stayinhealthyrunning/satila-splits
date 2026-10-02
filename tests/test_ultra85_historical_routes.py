@@ -59,16 +59,27 @@ class HistoricalUltra85Routes(unittest.TestCase):
             self.assertEqual(len(route["points"]), point_count)
             self.assertAlmostEqual(route["geometry_length_km"], length, places=6)
 
-    def test_missing_elevation_is_explicit_and_safe(self):
+    def test_filtered_surface_model_is_explicitly_provenanced_and_safe(self):
         app = (ROOT / "docs" / "assets" / "app.js").read_text(encoding="utf-8")
-        self.assertIn("Höjddata saknas i detta historiska deltagarspår", app)
-        self.assertIn("Höjddata saknas i källspåret", app)
+        self.assertIn("Rekonstruerad ytmodell · Copernicus GLO-30", app)
+        self.assertIn("inte uppmätt löparhöjd eller officiell D+", app)
         for year in EXPECTED:
             key = f"{year}-ultra85"
             route = load(DATA / "routes" / f"{key}-participant.json")
-            self.assertFalse(self.inventory[key]["elevation_available"], key)
-            self.assertTrue(all(point[3] is None for point in route["points"]), key)
+            inventory = self.inventory[key]
+            self.assertTrue(inventory["elevation_available"], key)
+            self.assertFalse(inventory["source_elevation_available"], key)
+            self.assertTrue(route["elevation_available"], key)
+            provenance = route["elevation_provenance"]
+            self.assertEqual(provenance["type"], "DSM_RECONSTRUCTED_SURFACE", key)
+            self.assertIn("Copernicus", provenance["model"], key)
+            self.assertIn("EGM2008", provenance["vertical_datum"], key)
+            self.assertTrue(provenance["surface_not_ground"], key)
+            self.assertTrue(provenance["not_official_ascent_or_runner_altitude"], key)
+            self.assertTrue(all(math.isfinite(point[3]) for point in route["points"]), key)
             self.assertTrue(all(math.isfinite(point[0]) for point in route["points"]), key)
+            self.assertNotIn("raw_positive_gain_m_not_official", route, key)
+            self.assertTrue(-10 < min(point[3] for point in route["points"]) < 250)
 
     def test_participant_timestamps_never_become_official_splits(self):
         split_fields = {"result_id", "station_uid", "elapsed_seconds", "place"}
