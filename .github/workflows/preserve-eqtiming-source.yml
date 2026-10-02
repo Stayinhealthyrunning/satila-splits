@@ -1,0 +1,70 @@
+name: Preserve complete EQ Timing source in Git
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/preserve-eqtiming-source.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: satila-preserve-source
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download frozen source artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/satila-raw"
+          gh run download 36818159977 --repo "${{ github.repository }}" --name satila-eqtiming-raw-36818159977 --dir "$RUNNER_TEMP/satila-raw"
+      - name: Build verifiable permanent archive
+        env:
+          RAW_DIR: ${{ runner.temp }}/satila-raw
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, zipfile
+          raw = Path(os.environ["RAW_DIR"])
+          # gh download extracts artifact contents; keep only the EQ Timing complete-data tree.
+          source_files = sorted(p for p in raw.rglob("*") if p.is_file() and "eqtiming-full" in p.parts)
+          if len(source_files) != 422:
+              raise SystemExit(f"Expected 422 complete-data source files; found {len(source_files)}")
+          output = Path("data/source-archive/satila-eqtiming-full-source-2026-10-01.zip")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          index = {}
+          with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for p in source_files:
+                  rel = Path(*p.parts[p.parts.index("eqtiming-full"):]).as_posix()
+                  payload = p.read_bytes()
+                  index[rel] = {"sha256": hashlib.sha256(payload).hexdigest(), "bytes": len(payload)}
+                  z.writestr(rel, payload)
+              manifest = {"source_artifact_id": 11142571759, "source_workflow_run": 36818159977, "files": index}
+              z.writestr("SOURCE_MANIFEST.json", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+          with zipfile.ZipFile(output) as z:
+              assert z.testzip() is None
+              for filename, entry in index.items():
+                  assert hashlib.sha256(z.read(filename)).hexdigest() == entry["sha256"]
+              assert len(z.namelist()) == 423
+              assert not any(n.startswith("eqtiming/") for n in z.namelist())
+          print(f"Validated {len(index)} complete-data files, {output.stat().st_size} ZIP bytes")
+          print("Archive SHA256:", hashlib.sha256(output.read_bytes()).hexdigest())
+          PY
+      - name: Commit and preserve archive on main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/source-archive/satila-eqtiming-full-source-2026-10-01.zip
+          if git diff --cached --quiet; then echo "Archive already committed"; exit 0; fi
+          git commit -m "Preserve complete frozen EQ Timing reconstruction source"
+          git push origin HEAD:main
