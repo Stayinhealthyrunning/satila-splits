@@ -13,7 +13,7 @@ async def main():
     route=json.loads((ROOT/"data"/edition["route_file"]).read_text(encoding="utf-8"))
     race=json.loads((ROOT/"data/races/2024-trail43.json").read_text(encoding="utf-8"))
     assert route["edition_references"]==[2024] and route["type"]=="VERIFIED_PARTICIPANT"
-    assert len(race["splits"])==850 and len(route["points"])>=100
+    assert len(race["splits"])==750 and len(route["points"])>=100
     payload={"data/bootstrap.json":boot,"data/races/2024-trail43.json":race}
     for e in boot["editions"]:
         if e["race_key"]=="2024-trail43":continue
@@ -68,7 +68,7 @@ async def main():
             assert not errors,(width,errors)
             await page.close()
         await browser.close()
-    print("PASS 2024/43 real participant GPS shows map and elevation at desktop/mobile with 850 unmodified TIME observations")
+    print("PASS 2024/43 real participant GPS shows map and elevation at desktop/mobile with 750 accepted TIME observations (100 nonofficial Grind excluded; raw source retained)")
 
 if __name__=="__main__":
     asyncio.run(main())

@@ -15,8 +15,7 @@ GOLDEN={
  "2025-trail43":{
    "results":163,"finishers":135,"median_finish":17986.43,
    "segments":[
-    ("Start","Grind",1.2,135,402.37,32,103),
-    ("Grind","Torrås",15.0,130,5976.59,29,101),
+    ("Start","Torrås",16.2,130,6392.97,29,101),
     ("Torrås","Almered",7.8,130,2580.25,29,101),
     ("Almered","Skolan",7.0,133,2857.27,32,101),
     ("Skolan","Ramhulta",6.0,134,2739.52,32,102),
@@ -25,16 +24,14 @@ GOLDEN={
  "2025-trail22":{
    "results":190,"finishers":160,"median_finish":8828.25,
    "segments":[
-    ("Start","Grind",1.2,160,389.18,48,112),
-    ("Grind","Skolan",8.4,156,3121.035,47,109),
+    ("Start","Skolan",9.6,156,3513.975,47,109),
     ("Skolan","Ramhulta",6.7,156,2402.13,47,109),
     ("Ramhulta","Smälteryd",4.2,156,2403.905,46,110),
     ("Smälteryd","Mål",1.5,156,505.39,46,110)]},
  "2025-ultra85":{
    "results":99,"finishers":79,"median_finish":44118.96,
    "segments":[
-    ("Start","Grind",1.2,79,437.38,22,57),
-    ("Grind","Navåsen",18.2,79,8862.14,22,57),
+    ("Start","Navåsen",19.4,79,9279.26,22,57),
     ("Navåsen","Äskhult",30.6,78,16575.755,22,56),
     ("Äskhult","Lerbäck",18.0,77,8674.98,22,55),
     ("Lerbäck","Ramhulta",10.7,78,5038.13,22,56),
@@ -43,8 +40,7 @@ GOLDEN={
  "2023-trail43":{
    "results":103,"finishers":86,"median_finish":16938.065,
    "segments":[
-    ("Start","Grind",1.2,86,377.83,15,71),
-    ("Grind","Torrås",6.8,85,5673.62,15,70),
+    ("Start","Torrås",8.0,85,6054.81,15,70),
     ("Torrås","Almered",16.0,84,2434.15,15,69),
     ("Almered","Skolan",7.0,8,4164.615,4,4),
     ("Skolan","Ramhulta",6.0,8,4058.165,4,4),
@@ -100,7 +96,8 @@ class GoldenAggregateRegression(unittest.TestCase):
 
     def test_golden_cases_encode_known_method_edges(self):
         t=GOLDEN["2025-trail43"]["segments"]
-        self.assertIn(("Grind","Torrås",15.0,130,5976.59,29,101),t)
+        self.assertIn(("Start","Torrås",16.2,130,6392.97,29,101),t)
+        self.assertFalse(any("Grind" in x[:2] for group in GOLDEN.values() for x in group["segments"]))
         sparse=[x for x in GOLDEN["2023-trail43"]["segments"] if x[3]==8]
         self.assertEqual(len(sparse),2)
         self.assertTrue(all(x[5:]==(4,4) for x in sparse))
