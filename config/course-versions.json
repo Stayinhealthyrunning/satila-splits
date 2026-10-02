@@ -37,7 +37,6 @@
       "sha256": "21752f9d5aafe13cb40c72845f6c1e96e416fb785180f87b3c920fb8178b874c",
       "status": "OWNER_ACCEPTED_FOR_YEAR_SCOPED_DISPLAY",
       "official_route": false,
-      "publication_blocker": "Normalized original GPX bytes not yet present in main repository; restore checksum-pinned source before exporting route JSON.",
       "current_reconstruction": {
         "file": "data/normalized-gpx/trail43-2021-2022-normalized.gpx",
         "sha256": "2a681e80841ae008872e35d8f4ffd1617b80a94bebcbbb18881e52fd86af82d4",
@@ -48,7 +47,8 @@
           "2022": "b7bd4710327fae74d0478db5dbb1df80c3bb7f84c9d316fd9c2a86028486479c"
         },
         "status": "owner_accepted_reconstruction_not_bitwise_identical_to_lost_prior_export"
-      }
+      },
+      "publication_status": "RESTORED_AND_PUBLISHED_AS_YEAR_SCOPED_DISPLAY_WHERE_NEEDED"
     },
     "trail43-2023-2025": {
       "filename": "Satila_Trail_43km_2023-2025_NORMALISERAD.gpx",
@@ -57,7 +57,6 @@
       "sha256": "e0fb4b648b48cd396f8922146e9ce27a20093b397d8c9413b4697b02bec45111",
       "status": "OWNER_ACCEPTED_FOR_YEAR_SCOPED_DISPLAY",
       "official_route": false,
-      "publication_blocker": "Normalized original GPX bytes not yet present in main repository; restore checksum-pinned source before exporting route JSON.",
       "current_reconstruction": {
         "file": "data/normalized-gpx/trail43-2023-2025-normalized.gpx",
         "sha256": "0ea09c107612064a31c717462cebbfd092b6cefb728b051f529f7b8a27737695",
@@ -69,7 +68,8 @@
           "2025": "f090e7d461e0ae53e06561c340b1a87bab30f10454e49ebaface2cd19468502b"
         },
         "status": "owner_accepted_reconstruction_not_bitwise_identical_to_lost_prior_export"
-      }
+      },
+      "publication_status": "RESTORED_AND_PUBLISHED_AS_YEAR_SCOPED_DISPLAY_WHERE_NEEDED"
     }
   },
   "project_decision_2026_10_01": {
