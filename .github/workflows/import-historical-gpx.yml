@@ -7,6 +7,7 @@ on:
     paths:
       - 'data/participant-gpx/trail43-2024.gpx'
       - 'tools/promote_participant_gpx.py'
+      - 'tests/test_integration_diff_contract.py'
       - '.github/workflows/import-historical-gpx.yml'
 
 permissions:
