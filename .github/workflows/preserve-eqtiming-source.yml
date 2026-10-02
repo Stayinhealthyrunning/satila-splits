@@ -67,4 +67,16 @@ jobs:
           git add -f data/source-archive/satila-eqtiming-full-source-2026-10-01.zip
           if git diff --cached --quiet; then echo "Archive already committed"; exit 0; fi
           git commit -m "Preserve complete frozen EQ Timing reconstruction source"
-          git push origin HEAD:main
+          # Other maintenance commits may have reached main since this run checked out.
+          # Replay only this archive commit on top of the newest main without force pushes.
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              echo "Archive successfully preserved on main"
+              exit 0
+            fi
+            echo "Main moved concurrently; retrying fast-forward after rebase (${attempt}/5)"
+          done
+          echo "Could not preserve the archive after five safe fast-forward attempts" >&2
+          exit 1
