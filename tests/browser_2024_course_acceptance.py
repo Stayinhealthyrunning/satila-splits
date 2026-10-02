@@ -55,7 +55,7 @@ async def main():
             assert await page.locator("#course-map .simple-route-line").count()==0
             assert await page.locator("#course-map .route-base").count()==1,(width,"map missing")
             assert await page.locator("#course-elevation .elev-line").count()==1,(width,"elevation missing")
-            assert "DELTAGARSPÅR" in await page.locator("#course-map .map-label").first.inner_text()
+            assert "DELTAGARSPÅR" in await page.locator("#course-map .map-label").first.text_content()
             assert await page.locator("#course-map [data-map-hit]").count()==1
             assert await page.locator("#course-elevation [data-elev-hit]").count()==1
             assert not await page.evaluate("window.__missing||[]"),(width,await page.evaluate("window.__missing"))
