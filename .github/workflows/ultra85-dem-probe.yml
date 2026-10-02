@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/ultra85-dem-probe.yml"
       - "tools/audit_dem_candidates.py"
+      - "tools/evaluate_dem_smoothing.py"
       - "tools/refine_dem_profile.py"
 permissions:
   contents: read
@@ -92,6 +93,13 @@ jobs:
               assert newroute["source_sha256"]==oldroute["source_sha256"]
               assert [q[:3] for q in newroute["points"]]==[q[:3] for q in oldroute["points"]]
           PY
+      - name: Quantify effect of robust longitudinal DSM smoothing
+        run: |
+          python tools/evaluate_dem_smoothing.py \
+            --candidate-dir /tmp/satila-dem/candidates \
+            --dem /tmp/satila-dem/COP30_N57E012.tif \
+            --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
+            --report /tmp/satila-dem/candidates/DEM_SMOOTHING_GRID.json
       - name: Assert QA and retain only sanitized candidates
         run: |
           python - <<'PY'
