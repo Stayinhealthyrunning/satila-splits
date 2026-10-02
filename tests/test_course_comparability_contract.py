@@ -33,7 +33,7 @@ def whole_course_comparable(first,second):
     return bool(ga and ga==gb and first["family"]==second["family"])
 
 def display_route_authorized(family,year,inventory):
-    matches=[r for r in inventory if r["family"]==family]
+    matches=[r for r in inventory if r["family"]==family and r.get("type")=="OFFICIAL_ORGANIZER"]
     return len(matches)==1 and year in matches[0]["edition_references"]
 
 class CourseComparabilityContract(unittest.TestCase):
@@ -64,7 +64,11 @@ class CourseComparabilityContract(unittest.TestCase):
     def test_current_older_editions_do_not_silently_borrow_modern_route(self):
         for ed in self.editions:
             if ed["year"]<2025:
-                self.assertFalse(ed.get("route_file"),ed["race_key"])
+                if ed.get("route_file"):
+                    self.assertEqual(ed.get("route_status"),"participant_track_display_only",ed["race_key"])
+                    source=read(DATA/ed["route_file"])
+                    self.assertEqual(source.get("edition_references"),[ed["year"]])
+                    self.assertEqual(source.get("type"),"VERIFIED_PARTICIPANT")
                 self.assertFalse(promoted_group(ed),ed["race_key"])
         e43=next(e for e in self.editions if e["race_key"]=="2025-trail43")
         e22=next(e for e in self.editions if e["race_key"]=="2025-trail22")
@@ -107,8 +111,8 @@ class CourseComparabilityContract(unittest.TestCase):
         self.assertIsNone(promoted_group(a))
 
     def test_route_geometry_distance_is_not_timing_distance(self):
-        r43=next(x for x in self.route_inventory if x["family"]=="trail43")
-        r22=next(x for x in self.route_inventory if x["family"]=="trail22")
+        r43=next(x for x in self.route_inventory if x["family"]=="trail43" and x.get("type")=="OFFICIAL_ORGANIZER")
+        r22=next(x for x in self.route_inventory if x["family"]=="trail22" and x.get("type")=="OFFICIAL_ORGANIZER")
         e43=next(e for e in self.editions if e["race_key"]=="2025-trail43")
         e22=next(e for e in self.editions if e["race_key"]=="2025-trail22")
         self.assertAlmostEqual(r43["geometry_length_km"],42.254,places=2)

@@ -44,13 +44,15 @@ def main():
                         r'fetch\s*\(\s*[\'\"]https?://[^\'\"]+/(?:athletes|profiles|users)/'):
             assert not re.search(pattern,text),f"Potential external runner image/profile in {p}: {pattern}"
     routes=list((ROOT/"data"/"routes").glob("*.json"))
-    assert len(routes)==5
+    inventory=json.loads((ROOT/"data"/"route-inventory.json").read_text(encoding="utf-8"))
+    assert len(routes)==len(inventory) and len(routes)>=5
+    assert len([v for v in inventory if v.get("type")=="OFFICIAL_ORGANIZER"])==5
     for f in routes:
         route=json.loads(f.read_text(encoding="utf-8"))
         assert all(len(point)==4 and all(isinstance(v,(int,float,type(None))) for v in point)
                    for point in route["points"]),"Route must contain sanitized geometry only"
         assert not (set(route)&SENSITIVE)
-    print(f"PUBLICATION PRIVACY CHECKS PASSED: {len(race_files)} sanitized race bundles; {len(routes)} organizer display routes; no raw GPS/database or social profile-image asset")
+    print(f"PUBLICATION PRIVACY CHECKS PASSED: {len(race_files)} sanitized race bundles; {len(routes)} sanitized display routes; no raw GPS/database or social profile-image asset")
 
 if __name__=="__main__":
     main()

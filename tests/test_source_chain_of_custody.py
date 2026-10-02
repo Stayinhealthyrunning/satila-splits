@@ -56,9 +56,10 @@ class SourceChainOfCustody(unittest.TestCase):
             self.assertGreater(race["leg_uid"],0)
 
     def test_organizer_route_sources_are_checksum_identified(self):
-        self.assertEqual(len(self.route_inventory),5)
+        official=[v for v in self.route_inventory if v.get("type")=="OFFICIAL_ORGANIZER"]
+        self.assertEqual(len(official),5)
         families=set()
-        for route in self.route_inventory:
+        for route in official:
             fam=route["family"]
             self.assertNotIn(fam,families)
             families.add(fam)

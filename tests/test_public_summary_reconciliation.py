@@ -81,9 +81,18 @@ class PublicSummaryReconciliation(unittest.TestCase):
 
     def test_measured_geometry_is_only_attached_to_authorized_editions(self):
         routed=[ed for ed in self.catalog if ed.get("route_file")]
-        self.assertEqual({ed["race_key"] for ed in routed},{"2025-trail22","2025-trail43"})
+        baseline={"2025-trail22","2025-trail43"}
+        self.assertTrue(baseline.issubset({ed["race_key"] for ed in routed}))
+        for ed in routed:
+            if ed["race_key"] not in baseline:
+                self.assertEqual(ed["route_status"],"participant_track_display_only")
+                self.assertEqual(ed["route_file"],f"routes/{ed['race_key']}-participant.json")
         for ed in routed:
             route=load(DATA/ed["route_file"])
+            if ed["race_key"] not in baseline:
+                self.assertEqual(route["type"],"VERIFIED_PARTICIPANT")
+                self.assertEqual(route["edition_references"],[ed["year"]])
+                self.assertEqual(route["source_sha256"],ed["route_source_sha256"])
             self.assertEqual(ed["measured_route_geometry_km"],route["geometry_length_km"])
             self.assertEqual(self.races[ed["race_key"]]["measured_route_geometry_km"],route["geometry_length_km"])
 

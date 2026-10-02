@@ -1,0 +1,29 @@
+name: Historical participant GPX and partial-split QA
+on:
+  pull_request:
+    paths:
+      - 'docs/assets/app.js'
+      - 'tools/promote_participant_gpx.py'
+      - 'tools/run_release_candidate_checks.py'
+      - 'tests/**'
+      - '.github/workflows/historical-route-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript and standalone GPX import regression
+        run: |
+          node --check docs/assets/app.js
+          python tests/test_participant_route_import.py
+      - name: Full deterministic source and release checks
+        run: python tools/run_release_candidate_checks.py --source
+      - name: Verify 2024 maps in Chromium desktop and mobile
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+          python tests/browser_2024_course_acceptance.py

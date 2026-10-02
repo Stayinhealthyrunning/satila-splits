@@ -131,17 +131,27 @@ def audit(root):
         if dns_observations:
             warnings.append(f"{key}: {dns_observations} DNS entrants nevertheless have public TIME observation(s); preserve source flags, inspect")
         if ed.get("route_file"):
-            if year != 2025 or family not in ("trail22", "trail43"):
-                failures.append(f"{key}: route reuse not authorized for edition")
             route_path = root / ed["route_file"]
             if not route_path.is_file():
                 failures.append(f"{key}: route asset missing")
             else:
                 route = read(route_path)
-                if route.get("source_sha256") != COURSE_SHA[family]:
-                    failures.append(f"{key}: official route checksum does not match source registry")
-                if route.get("edition_references") != [2025, 2026]:
-                    failures.append(f"{key}: unrecorded route edition references")
+                if route.get("type") == "OFFICIAL_ORGANIZER":
+                    if year != 2025 or family not in ("trail22", "trail43"):
+                        failures.append(f"{key}: organizer route reuse not authorized for edition")
+                    if route.get("source_sha256") != COURSE_SHA[family]:
+                        failures.append(f"{key}: official route checksum does not match source registry")
+                    if route.get("edition_references") != [2025, 2026]:
+                        failures.append(f"{key}: unrecorded organizer reuse references")
+                elif route.get("type") == "VERIFIED_PARTICIPANT":
+                    if ed.get("route_status") != "participant_track_display_only":
+                        failures.append(f"{key}: participant course must remain display-only")
+                    if route.get("race_key") != key or route.get("edition_references") != [year]:
+                        failures.append(f"{key}: participant route borrowed across editions")
+                    if route.get("source_sha256") != ed.get("route_source_sha256"):
+                        failures.append(f"{key}: participant GPX digest is not linked to edition")
+                else:
+                    failures.append(f"{key}: unknown route provenance")
         elif year == 2025 and family in ("trail22", "trail43"):
             failures.append(f"{key}: agreed 2025/2026 organizer route is not linked")
         details.append({
@@ -166,17 +176,29 @@ def audit(root):
 
     inventory_file = root / "route-inventory.json"
     inventory = read(inventory_file) if inventory_file.exists() else []
-    if {route["family"] for route in inventory} != set(COURSE_SHA):
-        failures.append("Organizer route inventory must contain 5/10/21/43/85 km exactly")
-    for route in inventory:
+    organizer = [route for route in inventory if route.get("type") == "OFFICIAL_ORGANIZER"]
+    participants = [route for route in inventory if route.get("type") == "VERIFIED_PARTICIPANT"]
+    if len(organizer) != 5 or {route["family"] for route in organizer} != set(COURSE_SHA):
+        failures.append("Five checksum-locked organizer sources must remain present")
+    if len(organizer) + len(participants) != len(inventory):
+        failures.append("Unexpected unclassified route provenance")
+    for route in organizer:
         family = route["family"]
         if route.get("source_sha256") != COURSE_SHA.get(family):
-            failures.append(f"{family}: source checksum changed")
+            failures.append(f"{family}: official source checksum changed")
         expected_editions = [2026] if family == "ultra85" else [2025, 2026]
         if route.get("edition_references") != expected_editions:
             failures.append(f"{family}: organizer reuse status mismatch")
+    for route in participants:
+        key = route.get("race_key")
+        edition = next((ed for ed in editions if ed["race_key"] == key), None)
+        if not edition or route.get("edition_references") != [edition["year"]]:
+            failures.append(f"{key}: participant GPX not restricted to exact edition")
+        elif edition.get("route_source_sha256") != route.get("source_sha256"):
+            failures.append(f"{key}: participant route source SHA mismatch")
+    for route in inventory:
         if not finite_positive(route.get("geometry_length_km")):
-            failures.append(f"{family}: invalid display geometry length")
+            failures.append(f"{route.get('race_key', route.get('family'))}: invalid display geometry length")
 
     report = {
         "schema": "satila-source-audit-v1", "subject": "current static published bundles",
@@ -185,7 +207,8 @@ def audit(root):
             "editions": len(details), "results": total_results,
             "splits": total_splits, "finishers": finished_total,
             "statuses": dict(catalog_status),
-            "organizer_routes": len(inventory),
+            "organizer_routes": len(organizer),
+            "participant_display_routes": len(participants),
             "failures": len(failures), "warnings": len(warnings),
         },
         "failures": failures, "warnings": warnings, "editions": details,

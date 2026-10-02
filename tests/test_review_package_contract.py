@@ -39,7 +39,10 @@ def expected_paths():
     assert len(catalog)==27
     races={"data/races/"+e["race_key"]+".json" for e in catalog}
     assert len(races)==27
-    return {"index.html","DATA_MODEL.md"}|ASSETS|MANIFESTS|EXPECTED_ROUTE|races
+    inventory=json.loads((SITE/"data/route-inventory.json").read_text(encoding="utf-8"))
+    participant={"data/routes/"+v["race_key"]+"-participant.json" for v in inventory if v.get("type")=="VERIFIED_PARTICIPANT"}
+    assert all(v.get("type") in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT") for v in inventory)
+    return {"index.html","DATA_MODEL.md"}|ASSETS|MANIFESTS|EXPECTED_ROUTE|participant|races
 
 def actual_paths():
     return {p.relative_to(SITE).as_posix() for p in SITE.rglob("*") if p.is_file()}
@@ -61,9 +64,9 @@ def verified_manifest():
 class ReviewPackageContract(unittest.TestCase):
     def test_allowlisted_static_package_contains_only_intended_content(self):
         m=verified_manifest()
-        self.assertEqual(len(m),45)
+        self.assertEqual(len(m),45+len([p for p in m if p.endswith("-participant.json")]))
         self.assertEqual(len([p for p in m if p.startswith("data/races/")]),27)
-        self.assertEqual(len([p for p in m if p.startswith("data/routes/")]),5)
+        self.assertEqual(len([p for p in m if p.startswith("data/routes/")]),5+len([p for p in m if p.endswith("-participant.json")]))
 
     def test_review_zip_paths_are_static_and_cannot_escape_site(self):
         m=verified_manifest()
