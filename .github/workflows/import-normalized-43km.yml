@@ -1,0 +1,83 @@
+name: Import owner-approved 2021–2025 normalized GPX
+
+on:
+  pull_request:
+    paths:
+      - 'tools/install_normalized_43km_archive.py'
+      - 'tests/test_course_comparability_contract.py'
+      - 'tests/test_normalized_43km_import_contract.py'
+      - '.github/workflows/import-normalized-43km.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/participant-gpx/satila-43km-2021-2025-source-and-normalized.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: satila-normalized-source-import
+  cancel-in-progress: false
+
+jobs:
+  source-qa-on-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check importer syntax and existing release contracts
+        run: |
+          python -m py_compile tools/install_normalized_43km_archive.py
+          python tools/run_release_candidate_checks.py --source
+
+  install:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          ref: main
+      - name: Verify exact source ZIP and generate year-locked routes
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          archive=Path('data/participant-gpx/satila-43km-2021-2025-source-and-normalized.zip')
+          if not archive.exists():raise SystemExit('Owner archive must be uploaded before running importer.')
+          sha=hashlib.sha256(archive.read_bytes()).hexdigest()
+          print('ZIP source SHA256:',sha)
+          if sha!='1617c1e1fe96912409989f3844f89c52e3673e8386c44394f1e0f367dd8cd5dc':
+              raise SystemExit('Wrong ZIP, expected checksum-locked owner archive.')
+          PY
+          python tools/install_normalized_43km_archive.py
+      - name: Recheck timing data, provenance, route topology and release package
+        run: |
+          python -m unittest discover -s tests -p test_normalized_43km_import_contract.py -v
+          node --check docs/assets/app.js
+          python tools/run_release_candidate_checks.py --source
+      - name: Permanently commit accepted display route assets and metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/ config/course-versions.json config/source-registry.json
+          if git diff --cached --quiet; then
+            echo 'All verified normalized route assets are already installed.'
+          else
+            git commit -m 'Publish accepted normalized 43 km routes for 2021–2024 and archive 2025 alternative'
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo 'Imported verified normalized routes to main.'
+                break
+              fi
+              if [ "$attempt" = 5 ]; then exit 1; fi
+            done
+          fi
+      - name: Start standard standalone Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --repo "$GITHUB_REPOSITORY" --ref main
