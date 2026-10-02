@@ -18,7 +18,7 @@ SITE=ROOT/"docs"
 ASSETS={
  "assets/app.js","assets/analytics-extra.js",
  "assets/style.css","assets/style-extra.css",
- "assets/hero.webp","assets/design-reference.webp",
+ "assets/hero.webp","assets/design-reference.webp","assets/satila-trail.mp3",
 }
 MANIFESTS={
  "data/bootstrap.json","data/coverage.json",
@@ -61,7 +61,7 @@ def verified_manifest():
 class ReviewPackageContract(unittest.TestCase):
     def test_allowlisted_static_package_contains_only_intended_content(self):
         m=verified_manifest()
-        self.assertEqual(len(m),44)
+        self.assertEqual(len(m),45)
         self.assertEqual(len([p for p in m if p.startswith("data/races/")]),27)
         self.assertEqual(len([p for p in m if p.startswith("data/routes/")]),5)
 
