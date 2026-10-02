@@ -1,0 +1,48 @@
+name: Import recovered owner-normalized 43 km GPX
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'data/source-archive/satila-43km-source-and-normalized-2021-2025.zip'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: satila-owner-43-gpx-import
+  cancel-in-progress: false
+
+jobs:
+  verify-and-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify owner source hashes and import historical map routes
+        run: |
+          python tools/import_owner_normalized_43.py
+          python tools/run_release_candidate_checks.py --source
+      - name: Commit validated map assets without force pushing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data config/source-registry.json
+          if git diff --cached --quiet; then
+            echo "Previously imported; no changes needed."
+            exit 0
+          fi
+          git commit -m "Publish accepted normalized 43 km routes for 2021-2023"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo "Main moved during import, safe fast-forward retries exhausted" >&2
+          exit 1
