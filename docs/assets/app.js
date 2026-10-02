@@ -182,9 +182,40 @@ function focusSelectedSegmentOnCourse(){
 }
 function renderCourse(){renderCourseMap();renderPlan()}
 function routePoints(){return S.route?.points||[]}
-function mapProjection(points,W,H,pad=17){const radians=value=>Number(value)*Math.PI/180,merc=lat=>Math.log(Math.tan(Math.PI/4+radians(Math.max(-85,Math.min(85,lat)))/2)),xs=points.map(p=>radians(p[2])),ys=points.map(p=>merc(p[1])),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),scale=Math.min((W-pad*2)/Math.max(1e-9,xmax-xmin),(H-pad*2)/Math.max(1e-9,ymax-ymin)),ox=(W-(xmax-xmin)*scale)/2,oy=(H-(ymax-ymin)*scale)/2,projectCoord=(lat,lon)=>[ox+(radians(lon)-xmin)*scale,H-(oy+(merc(lat)-ymin)*scale)];return {project:point=>projectCoord(point[1],point[2]),projectCoord}}
+function mapProjection(points,W,H,pad=17){
+ const radians=value=>Number(value)*Math.PI/180,merc=lat=>Math.log(Math.tan(Math.PI/4+radians(Math.max(-85,Math.min(85,lat)))/2)),xs=points.map(p=>radians(p[2])),ys=points.map(p=>merc(p[1])),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),scale=Math.min((W-pad*2)/Math.max(1e-9,xmax-xmin),(H-pad*2)/Math.max(1e-9,ymax-ymin)),ox=(W-(xmax-xmin)*scale)/2,oy=(H-(ymax-ymin)*scale)/2;
+ const projectCoord=(lat,lon)=>[ox+(radians(lon)-xmin)*scale,H-(oy+(merc(lat)-ymin)*scale)];
+ const inverseCoord=(x,y)=>{const m=ymin+(H-y-oy)/scale;return [(2*Math.atan(Math.exp(m))-Math.PI/2)*180/Math.PI,(xmin+(x-ox)/scale)*180/Math.PI]};
+ return {project:point=>projectCoord(point[1],point[2]),projectCoord,inverseCoord}
+}
 function project(points,W,H,pad=17){const projection=mapProjection(points,W,H,pad);return points.map(projection.project)}
-function osmTiles(points,W,H,pad=17,zoom=12){if(!points.length)return'';const projection=mapProjection(points,W,H,pad),n=2**zoom,lonToX=lon=>(Number(lon)+180)/360*n,latToY=lat=>{const r=Number(lat)*Math.PI/180;return (1-Math.asinh(Math.tan(r))/Math.PI)/2*n},tileLon=x=>x/n*360-180,tileLat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI,xs=points.map(p=>lonToX(p[2])),ys=points.map(p=>latToY(p[1])),minX=Math.max(0,Math.floor(Math.min(...xs))),maxX=Math.min(n-1,Math.floor(Math.max(...xs))),minY=Math.max(0,Math.floor(Math.min(...ys))),maxY=Math.min(n-1,Math.floor(Math.max(...ys)));let images='';for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const [left,top]=projection.projectCoord(tileLat(y),tileLon(x)),[right,bottom]=projection.projectCoord(tileLat(y+1),tileLon(x+1));images+=`<image href="https://tile.openstreetmap.org/${zoom}/${x}/${y}.png" x="${left.toFixed(2)}" y="${top.toFixed(2)}" width="${(right-left).toFixed(2)}" height="${(bottom-top).toFixed(2)}" preserveAspectRatio="none"/>`}return `<rect class="osm-map-fallback" width="${W}" height="${H}"/><g class="osm-tile-layer" aria-hidden="true">${images}</g>`}
+function osmTiles(points,W,H,pad=17){
+ if(!points.length)return'';
+ const projection=mapProjection(points,W,H,pad);
+ // Cover the ENTIRE SVG viewBox, including map letterboxing around long, thin
+ // trails: route-bounds-only tiles left 125–210 px grey side strips at 800 px.
+ const [north,west]=projection.inverseCoord(0,0),[south,east]=projection.inverseCoord(W,H);
+ const tileRange=zoom=>{
+  const n=2**zoom,lonToX=lon=>(Number(lon)+180)/360*n,latToY=lat=>{const r=Number(lat)*Math.PI/180;return (1-Math.asinh(Math.tan(r))/Math.PI)/2*n};
+  const minX=Math.max(0,Math.min(n-1,Math.floor(lonToX(west)))),maxX=Math.max(0,Math.min(n-1,Math.floor(lonToX(east)))),minY=Math.max(0,Math.min(n-1,Math.floor(latToY(north)))),maxY=Math.max(0,Math.min(n-1,Math.floor(latToY(south))));
+  return {zoom,n,minX,maxX,minY,maxY,columns:maxX-minX+1,rows:maxY-minY+1}
+ };
+ // Adapt zoom to the visible geographic extent: avoid 55 tile requests for
+ // one ultra map, but do not stretch a single low-resolution tile over 5 km.
+ let tiles;
+ for(let zoom=15;zoom>=8;zoom--){
+  const candidate=tileRange(zoom);
+  if(candidate.columns<=7&&candidate.rows<=6&&candidate.columns*candidate.rows<=24){tiles=candidate;break}
+ }
+ tiles=tiles||tileRange(8);
+ const {zoom,n,minX,maxX,minY,maxY}=tiles,tileLon=x=>x/n*360-180,tileLat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
+ let images='';
+ for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){
+  const [left,top]=projection.projectCoord(tileLat(y),tileLon(x)),[right,bottom]=projection.projectCoord(tileLat(y+1),tileLon(x+1));
+  images+=`<image href="https://tile.openstreetmap.org/${zoom}/${x}/${y}.png" x="${left.toFixed(2)}" y="${top.toFixed(2)}" width="${(right-left).toFixed(2)}" height="${(bottom-top).toFixed(2)}" preserveAspectRatio="none"/>`
+ }
+ return `<rect class="osm-map-fallback" width="${W}" height="${H}"/><g class="osm-tile-layer" data-zoom="${zoom}" aria-hidden="true">${images}</g>`
+}
 const osmAttribution=()=>'<a class="osm-attribution" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>';
 function pointAtDistance(pts,d){if(!pts.length)return null;d=Math.max(pts[0][0],Math.min(pts.at(-1)[0],d));let i=1;while(i<pts.length-1&&pts[i][0]<d)i++;let a=pts[i-1],b=pts[i],f=(d-a[0])/Math.max(.00001,b[0]-a[0]);return [d,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,num(a[3])&&num(b[3])?a[3]+(b[3]-a[3])*f:null]}
 function nearestSegmentPath(path,p){let best={index:0,fraction:0,dist:Infinity};for(let i=1;i<path.length;i++){let [ax,ay]=path[i-1],[bx,by]=path[i],vx=bx-ax,vy=by-ay,len=vx*vx+vy*vy,f=len?Math.max(0,Math.min(1,((p[0]-ax)*vx+(p[1]-ay)*vy)/len)):0,d=(p[0]-ax-vx*f)**2+(p[1]-ay-vy*f)**2;if(d<best.dist)best={index:i,fraction:f,dist:d}}return best}
