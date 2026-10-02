@@ -71,8 +71,11 @@ class PublicSummaryReconciliation(unittest.TestCase):
                 self.assertEqual(obj["organizer_advertised_km"],85.0)
                 self.assertEqual(obj["distance_semantics_status"],"organizer_eq_discrepancy")
                 self.assertEqual(obj["distance_source_urls"],[url])
-                self.assertNotIn("measured_route_geometry_km",obj)
-                self.assertFalse(obj.get("route_file"))
+                # Year-specific participant display geometry is now available for 2019/2021.
+                # It does not resolve the distinct EQ Timing (82 km) vs organizer (85 km) semantics.
+                self.assertEqual(obj.get("route_status"),"participant_track_display_only")
+                self.assertEqual(obj.get("route_file"),f"routes/{key}-participant.json")
+                self.assertGreater(obj.get("measured_route_geometry_km",0),75)
 
         # Analysis-family membership is not evidence for an organizer distance.
         for key in ("2018-ultra85","2022-ultra85","2025-ultra85"):
