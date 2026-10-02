@@ -42,20 +42,20 @@ class ReplaySemantics(unittest.TestCase):
                 tested+=1
         self.assertGreater(tested,200)
 
-    def test_tostared_is_not_a_fake_time_anchor(self):
+    def test_tostared_and_nonofficial_grind_are_not_replay_anchors(self):
         fam="trail43";race=self.races[fam];route=self.routes[fam]
         best=next(r for r in race["results"] if r["status"]=="FINISHED" and r["place"]==1)
         anchors=build_anchors(race,route,best)
         self.assertFalse(any(a["station_uid"]==1416266 for a in anchors))
-        grind=next(a for a in anchors if a["name"]=="Grind")
+        self.assertFalse(any(a["name"]=="Grind" for a in anchors))
         torras=next(a for a in anchors if a["name"]=="Torrås")
         artificial_position=10.2/race["nominal_km"]*route["geometry_length_km"]
-        self.assertLess(grind["display_km"],artificial_position)
-        self.assertLess(artificial_position,torras["display_km"])
+        self.assertGreater(torras["display_km"],artificial_position)
+        self.assertEqual(anchors[0]["kind"],"start_origin")
         estimate=time_at_display_km(anchors,artificial_position)
         self.assertIsNotNone(estimate)
         self.assertEqual(estimate[1],"illustrative_between_observed_anchors")
-        self.assertGreater(estimate[0],grind["seconds"])
+        self.assertGreater(estimate[0],0)
         self.assertLess(estimate[0],torras["seconds"])
 
     def test_interpolation_and_gap_do_not_extrapolate(self):

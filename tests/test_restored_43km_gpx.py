@@ -54,6 +54,6 @@ class RestoredOriginals(unittest.TestCase):
  def test_no_source_timing_rows_changed(self):
   allr=[read(p) for p in (DATA/"races").glob("*.json")]
   self.assertEqual(sum(len(r["results"]) for r in allr),3272)
-  self.assertEqual(sum(len(r["splits"]) for r in allr),16525)
+  self.assertEqual(sum(len(r["splits"]) for r in allr),14466)  # 16525 raw TIME − 2059 owner-rejected Grind rows
 
 if __name__=="__main__":unittest.main(verbosity=2)
