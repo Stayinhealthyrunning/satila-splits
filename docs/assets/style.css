@@ -13,3 +13,10 @@
 .course-map,.duel-map{position:relative;background:#dfe6db}.osm-map-fallback{fill:#dfe6db}.osm-tile-layer image{opacity:.94}.osm-attribution{position:absolute;right:4px;bottom:4px;z-index:3;padding:2px 5px;border-radius:3px;background:rgba(255,255,255,.88);color:#263b2d;font-size:9px;line-height:1.25;text-decoration:underline}.course-map .route-base,.simple-route-base{fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.9}.course-map .route-gold,.simple-route-line{fill:none;stroke:#b57416;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.duel-map .simple-route-base{stroke:#fff;stroke-width:7}.duel-map .simple-route-line{stroke:#b57416;stroke-width:3.5}
 @media(max-width:760px){.status-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.status-summary article{border-top:2px solid #b8c7ba}.status-summary article:nth-child(-n+2){border-top:0}.status-summary article:nth-child(odd){border-left:0}.segment-select-row{grid-template-columns:1fr 1fr}.standout-active{padding:12px 9px}.standout-active .podium-row{grid-template-columns:25px minmax(0,1fr);gap:5px}.standout-active .podium-row .avatar{display:none}.standout-active .podium-row .finish{grid-column:2;margin-left:0;font-size:10px}.standout-active .podium-group h4{font-size:11px}.osm-attribution{font-size:8px}}
 @media(max-width:440px){.standout-active .podium-pair{grid-template-columns:repeat(2,minmax(0,1fr))}.segment-select-row{grid-template-columns:1fr}.status-summary article{padding:13px 11px}}
+
+/* Match the actual SVG viewBox proportions to the visible map container.
+   Fixed 340/290/260/220px heights caused the browser's default SVG
+   meet-scaling to expose grey sidebars outside the OSM imagery. Do not
+   distort (preserveAspectRatio=none) the actual GPX coordinates. */
+.course-map{height:auto;aspect-ratio:800 / 340}
+.duel-map{height:auto;aspect-ratio:760 / 280}
