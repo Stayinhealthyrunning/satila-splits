@@ -1,0 +1,79 @@
+[
+  {
+    "year": 2018,
+    "source_points": 3584,
+    "published_points": 1618,
+    "source_km": 84.455,
+    "display_km": 84.148,
+    "retention_percent": 99.636,
+    "gap_m": 156.3,
+    "source_sha256": "5f0864fba534b23d48ac2adde73240bd58d48946d4a2cb092757a9b4304175ec",
+    "polyline_chars": 7306
+  },
+  {
+    "year": 2019,
+    "source_points": 2351,
+    "published_points": 1345,
+    "source_km": 81.246,
+    "display_km": 81.152,
+    "retention_percent": 99.884,
+    "gap_m": 125.4,
+    "source_sha256": "4b508c9071480feea7823ca8df371cf39030b74d62370851df8de485fbce9510",
+    "polyline_chars": 6290
+  },
+  {
+    "year": 2021,
+    "source_points": 1249,
+    "published_points": 964,
+    "source_km": 82.802,
+    "display_km": 82.775,
+    "retention_percent": 99.968,
+    "gap_m": 143.5,
+    "source_sha256": "13c033f0e4a336334f9030ea322f4df3df226415c850896fd511e980e36ed294",
+    "polyline_chars": 4907
+  },
+  {
+    "year": 2022,
+    "source_points": 3515,
+    "published_points": 1607,
+    "source_km": 84.338,
+    "display_km": 84.211,
+    "retention_percent": 99.849,
+    "gap_m": 180.2,
+    "source_sha256": "0b6cd4a39ecce9fe6262f03b8c9be15c59c6428277c0b67497402d95d95207b0",
+    "polyline_chars": 7251
+  },
+  {
+    "year": 2023,
+    "source_points": 940,
+    "published_points": 796,
+    "source_km": 81.069,
+    "display_km": 81.049,
+    "retention_percent": 99.975,
+    "gap_m": 167.6,
+    "source_sha256": "e363954507767a4a06f74f4547d4e5b7216849452317f4359c368ecd28636e81",
+    "polyline_chars": 4180
+  },
+  {
+    "year": 2024,
+    "source_points": 1666,
+    "published_points": 1158,
+    "source_km": 83.441,
+    "display_km": 83.364,
+    "retention_percent": 99.909,
+    "gap_m": 144.4,
+    "source_sha256": "042ddbb7d32862fbcc415f284577f3dad8225adec47f1240e9dd9caa7f7f18c6",
+    "polyline_chars": 5615
+  },
+  {
+    "year": 2025,
+    "source_points": 1049,
+    "published_points": 856,
+    "source_km": 81.436,
+    "display_km": 81.414,
+    "retention_percent": 99.973,
+    "gap_m": 146.5,
+    "source_sha256": "d54db03d752dd1e6679492f595aa6121c4396d94ed13c9903f5a974b11380d47",
+    "polyline_chars": 4434
+  }
+]
