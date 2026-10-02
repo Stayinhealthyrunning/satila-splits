@@ -84,7 +84,13 @@ def test_coverage():
             assert 0<=row[field]<=row["results"],(row["race_key"],field)
         if row.get("route_file"):
             assert len(row.get("route_sha256") or "")==64,row["race_key"]
-            assert row.get("route_source_type")=="OFFICIAL_ORGANIZER",row["race_key"]
+            source_type=row.get("route_source_type")
+            assert source_type in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT"),row["race_key"]
+            if source_type=="VERIFIED_PARTICIPANT":
+                assert row["route_status"]=="participant_track_display_only",row["race_key"]
+                display=json.loads((ROOT/"data"/row["route_file"]).read_text(encoding="utf-8"))
+                assert display["edition_references"]==[row["year"]],row["race_key"]
+                assert display["source_sha256"]==row["route_sha256"],row["race_key"]
     print("PASS coverage: 27 current editions, source fields and route status agree")
 
 if __name__=="__main__":

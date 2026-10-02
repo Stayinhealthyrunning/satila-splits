@@ -1,0 +1,52 @@
+name: Import verified 2024 43km GPX and commit display route
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/historical-participant-route-partial-splits-2026-10-02]
+    paths:
+      - 'data/participant-gpx/trail43-2024.gpx'
+      - 'tools/promote_participant_gpx.py'
+      - 'tests/test_integration_diff_contract.py'
+      - 'tests/test_accessibility_performance.py'
+      - '.github/workflows/import-historical-gpx.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: satila-import-historical-gpx
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify original 2024 source bytes and derive public display geometry
+        run: |
+          echo "d83bfad962e94a69ed0ea53a0c063679478234cccd3a780d714900ae7640c4b4  data/participant-gpx/trail43-2024.gpx" | sha256sum --check
+          python tools/promote_participant_gpx.py --gpx data/participant-gpx/trail43-2024.gpx --year 2024 --family trail43
+      - name: Validate all original timing data and display geometry
+        run: |
+          node --check docs/assets/app.js
+          python tools/run_release_candidate_checks.py --source
+      - name: Commit source-linked 2024 assets without force push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/bootstrap.json docs/data/coverage.json docs/data/route-inventory.json docs/data/races/2024-trail43.json docs/data/routes/2024-trail43-participant.json config/source-registry.json
+          if git diff --cached --quiet; then echo "Already imported"; exit 0; fi
+          git commit -m "Import real 2024 43km GPX into source-scoped display route"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin fix/historical-participant-route-partial-splits-2026-10-02
+            git rebase origin/fix/historical-participant-route-partial-splits-2026-10-02
+            if git push origin HEAD:fix/historical-participant-route-partial-splits-2026-10-02; then
+              echo "2024 GPX and validated derived route now committed"
+              exit 0
+            fi
+          done
+          exit 1
