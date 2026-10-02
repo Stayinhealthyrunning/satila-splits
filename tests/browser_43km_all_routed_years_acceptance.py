@@ -34,7 +34,7 @@ async def main():
             assert route["normalized_source_group"]==("trail43-2021-2022-normalized" if year<=2022 else "trail43-2023-2025-normalized")
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
-    markup=re.sub(r"<script[^>]*>\\s*</script>","",markup)
+    markup=re.sub(r"<script[^>]*>\s*</script>","",markup)
     app=(ROOT/"assets/app.js").read_text(encoding="utf-8")
     base_css=(ROOT/"assets/style.css").read_text(encoding="utf-8")
     extra_css=(ROOT/"assets/style-extra.css").read_text(encoding="utf-8")
@@ -62,9 +62,12 @@ async def main():
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             for year in YEARS:
                 await page.locator("#year-select").select_option(str(year))
+                route=fixtures["data/"+editions[f"{year}-trail43"]["route_file"]]
                 await page.wait_for_function(
-                    """y=>document.querySelector('#race-title').textContent.includes(''+y)
-                     && document.querySelector('#course-source').textContent.includes('km')""",year)
+                    """p=>document.querySelector('#race-title').textContent.includes(''+p.year)
+                      && document.querySelector('#course-map [data-map-hit]')
+                      && Math.abs(Number(document.querySelector('#course-map [data-map-hit]').getAttribute('aria-valuemax'))-p.length)<.001""",
+                    arg={"year":year,"length":route["geometry_length_km"]})
                 assert await page.locator("#course-map .route-base").count()==1,(width,year,"map missing")
                 assert await page.locator("#course-elevation .elev-line").count()==1,(width,year,"elevation missing")
                 assert await page.locator("#course-map [data-map-hit]").count()==1,(width,year,"map seek missing")
