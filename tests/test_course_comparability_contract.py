@@ -3,8 +3,9 @@
 
 Course evidence must be checked separately from timing availability. In the
 current draft only organizer 2025→2026 route reuse is approved for 5/10/21/43.
-Normalized 43 km participant candidates (2021–2022, 2023–2025) are valuable
-evidence, but are NOT yet promoted as public authoritative course versions.
+Owner-accepted normalized 43 km participant geometry (2021–2022, 2023–2025)
+is valid for year-scoped display, but never an official course or permission
+for automatic cross-year timing-performance comparisons.
 """
 from __future__ import annotations
 import json
@@ -96,18 +97,17 @@ class CourseComparabilityContract(unittest.TestCase):
         b["family"]="trail43";b["course_version"]="official-v2"
         self.assertFalse(whole_course_comparable(a,b))
 
-    def test_participant_route_candidates_not_promoted(self):
+    def test_participant_normalized_routes_are_owner_accepted_for_display_only(self):
         candidates=self.participant_versions["normalized_route_candidates"]
         self.assertTrue(candidates)
-        self.assertTrue(all(c.get("status")=="candidate_pending_official_crosscheck"
+        self.assertTrue(all(c.get("status")=="OWNER_ACCEPTED_FOR_YEAR_SCOPED_DISPLAY"
                             for c in candidates.values()))
         for year,obj in self.participant_versions["year_candidates"].items():
             self.assertIn(int(year),{2021,2022,2023,2024,2025})
             self.assertIn(obj["comparison_group"],candidates)
-        # Participant geometry groups can be discussed as route-evidence, but
-        # cannot automatically be promoted to a whole-course timing comparison.
+        # Owner acceptance permits display but not automatic whole-course timing comparison.
         a={"family":"trail43","course_version":"trail43-2023-2025",
-           "route_status":"candidate_pending_official_crosscheck"}
+           "route_status":"participant_track_display_only"}
         self.assertIsNone(promoted_group(a))
 
     def test_route_geometry_distance_is_not_timing_distance(self):
