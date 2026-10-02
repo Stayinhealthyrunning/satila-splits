@@ -58,3 +58,5 @@ write(coverage_path,coverage)
 write(registry_path,registry)
 assert sum(bool(x.get("route_file")) for x in bootstrap["editions"] if x["family"]=="trail43" and x["year"] in (2021,2022,2023,2024,2025))==5
 print("PASS 43 km 2021–2025: five map-enabled editions; 2024/2025 original published sources preserved")
+
+# Trigger checkpoint automation after the workflow was registered on main.
