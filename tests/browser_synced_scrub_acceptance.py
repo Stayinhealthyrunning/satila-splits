@@ -114,6 +114,12 @@ async def main():
                 for runner in finishers:
                     await page.locator("#runner-search").fill(runner["name"])
                     await page.locator("#runner-suggestions .suggestion").first.click()
+                    if runner["id"]==finishers[0]["id"]:
+                        dialog=page.locator("#profile-dialog")
+                        assert await dialog.evaluate("(d)=>d.scrollWidth<=d.clientWidth+1"),(
+                            width,"profile dialog has horizontal overflow")
+                        assert await dialog.locator("#profile-replay svg").count()>=2
+                        await dialog.screenshot(path=str(OUT/f"profile-{width}.png"),animations="disabled")
                     await page.locator("#profile-add-compare").click()
                     await page.locator('[data-close="profile-dialog"]').click()
                 assert "(2/2)" in await page.locator("#compare-counter").inner_text()
@@ -141,7 +147,12 @@ async def main():
                 info=await page.locator("#duel-readout").inner_text()
                 assert "GPX-distans" in info and "Tidslucka A−B" in info,info
                 # A modern 2025 display route must not appear in the 2024 edition.
-                await page.locator("#compare-dialog").screenshot(path=str(OUT/f"duel-{width}.png"),animations="disabled")
+                compare_dialog=page.locator("#compare-dialog")
+                assert await compare_dialog.evaluate("(d)=>d.scrollWidth<=d.clientWidth+1"),(
+                    width,"comparison dialog has horizontal overflow")
+                await compare_dialog.screenshot(path=str(OUT/f"duel-map-{width}.png"),animations="disabled")
+                await compare_dialog.evaluate("(d)=>d.scrollTop=0")
+                await compare_dialog.screenshot(path=str(OUT/f"duel-{width}.png"),animations="disabled")
                 await page.locator('[data-close="compare-dialog"]').click()
                 await page.locator("#year-select").select_option("2024")
                 await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2024')")

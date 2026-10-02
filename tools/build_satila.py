@@ -4,10 +4,9 @@
 Only observed timing values are source splits. No geospatial interpolation enters results.
 The browser receives a small catalogue + one race-bundle at a time.
 """
-import json,re,math,hashlib,argparse,collections,statistics,sqlite3,xml.etree.ElementTree as ET
+import json,re,math,hashlib,argparse,collections,statistics,sqlite3,unicodedata,xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
-from bisect import bisect_right
 ROOT=Path(__file__).resolve().parents[1] if Path(__file__).resolve().parent.name=='tools' else Path(__file__).resolve().parent
 FAMS=('ultra85','trail43','trail22')
 def js(path,thing):
@@ -109,26 +108,46 @@ def parse(root,out,source_cat):
 def geodist(a,b):
  lat1,lon1=a;lat2,lon2=b;h=math.sin(math.radians(lat2-lat1)/2)**2+math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(math.radians(lon2-lon1)/2)**2
  return 6371.0088*2*math.atan2(math.sqrt(h),math.sqrt(1-h))
+
+def build_route_asset_from_trackpoints(tr,family,raw=b'',source_filename='synthetic.gpx'):
+ """Export every geometrically unique organizer trackpoint with source chainage.
+
+ The five organizer routes contain only 5,483 trackpoints in total. Keeping the
+ source geometry avoids shortcutting bends and loops, while the browser still
+ fetches only the route used by the selected edition. Consecutive zero-distance
+ duplicates are omitted so the public distance axis remains strictly monotone.
+ """
+ if not tr:raise RuntimeError('Empty official GPX '+source_filename)
+ cumulative=[0.];ascent=0
+ for a,b in zip(tr,tr[1:]):
+  cumulative.append(cumulative[-1]+geodist(a[:2],b[:2]));ascent+=max(0,(b[2] or 0)-(a[2] or 0)) if a[2] is not None and b[2] is not None else 0
+ inds=[0]
+ for i in range(1,len(tr)):
+  if cumulative[i]>cumulative[inds[-1]]+1e-9:inds.append(i)
+ points=[[round(cumulative[i],6),round(tr[i][0],6),round(tr[i][1],6),round(tr[i][2],1) if tr[i][2] is not None else None] for i in inds]
+ drawn=sum(geodist(a[1:3],b[1:3]) for a,b in zip(points,points[1:]))
+ sha=hashlib.sha256(raw).hexdigest()
+ refs=[2026] if family=='ultra85' else [2025,2026]
+ asset={'family':family,'edition_references':refs,'type':'OFFICIAL_ORGANIZER','evidence_note':'Organizer 2026 download; internal GPX 2025 title reused for unchanged 2025/2026 course on 5, 10, 21 and 43 km as agreed with project owner.','source_sha256':sha,'geometry_length_km':round(cumulative[-1],6),'published_polyline_length_km':round(drawn,6),'raw_positive_gain_m_not_official':round(ascent,1),'geometry_export_method':'all_geometrically_unique_source_trackpoints','points':points}
+ inventory={k:v for k,v in asset.items() if k!='points'}|{'source_filename':unicodedata.normalize('NFC',source_filename),'source_points':len(tr),'published_points':len(points)}
+ return asset,inventory
+
+def build_route_asset(file,family):
+ tree=ET.parse(file);tr=[]
+ for p in tree.iter():
+  if p.tag.endswith('}trkpt') or p.tag=='trkpt':
+   lat=float(p.attrib['lat']);lon=float(p.attrib['lon']);el=next((float(v.text) for v in p if v.tag.endswith('}ele') or v.tag=='ele'),None)
+   tr.append((lat,lon,el))
+ return build_route_asset_from_trackpoints(tr,family,Path(file).read_bytes(),Path(file).name)
+
 def routes(out,gpxdir):
  mapping={'5':'trail5','10':'trail10','21':'trail22','43':'trail43','85':'ultra85'}; inventory=[]
  for file in sorted(gpxdir.glob('*.gpx')):
   match=re.search(r'Trail\s+(5|10|21|43|85)\s*-\s*2026',file.name,re.I)
   if not match:continue
-  family=mapping[match.group(1)];tree=ET.parse(file);tr=[]
-  for p in tree.iter():
-   if p.tag.endswith('}trkpt') or p.tag=='trkpt':
-    lat=float(p.attrib['lat']);lon=float(p.attrib['lon']);el=next((float(v.text) for v in p if v.tag.endswith('}ele') or v.tag=='ele'),None)
-    tr.append((lat,lon,el))
-  if not tr:raise RuntimeError('Empty official GPX '+str(file))
-  # deterministic equidistance sample without projecting any timing checkpoints
-  cumulative=[0.];ascent=0
-  for a,b in zip(tr,tr[1:]):
-   cumulative.append(cumulative[-1]+geodist(a[:2],b[:2]));ascent+=max(0,(b[2] or 0)-(a[2] or 0)) if a[2] is not None and b[2] is not None else 0
-  limit=350 if family=='ultra85' else 250;inds=sorted(set([0,len(tr)-1]+[min(len(tr)-1,bisect_right(cumulative,cumulative[-1]*i/(limit-1))) for i in range(limit)]))
-  points=[[round(cumulative[i],3),round(tr[i][0],6),round(tr[i][1],6),round(tr[i][2],1) if tr[i][2] is not None else None] for i in inds]
-  raw=file.read_bytes();sha=hashlib.sha256(raw).hexdigest();asset={'family':family,'edition_references':[2026] if family=='ultra85' else [2025,2026],'type':'OFFICIAL_ORGANIZER','evidence_note':'Organizer 2026 download; internal GPX 2025 title reused for unchanged 2025/2026 course on 5, 10, 21 and 43 km as agreed with project owner.','source_sha256':sha,'geometry_length_km':round(cumulative[-1],3),'raw_positive_gain_m_not_official':round(ascent,1),'points':points}
+  family=mapping[match.group(1)];asset,item=build_route_asset(file,family)
   js(out/'routes'/f'{family}-2025-2026.json' if family!='ultra85' else out/'routes'/'ultra85-2026.json',asset)
-  inventory.append({k:v for k,v in asset.items() if k!='points'}|{'source_filename':file.name,'source_points':len(tr)})
+  inventory.append(item)
  if inventory:js(out/'route-inventory.json',inventory)
  else:inventory=load(out/'route-inventory.json') if (out/'route-inventory.json').exists() else []
  # Link route references to completed 2025 and future 2026 catalogue only; never borrow routes for older years.
@@ -141,6 +160,31 @@ def routes(out,gpxdir):
   if ed.get('route_file'):
    f=out/'races'/f'{ed["race_key"]}.json';race=load(f);race['route_status']=ed['route_status'];race['route_file']=ed['route_file'];race['course_version']=ed['course_version'];js(f,race)
  return inventory
+
+def distance_fields(racekey,eq_km,config):
+ extra=(config.get('editions') or {}).get(racekey)
+ if not extra:return {}
+ if float(extra['eq_timing_leg_km'])!=float(eq_km):raise RuntimeError(f'{racekey}: configured EQ distance does not match source nominal_km')
+ return dict(extra)
+
+def refresh_distance_metadata(out,config_path=ROOT/'config'/'edition-distance-metadata.json'):
+ """Enrich committed bundles without requiring the private EQ source archive."""
+ config=load(config_path);bootstrap=load(out/'bootstrap.json')
+ for ed in bootstrap['editions']:
+  fields=distance_fields(ed['race_key'],ed['nominal_km'],config)
+  for key in ('eq_timing_leg_km','organizer_advertised_km','distance_semantics_status','distance_evidence_note','distance_source_urls'):ed.pop(key,None)
+  ed.update(fields)
+  route_file=ed.get('route_file')
+  if route_file:ed['measured_route_geometry_km']=load(out/route_file)['geometry_length_km']
+  else:ed.pop('measured_route_geometry_km',None)
+  file=out/'races'/f"{ed['race_key']}.json";race=load(file)
+  for key in ('eq_timing_leg_km','organizer_advertised_km','distance_semantics_status','distance_evidence_note','distance_source_urls'):race.pop(key,None)
+  race.update(fields)
+  if route_file:race['measured_route_geometry_km']=ed['measured_route_geometry_km']
+  else:race.pop('measured_route_geometry_km',None)
+  js(file,race)
+ js(out/'bootstrap.json',bootstrap)
+ return len(bootstrap['editions'])
 
 def refresh_coverage(out):
  """Derive public field coverage from committed race bundles after course linking."""
@@ -170,8 +214,10 @@ def refresh_coverage(out):
  return coverage
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--source',default=str(ROOT/'data/work/eqtiming-full'));ap.add_argument('--gpix',default=str(ROOT/'data/source/gpx'));ap.add_argument('--events',default=str(ROOT/'config/eqtiming-events.json'));ap.add_argument('--out',default=str(ROOT/'docs/data'));ap.add_argument('--refresh-coverage-only',action='store_true');arg=ap.parse_args();out=Path(arg.out);out.mkdir(parents=True,exist_ok=True)
+ ap=argparse.ArgumentParser();ap.add_argument('--source',default=str(ROOT/'data/work/eqtiming-full'));ap.add_argument('--gpix',default=str(ROOT/'data/source/gpx'));ap.add_argument('--events',default=str(ROOT/'config/eqtiming-events.json'));ap.add_argument('--out',default=str(ROOT/'docs/data'));ap.add_argument('--refresh-coverage-only',action='store_true');ap.add_argument('--refresh-distance-metadata-only',action='store_true');arg=ap.parse_args();out=Path(arg.out);out.mkdir(parents=True,exist_ok=True)
  if arg.refresh_coverage_only:
   print('COVERAGE',len(refresh_coverage(out)),'editions refreshed from committed bundles');return
- meta,n=parse(Path(arg.source),out,Path(arg.events));inv=routes(out,Path(arg.gpix));refresh_coverage(out);print('EQ full observations',n,'EDITION COUNT',len(meta['editions']),'UNIQUE',sum(x['results'] for x in meta['editions']),'FINISHED',sum(x['finishers'] for x in meta['editions']),'SPLITS',sum(x['split_observations'] for x in meta['editions'])); print('BY FAMILY',collections.Counter(x['family'] for x in meta['editions']));print('GPX',[(x['family'],x['geometry_length_km']) for x in inv]);
+ if arg.refresh_distance_metadata_only:
+  print('DISTANCE METADATA',refresh_distance_metadata(out),'editions refreshed');refresh_coverage(out);return
+ meta,n=parse(Path(arg.source),out,Path(arg.events));inv=routes(out,Path(arg.gpix));refresh_distance_metadata(out);refresh_coverage(out);print('EQ full observations',n,'EDITION COUNT',len(meta['editions']),'UNIQUE',sum(x['results'] for x in meta['editions']),'FINISHED',sum(x['finishers'] for x in meta['editions']),'SPLITS',sum(x['split_observations'] for x in meta['editions'])); print('BY FAMILY',collections.Counter(x['family'] for x in meta['editions']));print('GPX',[(x['family'],x['geometry_length_km']) for x in inv]);
 if __name__=='__main__':main()

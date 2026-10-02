@@ -57,6 +57,36 @@ class PublicSummaryReconciliation(unittest.TestCase):
                 self.assertNotIn(ed.get("route_status"),("official_verified",
                     "organizer_2025_2026_reuse_assumption"),ed["race_key"])
 
+    def test_historical_ultra_distance_sources_remain_distinct(self):
+        expected={
+            "2019-ultra85":"https://www.satilatrail.se/wp-content/uploads/2019/07/Inbjudan-S%C3%A4tila-Trail-2019.pdf",
+            "2021-ultra85":"https://www.satilatrail.se/wp-content/uploads/2021/07/Inbjudan-ST-2021-ENG.pdf",
+        }
+        for key,url in expected.items():
+            ed=next(x for x in self.catalog if x["race_key"]==key)
+            race=self.races[key]
+            for obj in (ed,race):
+                self.assertEqual(obj["nominal_km"],82.0)
+                self.assertEqual(obj["eq_timing_leg_km"],82.0)
+                self.assertEqual(obj["organizer_advertised_km"],85.0)
+                self.assertEqual(obj["distance_semantics_status"],"organizer_eq_discrepancy")
+                self.assertEqual(obj["distance_source_urls"],[url])
+                self.assertNotIn("measured_route_geometry_km",obj)
+                self.assertFalse(obj.get("route_file"))
+
+        # Analysis-family membership is not evidence for an organizer distance.
+        for key in ("2018-ultra85","2022-ultra85","2025-ultra85"):
+            ed=next(x for x in self.catalog if x["race_key"]==key)
+            self.assertNotIn("organizer_advertised_km",ed,key)
+
+    def test_measured_geometry_is_only_attached_to_authorized_editions(self):
+        routed=[ed for ed in self.catalog if ed.get("route_file")]
+        self.assertEqual({ed["race_key"] for ed in routed},{"2025-trail22","2025-trail43"})
+        for ed in routed:
+            route=load(DATA/ed["route_file"])
+            self.assertEqual(ed["measured_route_geometry_km"],route["geometry_length_km"])
+            self.assertEqual(self.races[ed["race_key"]]["measured_route_geometry_km"],route["geometry_length_km"])
+
     def test_every_catalogue_median_is_from_exact_finished_times(self):
         for ed in self.catalog:
             finish_times=sorted(r["finish_seconds"] for r in self.races[ed["race_key"]]["results"]
