@@ -1,21 +1,70 @@
 {
   "schema_version": 1,
   "race_family": "trail43",
-  "status": "normalized_route_candidates_built",
+  "status": "owner_accepted_normalized_participant_display_routes_pending_file_restoration",
   "year_candidates": {
-    "2021": {"comparison_group":"trail43-2021-2022","source":"VERIFIED_PARTICIPANT","confidence":"high_with_known_wrong_turns"},
-    "2022": {"comparison_group":"trail43-2021-2022","source":"VERIFIED_PARTICIPANT","confidence":"high_with_known_wrong_turn"},
-    "2023": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"},
-    "2024": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"},
-    "2025": {"comparison_group":"trail43-2023-2025","source":"VERIFIED_PARTICIPANT","confidence":"high"}
+    "2021": {
+      "comparison_group": "trail43-2021-2022",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high_with_known_wrong_turns"
+    },
+    "2022": {
+      "comparison_group": "trail43-2021-2022",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high_with_known_wrong_turn"
+    },
+    "2023": {
+      "comparison_group": "trail43-2023-2025",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high"
+    },
+    "2024": {
+      "comparison_group": "trail43-2023-2025",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high"
+    },
+    "2025": {
+      "comparison_group": "trail43-2023-2025",
+      "source": "VERIFIED_PARTICIPANT",
+      "confidence": "high"
+    }
   },
   "normalized_route_candidates": {
-    "trail43-2021-2022": {"filename":"Satila_Trail_43km_2021-2022_NORMALISERAD.gpx","geometry_length_km":44.415,"point_count":1091,"sha256":"21752f9d5aafe13cb40c72845f6c1e96e416fb785180f87b3c920fb8178b874c","status":"candidate_pending_official_crosscheck"},
-    "trail43-2023-2025": {"filename":"Satila_Trail_43km_2023-2025_NORMALISERAD.gpx","geometry_length_km":41.595,"point_count":944,"sha256":"e0fb4b648b48cd396f8922146e9ce27a20093b397d8c9413b4697b02bec45111","status":"candidate_pending_official_crosscheck"}
+    "trail43-2021-2022": {
+      "filename": "Satila_Trail_43km_2021-2022_NORMALISERAD.gpx",
+      "geometry_length_km": 44.415,
+      "point_count": 1091,
+      "sha256": "21752f9d5aafe13cb40c72845f6c1e96e416fb785180f87b3c920fb8178b874c",
+      "status": "OWNER_ACCEPTED_FOR_YEAR_SCOPED_DISPLAY",
+      "official_route": false,
+      "publication_blocker": "Normalized original GPX bytes not yet present in main repository; restore checksum-pinned source before exporting route JSON."
+    },
+    "trail43-2023-2025": {
+      "filename": "Satila_Trail_43km_2023-2025_NORMALISERAD.gpx",
+      "geometry_length_km": 41.595,
+      "point_count": 944,
+      "sha256": "e0fb4b648b48cd396f8922146e9ce27a20093b397d8c9413b4697b02bec45111",
+      "status": "OWNER_ACCEPTED_FOR_YEAR_SCOPED_DISPLAY",
+      "official_route": false,
+      "publication_blocker": "Normalized original GPX bytes not yet present in main repository; restore checksum-pinned source before exporting route JSON."
+    }
   },
   "project_decision_2026_10_01": {
     "organizer_route_reuse_assumption": "Official organizer files supplied as 2026 downloads with internal 2025 names are treated as unchanged 2025-2026 routes for 5, 10, 21 and 43 km.",
     "ultra85": "Keep 2026 organizer route separate until geometry comparison establishes equivalence with 2025."
   },
-  "rule":"Raw participant tracks remain evidence; normalized route candidates are analysis artifacts until corroborated."
+  "rule": "Owner accepted the normalized participant-derived GPX for year-scoped course display (2021–2025). Official organizer status and cross-year performance comparability remain separate claims.",
+  "project_decision_2026_10_02": {
+    "owner_acceptance": "Owner confirms 2021–2025 participant GPX tracks were verified and both normalized course-family GPX files are accepted for historical cartographic display. No additional organizer verification is needed for this limited use.",
+    "mapping": {
+      "2021": "trail43-2021-2022",
+      "2022": "trail43-2021-2022",
+      "2023": "trail43-2023-2025",
+      "2024": "trail43-2023-2025",
+      "2025": "trail43-2023-2025"
+    },
+    "source_integrity": "Use the previously produced exact normalized files with SHA-256 pinned in normalized_route_candidates. Do not infer geometry from file size, point count or measured length and do not replace participant evidence with an invented track.",
+    "display_semantics": "Accepted normalized participant-derived display course. Not OFFICIAL_ORGANIZER. Retain 2024 existing year-specific participant asset until normalized display source is imported. Preserve 2025 organizer route and its provenance; do not silently replace it.",
+    "timing_semantics": "Map availability independent of split coverage; compute actual timing statistics on observed monotonic EQ Timing endpoint pairs only; do not manufacture checkpoint times or project runner's observed GPS coordinates."
+  }
 }
