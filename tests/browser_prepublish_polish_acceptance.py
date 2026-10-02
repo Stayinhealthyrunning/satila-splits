@@ -133,7 +133,8 @@ async def main():
                     # Excluding only DNS would incorrectly claim this person started.
                     await page.evaluate("location.hash='#family=trail22&year=2021'")
                     await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('22 km · 2021')")
-                    await page.wait_for_function("document.querySelector('#status-chart .status-summary')!==null")
+                    await page.wait_for_function("""() => document.querySelector('#year-select')?.value==='2021' &&
+                        document.querySelector('#status-chart .status-summary article strong')?.textContent.trim()==='217'""")
                     historic=data["data/races/2021-trail22.json"]["results"]
                     assert sum(r["status"]=="UNKNOWN" for r in historic)==1
                     historic_values=[int(v.replace("\\xa0","")) for v in await page.locator("#status-chart .status-summary article>strong").all_text_contents()]
