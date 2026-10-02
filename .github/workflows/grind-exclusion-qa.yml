@@ -1,0 +1,40 @@
+name: Exclude nonofficial Grind — complete browser audit
+on:
+  pull_request:
+    paths:
+      - "docs/data/**"
+      - "docs/assets/**"
+      - "tests/browser_grind_exclusion_acceptance.py"
+      - "tests/browser_evidence_acceptance.py"
+      - "tests/test_grind_exclusion_contract.py"
+      - "tools/build_satila.py"
+      - ".github/workflows/grind-exclusion-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-checkpoint-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify exact 2,059 source-archived / 14,466 publishable observations
+        run: |
+          python tests/test_grind_exclusion_contract.py -v
+          python tools/audit_station_coverage.py
+          python -m unittest discover -s tests -p "test_golden_aggregate_regression.py" -v
+          python -m unittest discover -s tests -p "test_real_data_analysis_contract.py" -v
+      - name: Install Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test all 27 dashboard renderings, two screen sizes
+        env:
+          SATILA_SITE: docs
+        run: |
+          python tests/browser_grind_exclusion_acceptance.py
+          python tests/browser_evidence_acceptance.py
+          python tests/browser_all_editions_acceptance.py
