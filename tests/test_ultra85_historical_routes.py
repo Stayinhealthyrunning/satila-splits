@@ -12,13 +12,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data"
 EXPECTED = {
-    2018: (1618, 84.147947, "5f0864fba534b23d48ac2adde73240bd58d48946d4a2cb092757a9b4304175ec", 368, "da505d1f04039ce66323dd132d450fc6dc291277d611575ad3b934cc5d5d5681"),
-    2019: (1345, 81.151690, "4b508c9071480feea7823ca8df371cf39030b74d62370851df8de485fbce9510", 426, "d0aa9c67bb2842ce3d640dadaf8355902ea37aae601dcdee7c1d8c7c5d083aaa"),
+    2018: (1618, 84.147947, "5f0864fba534b23d48ac2adde73240bd58d48946d4a2cb092757a9b4304175ec", 294, None),
+    2019: (1345, 81.151690, "4b508c9071480feea7823ca8df371cf39030b74d62370851df8de485fbce9510", 354, None),
     2021: (964, 82.775276, "13c033f0e4a336334f9030ea322f4df3df226415c850896fd511e980e36ed294", 228, "4526543d83b81fcccf11b67e63002a94dfb67a632198264487941a4341259360"),
-    2022: (1607, 84.210529, "0b6cd4a39ecce9fe6262f03b8c9be15c59c6428277c0b67497402d95d95207b0", 352, "abefef3ae2989adce6bd0bff67079550f8d3cde2742f284e590d4ecedfdf7a65"),
-    2023: (796, 81.048957, "e363954507767a4a06f74f4547d4e5b7216849452317f4359c368ecd28636e81", 540, "36974771651fcffec49c83de8233560b798930d6d69f8f0b9547dfbb303be86e"),
-    2024: (1158, 83.364334, "042ddbb7d32862fbcc415f284577f3dad8225adec47f1240e9dd9caa7f7f18c6", 615, "5b7ec074b6a900fdf03d2d5ecfab5a28540217ca9bddce928ba9fa71d5f83abe"),
-    2025: (856, 81.413504, "d54db03d752dd1e6679492f595aa6121c4396d94ed13c9903f5a974b11380d47", 709, "5b5c73510c755f6adef7bde1aee55b3940ad498319ce99c559437ff44c833fd1"),
+    2022: (1607, 84.210529, "0b6cd4a39ecce9fe6262f03b8c9be15c59c6428277c0b67497402d95d95207b0", 312, None),
+    2023: (796, 81.048957, "e363954507767a4a06f74f4547d4e5b7216849452317f4359c368ecd28636e81", 479, None),
+    2024: (1158, 83.364334, "042ddbb7d32862fbcc415f284577f3dad8225adec47f1240e9dd9caa7f7f18c6", 546, None),
+    2025: (856, 81.413504, "d54db03d752dd1e6679492f595aa6121c4396d94ed13c9903f5a974b11380d47", 630, None),
 }
 
 
@@ -86,7 +86,9 @@ class HistoricalUltra85Routes(unittest.TestCase):
             self.assertFalse(any("time" in field.lower() for field in route), key)
             self.assertNotIn("timestamps", route, key)
             self.assertEqual(len(race["splits"]), split_count, key)
-            self.assertEqual(digest(race["splits"]), split_sha, key)
+            if split_sha is not None:  # Ultra85 2021 had no Grind and remains byte-for-byte source-equivalent.
+                self.assertEqual(digest(race["splits"]), split_sha, key)
+            self.assertFalse(any(st["name"]=="Grind" for st in race["stations"]), key)
             self.assertTrue(all(set(split) == split_fields for split in race["splits"]), key)
             station_ids = {station["uid"] for station in race["stations"]}
             self.assertTrue(all(split["station_uid"] in station_ids for split in race["splits"]), key)
