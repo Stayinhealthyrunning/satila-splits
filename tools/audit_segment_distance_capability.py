@@ -74,9 +74,12 @@ def main():
     print("PACE-DISTANCE SANITY SUSPECT SEGMENTS:",len(suspect))
     for x in suspect:
         print(f"{x['race_key']} | {x['from']} -> {x['to']} | {x['timing_km']} km | n={x['n']} | implied median {x['median_implied_kmh']} km/h")
-    # Known 2023/43 anomaly must remain detectable until source metadata changes through an explicit migration.
-    target=[x for x in suspect if x["race_key"]=="2023-trail43" and x["from"]=="Torrås" and x["to"]=="Almered"]
-    assert target, "Expected 2023 trail43 Torrås->Almered timing-km sanity anomaly not detected"
+    # The historical 2023 Torrås km metadata was explicitly migrated from 8.0 to 16.2.
+    # Its formerly implausible 16 km Torrås -> Almered interval must no longer recur.
+    race2023=next(r for r in rows if r["race_key"]=="2023-trail43")
+    torras=next(s for s in race2023["segments"] if s["from"]=="Torrås" and s["to"]=="Almered")
+    assert math.isclose(torras["timing_km"],7.8), "2023 Torrås -> Almered must use corrected 16.2 km Torrås boundary"
+    assert torras["pace_distance_sanity"]=="PASS_BASIC_SANITY", "Corrected Torrås interval failed basic sanity"
     assert len(rows)==27
     print("SEGMENT DISTANCE CAPABILITY AUDIT PASSED")
 
