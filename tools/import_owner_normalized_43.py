@@ -48,7 +48,33 @@ def main():
     registry_file=ROOT/"config/source-registry.json"
     registry=json.loads(registry_file.read_text(encoding="utf-8"))
     registry["participant_gpx"]["trail43"][str(year)]["source_file"]=str(PACKAGE.relative_to(ROOT))+"#normalized/"+key+".gpx"
+    registry["participant_gpx"]["trail43"][str(year)]["normalized_source_group"]=key
+    registry["participant_gpx"]["trail43"][str(year)]["original_source_sha256"]={str(y):sha for y,(_,sha) in ORIGINAL.items() if y in ([2021,2022] if year<=2022 else [2023,2024,2025])}
     registry_file.write_text(json.dumps(registry,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+    # Keep participant-source type compatible with existing publication tests,
+    # but make the normalized (not literal individual recorded track) status explicit.
+    race_key=str(year)+"-trail43"
+    rel="routes/"+race_key+"-participant.json"
+    route_file=ROOT/"docs/data"/rel
+    route=json.loads(route_file.read_text(encoding="utf-8"))
+    evidence="Owner-accepted normalized participant-derived GPX corridor "+key+". Display geometry only, not an organizer-official GPX or a runner's exact GPS trajectory. All timing comes exclusively from observed EQ Timing TIME pairs."
+    route["evidence_note"]=evidence
+    route["normalized_source_group"]=key
+    route["source_archive"]=str(PACKAGE.relative_to(ROOT))
+    route_file.write_text(json.dumps(route,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+    inventory_file=ROOT/"docs/data/route-inventory.json"
+    inventory=json.loads(inventory_file.read_text(encoding="utf-8"))
+    for item in inventory:
+     if item.get("race_key")==race_key:
+      item["evidence_note"]=evidence
+      item["normalized_source_group"]=key
+    inventory_file.write_text(json.dumps(inventory,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+    coverage_file=ROOT/"docs/data/coverage.json"
+    coverage=json.loads(coverage_file.read_text(encoding="utf-8"))
+    for item in coverage:
+     if item["race_key"]==race_key:
+      item["route_evidence_note"]=evidence
+    coverage_file.write_text(json.dumps(coverage,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
   # The 2024 same-corridor source is already published and checksum locked;
   # 2025 official organizer route is retained, never silently replaced.
   boot=json.loads((ROOT/"docs/data/bootstrap.json").read_text())
