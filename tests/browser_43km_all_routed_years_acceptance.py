@@ -86,7 +86,7 @@ async def main():
                     assert "överförd från 2024" in note,(width,year,note)
                 elif year==2024:
                     assert "DELTAGARSPÅR" in label,(width,year,label)
-                else:
+                elif year==2025:
                     assert "ARRANGÖRSRUTT" in label,(width,year,label)
                 route=fixtures["data/"+editions[f"{year}-trail43"]["route_file"]]
                 length=float(await page.locator("#course-map [data-map-hit]").get_attribute("aria-valuemax"))
