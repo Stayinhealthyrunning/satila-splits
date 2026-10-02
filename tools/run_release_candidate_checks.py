@@ -15,6 +15,7 @@ SOURCE=[
  ["python","tools/audit_station_coverage.py"],
  ["python","tools/audit_segment_distance_capability.py"],
  ["python","tests/test_route_geometry_integrity.py"],
+ ["python","tests/test_participant_route_import.py"],
  ["python","tools/audit_ui_capabilities.py"],
  ["python","tests/test_publication_privacy.py"],
  ["python","-m","unittest","discover","-s","tests","-p","test_statistics_contract.py","-v"],
