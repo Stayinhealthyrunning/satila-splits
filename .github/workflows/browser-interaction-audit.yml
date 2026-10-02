@@ -1,0 +1,46 @@
+name: Sätila independent interaction acceptance
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "audit/**"
+      - "build/**"
+      - "codex/**"
+    paths:
+      - "tests/browser_synced_scrub_acceptance.py"
+      - "tests/browser_all_editions_acceptance.py"
+      - ".github/workflows/browser-interaction-audit.yml"
+      - "qa.interaction.trigger"
+concurrency:
+  group: satila-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  synced-map-and-duel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Exercise actual map/elevation clicks, H2H and route gating
+        env:
+          SATILA_SITE: docs
+          SATILA_INTERACTION_QA: /tmp/satila-interaction-qa
+        run: |
+          python tests/browser_synced_scrub_acceptance.py
+          python tests/browser_all_editions_acceptance.py
+      - name: Preserve reviewable H2H screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-interaction-screenshots
+          path: /tmp/satila-interaction-qa/
+          if-no-files-found: warn
+          retention-days: 30

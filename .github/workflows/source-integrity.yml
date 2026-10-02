@@ -1,0 +1,91 @@
+name: Independent Sätila source integrity
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "audit/**"
+      - "build/**"
+      - "codex/**"
+    paths:
+      - "tests/**"
+      - "tools/audit_*.py"
+      - "tools/run_release_candidate_checks.py"
+      - "config/course-versions.json"
+      - "config/eqtiming-events.json"
+      - "docs/data/**"
+      - "reports/COMPONENT_READINESS_MATRIX.json"
+      - ".github/workflows/source-integrity.yml"
+      - "qa.source.trigger"
+permissions:
+  contents: read
+jobs:
+  source-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Syntax-check optional private-source rebuild tool
+        run: python -m py_compile tools/audit_rebuild_against_published.py
+      - name: Independent structural, status and GPX provenance validation
+        run: python tests/test_published_data_integrity.py --output /tmp/satila-source-integrity.json
+      - name: Verify segment and goal-plan observation coverage
+        run: python tools/audit_segment_capabilities.py --output /tmp/satila-segment-capabilities.json
+      - name: Detect unobserved source stations and verify real bridge pairs
+        run: python tools/audit_station_coverage.py
+      - name: Verify all five sanitized GPX display geometries
+        run: python tests/test_route_geometry_integrity.py
+      - name: Audit individual, placement and podium component readiness
+        run: python tools/audit_ui_capabilities.py --output /tmp/satila-ui-capabilities.json
+      - name: Block unsafe raw or personal data in public static bundle
+        run: python tests/test_publication_privacy.py
+      - name: Independent statistical edge-case regression
+        run: python -m unittest discover -s tests -p test_statistics_contract.py -v
+      - name: Course version and historic comparison regression
+        run: python -m unittest discover -s tests -p test_course_comparability_contract.py -v
+      - name: All-edition real-data analytical parity oracle
+        run: python -m unittest discover -s tests -p test_real_data_analysis_contract.py -v
+      - name: Validate starter denominators, finish histograms and last observed DNF stations
+        run: python -m unittest discover -s tests -p test_population_denominators.py -v
+      - name: Reconcile public catalogue KPIs, medians and chart denominators
+        run: python -m unittest discover -s tests -p test_public_summary_reconciliation.py -v
+      - name: Frozen event and GPX source fingerprint lineage
+        run: python -m unittest discover -s tests -p test_source_chain_of_custody.py -v
+      - name: Compare actual historical checkpoint axes without assuming equal course
+        run: python tools/audit_historical_station_alignment.py --output /tmp/satila-history-checkpoint-alignment.json
+      - name: Verify byte-for-byte reconstruction comparator contract
+        run: python -m unittest discover -s tests -p test_rebuild_parity_contract.py -v
+      - name: Source-only replay and synchronized map/elevation duel regression
+        run: python -m unittest discover -s tests -p test_replay_source_contract.py -v
+      - name: Frozen representative aggregate regression
+        run: python -m unittest discover -s tests -p test_golden_aggregate_regression.py -v
+      - name: Review bundle regression
+        run: python -m unittest discover -s tests -p test_review_package_contract.py -v
+      - name: Integration diff guard contract
+        run: python -m unittest discover -s tests -p test_integration_diff_contract.py -v
+      - name: Blueprint component readiness manifest contract
+        run: python -m unittest discover -s tests -p test_component_readiness_manifest.py -v
+      - name: Approved Hero/design binary asset lock
+        run: python -m unittest discover -s tests -p test_visual_asset_lock.py -v
+      - name: Compile future release-only gates and freeze final QA plan
+        run: |
+          python -m py_compile tests/browser_release_navigation_acceptance.py tests/browser_release_ux_acceptance.py tests/test_release_copy_acceptance.py tools/run_release_candidate_checks.py
+          python tools/run_release_candidate_checks.py --plan > /tmp/satila-release-check-plan.json
+      - name: Audit timing-km suitability for pace-derived analytics
+        run: python tools/audit_segment_distance_capability.py --output /tmp/satila-segment-distance-capability.json
+      - name: Preserve full audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: satila-source-integrity
+          path: |
+            /tmp/satila-source-integrity.json
+            /tmp/satila-segment-capabilities.json
+            /tmp/satila-ui-capabilities.json
+            /tmp/satila-history-checkpoint-alignment.json
+            /tmp/satila-release-check-plan.json
+            /tmp/satila-segment-distance-capability.json
+          if-no-files-found: warn
+          retention-days: 30

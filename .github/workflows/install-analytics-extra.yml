@@ -1,0 +1,49 @@
+name: Install Sätila analytics extension
+on:
+  push:
+    branches: ["build/full-first-draft-2026-10-01"]
+    paths:
+      - ".github/workflows/install-analytics-extra.yml"
+      - "tools/payloads/analytics-extra.js.gz.b64"
+      - "tools/payloads/style-extra.css.gz.b64"
+permissions:
+  contents: write
+concurrency:
+  group: satila-analytics-extra
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Decode tested extension assets
+        run: |
+          python - <<'PY'
+          import base64,gzip,hashlib,pathlib
+          root=pathlib.Path(".")
+          specs=[
+            ("tools/payloads/analytics-extra.js.gz.b64","docs/assets/analytics-extra.js","b99f47737288d38fc1756e7a58ddda55110299b8037e9b75075cacd8d436deb4"),
+            ("tools/payloads/style-extra.css.gz.b64","docs/assets/style-extra.css","1b8b9384192cb5698f0bf2efc5e292891ecf2196610bff4df62d7d6b6078fe92"),
+          ]
+          for src,dst,expected in specs:
+              raw=gzip.decompress(base64.b64decode((root/src).read_text().strip()))
+              got=hashlib.sha256(raw).hexdigest()
+              assert got==expected,(src,got,expected)
+              p=root/dst;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(raw)
+              print(dst,len(raw),got)
+          PY
+          node --check docs/assets/analytics-extra.js
+      - name: Commit decoded assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/analytics-extra.js docs/assets/style-extra.css
+          if git diff --cached --quiet; then
+            echo "Extension assets already current."
+          else
+            git commit -m "S5-S9: install tested analytics extension assets [skip ci]"
+            git push origin HEAD:build/full-first-draft-2026-10-01
+          fi
