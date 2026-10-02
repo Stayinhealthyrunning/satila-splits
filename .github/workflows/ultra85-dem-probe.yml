@@ -6,6 +6,7 @@ on:
       - "research/ultra85-dem-copernicus-probe-20261002"
     paths:
       - ".github/workflows/ultra85-dem-probe.yml"
+      - "tools/audit_dem_candidates.py"
 permissions:
   contents: read
 jobs:
@@ -55,6 +56,13 @@ jobs:
             --source-id "COPERNICUS_DEM_GLO30_PUBLIC_2021_DSM_N57E012" \
             --vertical-datum "EGM2008 (EPSG:3855)" \
             --output-dir /tmp/satila-dem/candidates
+      - name: Validate height quality against organizer and participant GPX at SAME geographic coordinates
+        run: |
+          python tools/audit_dem_candidates.py \
+            --candidate-dir /tmp/satila-dem/candidates \
+            --dem /tmp/satila-dem/COP30_N57E012.tif \
+            --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
+            --report /tmp/satila-dem/candidates/DEM_HEIGHT_QUALITY.json
       - name: Assert QA and retain only sanitized candidates
         run: |
           python - <<'PY'
