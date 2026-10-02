@@ -12,6 +12,56 @@ const signed=s=>!num(s)?'—':(s>0?'+':'−')+time(Math.abs(s));
 const pace=(sec,km,unit='pace')=>!num(sec)||!num(km)||km<=0?'—':unit==='speed'?(3600*km/sec).toFixed(2).replace('.',',')+' km/h':time(sec/km)+'/km';
 const fmtKm=n=>num(n)?n.toFixed(1).replace('.',','):'—';
 const readCache=(key,other=[])=>{try{let j=JSON.parse(localStorage.getItem(key));return Array.isArray(j)?j:other}catch{return other}};
+
+/* One soundtrack shared by the two modal map players. Music is independent
+   of the animation clock: it loops at the finish until the dialog closes. */
+const replaySoundtrack=(()=>{
+  const audio=new Audio('assets/satila-trail.mp3');
+  audio.preload='metadata';audio.loop=true;
+  const DEFAULT_VOLUME=.35,VOLUME_KEY='satila-music-volume',ENABLED_KEY='satila-music-enabled';
+  let enabled=true,volume=DEFAULT_VOLUME,lastAudible=DEFAULT_VOLUME,sessionActive=false,host=null;
+  try{
+    const saved=localStorage.getItem(VOLUME_KEY);
+    if(saved!==null&&Number.isFinite(Number(saved)))volume=Math.max(0,Math.min(1,Number(saved)));
+    enabled=localStorage.getItem(ENABLED_KEY)!=='false';
+  }catch{}
+  if(volume>0)lastAudible=volume;
+  audio.volume=volume;
+  const note=message=>{const el=host?.querySelector('[data-replay-audio-note]');if(el){el.hidden=false;el.textContent=message}};
+  const render=()=>{
+    if(!host)return;
+    const btn=host.querySelector('[data-replay-music]'),slider=host.querySelector('[data-replay-volume]');
+    if(btn){btn.setAttribute('aria-pressed',String(enabled));btn.textContent=enabled?'♫ Musik':'♪ Musik av';btn.title=enabled?'Stäng av musik':'Slå på musik'}
+    if(slider)slider.value=String(volume);
+  };
+  function setVolume(value){
+    volume=Math.max(0,Math.min(1,Number.isFinite(value)?value:DEFAULT_VOLUME));
+    if(volume>0)lastAudible=volume;
+    audio.volume=volume;
+    try{localStorage.setItem(VOLUME_KEY,String(volume))}catch{}
+  }
+  function start(){
+    sessionActive=true;
+    if(enabled)audio.play().catch(()=>note('Webbläsaren väntar med musiken. Tryck på Spela igen.'));
+  }
+  function pause(){sessionActive=false;audio.pause()}
+  function close(){pause();try{audio.currentTime=0}catch{}host=null}
+  function bind(container){
+    close();host=container;render();
+    container.querySelector('[data-replay-music]')?.addEventListener('click',()=>{
+      enabled=!enabled;
+      if(enabled&&volume<=0)setVolume(lastAudible||DEFAULT_VOLUME);
+      try{localStorage.setItem(ENABLED_KEY,String(enabled))}catch{}
+      render();
+      if(enabled&&sessionActive)audio.play().catch(()=>note('Tryck på Spela igen för att starta musiken.'));
+      else audio.pause();
+    });
+    container.querySelector('[data-replay-volume]')?.addEventListener('input',event=>setVolume(Number(event.target.value)));
+  }
+  audio.addEventListener('error',()=>note('Musiken kunde inte laddas. Kartuppspelningen fungerar ändå.'));
+  return {bind,start,pause,close};
+})();
+
 const key='satila-splits-favorites-v1';let S={boot:null,family:'trail43',year:null,race:null,route:null,routeByFamily:{},filtered:[],page:0,sort:'place',q:'',sex:'all',status:'all',className:'all',club:'',unit:'pace',finishSex:new Set(['F','M']),selectedSegment:0,podiumStart:0,podiumEnd:1,standoutTab:'relative',compare:[],mapDuel:[],favorites:readCache(key),searchIndex:-1,loading:0,courseD:null,duelD:null};
 const HELP={finish:'Officiella sluttider för FINISHED. Samma 15-minutersbin används för alla könsserier. DNS, DNF och UNKNOWN ingår inte i histogrammet. Kvinna/man visas endast för källstödd uppgift.',percentiles:'P10, P25, P50, P75 och P90 är kvantiler av giltiga sluttider hos fullföljare i det aktuella fälturvalet. Median visas först vid n ≥ 5. Inga saknade tider blir noll.',podium:'Placering bland kvinnor respektive män bestäms av giltiga officiella målgångar eller positiva segmenttider mellan två valda, exakta observationer. Bilder från sociala medier används inte; initialavatarer visas.',groups:'Kön, klass, ålder och klubb/ort härleds enbart från publicerade EQ Timing-fält. Ett filtrerat urval påverkar fältstatistik men inte sökfunktionen.',status:'Anmälda är alla publicerade resultatrader i urvalet. Startande kräver känd startstatus (FINISHED + DNF + DSQ); en post med okänd status räknas inte som bekräftad start. DNF och Fullföljt visar respektive källstatus; DSQ och okänd status redovisas inte som egna delar här.',flow:'Visar antal verkliga TIME-registreringar vid varje publik kontroll för urvalets löpare. Trivial Start=100 % utelämnas. En saknad passage innebär inte i sig DNF.',placement:'Endast FINISHED med verklig sluttid och publicerad totalplacering. Klick på en punkt för att öppna löparprofilen.',standouts:'Ovanliga prestationer beräknas inom en edition från två verkliga tidtagningspassager. Minst fem giltiga observationer krävs där en gruppmedian används. Ingen personidentitet mellan år antas.',segments:'En segmenttid kräver två verkliga och tidsmässigt positiva passager. Start=0 används före första observerade kontroll. Delsträckans distans kommer från källans timingaxel, inte från GPS-vägens längd. Median n ≥ 5; Q25–Q75 n ≥ 10.',course:'Arrangörens officiella GPX används som ban-/displaygeometri ovanpå OpenStreetMap. 2025 års 21/43 km-rutter antas återanvändas utan ändring 2026. Äldre upplagor lånar inte denna rutt. Kartposition mellan verifierade ändankare är illustrativ; rå D+ är inte officiell höjdmetrik.',plan:'Måltiden fördelas efter medianen av exakta segmenttidsandelar (segmenttid / sluttid) inom vald edition och kohort, minst fem per segment. Saknas historiskt underlag används explicit timingdistans som märkt fallback. Värdena normaliseras till exakt hela måltiden; planen är en pacingreferens, inte prognos.',history:'Deltagarantal, fullföljare och status kan visas för alla källstödda år. Enskilda års mediantider redovisas separat men kopplas inte till en gemensam utvecklingskurva utan verifierad whole-course-jämförbarhet. År 2020 har ingen importkälla i arkivet.'};
 const famLabel=id=>({ultra85:'85 km',trail43:'43 km',trail22:'22 km'}[id]||id);
@@ -394,6 +444,7 @@ function updateReplayElevation(host,pts,d,callback){
 }
 function renderProfileReplay(r){
   cancelAnimationFrame(S._replayFrame);
+  replaySoundtrack.close();
   const host=$('#profile-replay');
   if(!validRouteComparison()||splitsFor(r.id).length<2){
     host.innerHTML=`<p class="empty">Ingen Replay för detta resultat: ${S.route?'för få verkliga tidsankare':'denna upplaga saknar separat verifierad publicerbar lokal rutt'}. Profilens publicerade passager påverkas inte.</p>`;
@@ -406,9 +457,10 @@ function renderProfileReplay(r){
   }
   let d=0,playing=false,startedAt=0,startedKm=0;
   S.profileFollow=false;
-  host.innerHTML=`<div class="panel-heading"><div><p class="eyebrow">BERÄKNAD POSITION MELLAN KONTROLLER</p><h3>Personlig Replay · bana och höjd</h3></div></div><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><div class="replay-controls"><button type="button" class="btn green" id="profile-replay-play">Spela</button><button type="button" class="btn text-btn" id="profile-replay-reset">Börja om</button><label>Uppspelningstid<select id="profile-replay-duration"><option value="30">30 s</option><option value="60">60 s</option><option value="120" selected>120 s</option><option value="180">180 s</option></select></label><button type="button" class="btn text-btn" id="profile-replay-follow" aria-pressed="false">Följ löpare</button><button type="button" class="btn text-btn" id="profile-replay-fit">Visa hela banan</button></div><label>Position längs visningsrutten<input class="duel-scrubber" id="profile-replay-range" type="range" min="0" max="${maxDistance}" step="0.1" value="0" aria-label="Spola genom löparens lopp"/></label><p class="muted small" id="profile-replay-readout"></p>`;
+  host.innerHTML=`<div class="panel-heading"><div><p class="eyebrow">BERÄKNAD POSITION MELLAN KONTROLLER</p><h3>Personlig Replay · bana och höjd</h3></div></div><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><div class="replay-controls"><button type="button" class="btn green" id="profile-replay-play">Spela</button><button type="button" class="btn text-btn" id="profile-replay-reset">Börja om</button><label>Uppspelningstid<select id="profile-replay-duration"><option value="30">30 s</option><option value="60">60 s</option><option value="120" selected>120 s</option><option value="180">180 s</option></select></label><button type="button" class="btn text-btn" id="profile-replay-follow" aria-pressed="false">Följ löpare</button><button type="button" class="btn text-btn" id="profile-replay-fit">Visa hela banan</button><button type="button" class="btn text-btn replay-music-toggle" data-replay-music aria-label="Slå av eller på musik" aria-pressed="true">♫ Musik</button><label class="replay-music-volume">Volym <input data-replay-volume type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Musikvolym"></label><span data-replay-audio-note class="muted small" role="status" hidden></span></div><label>Position längs visningsrutten<input class="duel-scrubber" id="profile-replay-range" type="range" min="0" max="${maxDistance}" step="0.1" value="0" aria-label="Spola genom löparens lopp"/></label><p class="muted small" id="profile-replay-readout"></p>`;
   const map=$('#profile-mini-map'),elev=$('#profile-mini-elev'),range=$('#profile-replay-range'),playButton=$('#profile-replay-play');
-  const stop=()=>{playing=false;cancelAnimationFrame(S._replayFrame);playButton.textContent='Spela'};
+  replaySoundtrack.bind(host);
+  const stop=(pauseMusic=true)=>{playing=false;cancelAnimationFrame(S._replayFrame);playButton.textContent='Spela';if(pauseMusic)replaySoundtrack.pause()};
   function draw(km){
     d=Math.max(0,Math.min(maxDistance,km));
     range.value=d;
@@ -422,16 +474,17 @@ function renderProfileReplay(r){
     const duration=Number($('#profile-replay-duration').value)*1000;
     const next=startedKm+(now-startedAt)/duration*maxDistance;
     draw(next);
-    if(next>=maxDistance)stop();
+    if(next>=maxDistance)stop(false); // Keep soundtrack looping until the popup closes.
     else S._replayFrame=requestAnimationFrame(frame);
   }
   playButton.addEventListener('click',()=>{
     if(playing){stop();return}
     if(d>=maxDistance)draw(0);
     playing=true;startedKm=d;startedAt=performance.now();playButton.textContent='Pausa';
+    replaySoundtrack.start();
     S._replayFrame=requestAnimationFrame(frame);
   });
-  $('#profile-replay-reset').addEventListener('click',()=>{stop();draw(0)});
+  $('#profile-replay-reset').addEventListener('click',()=>{stop();replaySoundtrack.close();replaySoundtrack.bind(host);draw(0)});
   range.addEventListener('input',()=>{if(playing)stop();draw(+range.value)});
   $('#profile-replay-duration').addEventListener('change',()=>{if(playing){startedKm=d;startedAt=performance.now()}});
   $('#profile-replay-follow').addEventListener('click',event=>{
@@ -442,7 +495,7 @@ function renderProfileReplay(r){
   $('#profile-replay-fit').addEventListener('click',()=>{
     S.profileFollow=false;$('#profile-replay-follow').setAttribute('aria-pressed','false');draw(d);
   });
-  $('#profile-dialog').addEventListener('close',stop,{once:true});
+  $('#profile-dialog').addEventListener('close',()=>{stop();replaySoundtrack.close()},{once:true});
   draw(0);
 }
 
@@ -632,6 +685,7 @@ function distanceAtTime(anchors,elapsed){
   return anchors.at(-1).km;
 }
 function openMapDuel(){
+  replaySoundtrack.close();
   const dialog=$('#map-duel-dialog'),host=$('#map-duel-content'),runners=S.mapDuel.map(findRecord).filter(Boolean);
   if(runners.length<2||runners.length>5)return;
   cancelAnimationFrame(S._mapDuelFrame);
@@ -648,10 +702,11 @@ function openMapDuel(){
   const pts=routePoints(),maxClock=Math.max(...data.map(item=>item.anchors.at(-1).t));
   let clock=0,playing=false,startedAt=0,startedClock=0;
   S.mapDuelCamera='full';
-  host.innerHTML=`<p class="muted small">Gemensam tävlingsklocka. Markörerna interpoleras endast mellan varje löpares verkliga EQ-passager och fryser vid sista säkra ankarpunkt. De är inte uppmätta GPS-positioner.</p><div class="compare-dashboard"><div id="map-duel-map" class="duel-map"></div><div id="map-duel-elevation" class="duel-elevation"></div></div><div class="map-duel-playback"><button type="button" class="btn green" id="map-duel-play">Spela</button><button type="button" class="btn text-btn" id="map-duel-reset">Börja om</button><label>Hastighet<select id="map-duel-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Kamera<select id="map-duel-camera"><option value="full">Hela banan</option><option value="leader">Följ ledaren</option></select></label><button type="button" class="btn text-btn" id="map-duel-fit">Visa hela banan</button></div><label>Delad tävlingsklocka<input id="map-duel-clock" type="range" min="0" max="${maxClock}" step="1" value="0" aria-label="Sök i kartduellens tävlingsklocka"/></label><p id="map-duel-readout" class="duel-readout"></p><h3>Position och ordning vid vald tid</h3><div id="map-duel-leaderboard"></div>`;
+  host.innerHTML=`<p class="muted small">Gemensam tävlingsklocka. Markörerna interpoleras endast mellan varje löpares verkliga EQ-passager och fryser vid sista säkra ankarpunkt. De är inte uppmätta GPS-positioner.</p><div class="compare-dashboard"><div id="map-duel-map" class="duel-map"></div><div id="map-duel-elevation" class="duel-elevation"></div></div><div class="map-duel-playback"><button type="button" class="btn green" id="map-duel-play">Spela</button><button type="button" class="btn text-btn" id="map-duel-reset">Börja om</button><label>Hastighet<select id="map-duel-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Kamera<select id="map-duel-camera"><option value="full">Hela banan</option><option value="leader">Följ ledaren</option></select></label><button type="button" class="btn text-btn" id="map-duel-fit">Visa hela banan</button><button type="button" class="btn text-btn replay-music-toggle" data-replay-music aria-label="Slå av eller på musik" aria-pressed="true">♫ Musik</button><label class="replay-music-volume">Volym <input data-replay-volume type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Musikvolym"></label><span data-replay-audio-note class="muted small" role="status" hidden></span></div><label>Delad tävlingsklocka<input id="map-duel-clock" type="range" min="0" max="${maxClock}" step="1" value="0" aria-label="Sök i kartduellens tävlingsklocka"/></label><p id="map-duel-readout" class="duel-readout"></p><h3>Position och ordning vid vald tid</h3><div id="map-duel-leaderboard"></div>`;
   dialog.showModal();
   const map=$('#map-duel-map'),elev=$('#map-duel-elevation'),play=$('#map-duel-play'),range=$('#map-duel-clock');
-  const stop=()=>{playing=false;cancelAnimationFrame(S._mapDuelFrame);play.textContent='Spela'};
+  replaySoundtrack.bind(host);
+  const stop=(pauseMusic=true)=>{playing=false;cancelAnimationFrame(S._mapDuelFrame);play.textContent='Spela';if(pauseMusic)replaySoundtrack.pause()};
   function draw(next){
     clock=Math.max(0,Math.min(maxClock,next));range.value=clock;
     const positions=data.map(item=>({...item,km:distanceAtTime(item.anchors,clock)}));
@@ -668,20 +723,21 @@ function openMapDuel(){
     if(!playing)return;
     const speed=Number($('#map-duel-speed').value),next=startedClock+(now-startedAt)/120000*maxClock*speed;
     draw(next);
-    if(next>=maxClock)stop();else S._mapDuelFrame=requestAnimationFrame(frame);
+    if(next>=maxClock)stop(false); // Keep soundtrack looping at the finish until the popup closes.
+    else S._mapDuelFrame=requestAnimationFrame(frame);
   }
   S._mapDuelSeek=km=>{const target=estimatedAt(data[0].anchors,km);if(num(target)){stop();draw(target)}};
   play.addEventListener('click',()=>{
     if(playing){stop();return}
     if(clock>=maxClock)draw(0);
-    playing=true;startedClock=clock;startedAt=performance.now();play.textContent='Pausa';S._mapDuelFrame=requestAnimationFrame(frame);
+    playing=true;startedClock=clock;startedAt=performance.now();play.textContent='Pausa';replaySoundtrack.start();S._mapDuelFrame=requestAnimationFrame(frame);
   });
-  $('#map-duel-reset').addEventListener('click',()=>{stop();draw(0)});
+  $('#map-duel-reset').addEventListener('click',()=>{stop();replaySoundtrack.close();replaySoundtrack.bind(host);draw(0)});
   range.addEventListener('input',()=>{stop();draw(+range.value)});
   $('#map-duel-speed').addEventListener('change',()=>{if(playing){startedClock=clock;startedAt=performance.now()}});
   $('#map-duel-camera').addEventListener('change',event=>{S.mapDuelCamera=event.target.value;draw(clock)});
   $('#map-duel-fit').addEventListener('click',()=>{S.mapDuelCamera='full';$('#map-duel-camera').value='full';draw(clock)});
-  dialog.addEventListener('close',stop,{once:true});
+  dialog.addEventListener('close',()=>{stop();replaySoundtrack.close()},{once:true});
   draw(0);
 }
 function renderPage(){renderAll();}
