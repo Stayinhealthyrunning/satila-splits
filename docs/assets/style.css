@@ -14,9 +14,3 @@
 @media(max-width:760px){.status-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.status-summary article{border-top:2px solid #b8c7ba}.status-summary article:nth-child(-n+2){border-top:0}.status-summary article:nth-child(odd){border-left:0}.segment-select-row{grid-template-columns:1fr 1fr}.standout-active{padding:12px 9px}.standout-active .podium-row{grid-template-columns:25px minmax(0,1fr);gap:5px}.standout-active .podium-row .avatar{display:none}.standout-active .podium-row .finish{grid-column:2;margin-left:0;font-size:10px}.standout-active .podium-group h4{font-size:11px}.osm-attribution{font-size:8px}}
 @media(max-width:440px){.standout-active .podium-pair{grid-template-columns:repeat(2,minmax(0,1fr))}.segment-select-row{grid-template-columns:1fr}.status-summary article{padding:13px 11px}}
 
-/* Match the actual SVG viewBox proportions to the visible map container.
-   Fixed 340/290/260/220px heights caused the browser's default SVG
-   meet-scaling to expose grey sidebars outside the OSM imagery. Do not
-   distort (preserveAspectRatio=none) the actual GPX coordinates. */
-.course-map{height:auto;aspect-ratio:800 / 340}
-.duel-map{height:auto;aspect-ratio:760 / 280}

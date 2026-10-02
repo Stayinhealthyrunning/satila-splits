@@ -112,6 +112,11 @@ async def main():
                     maxX>=view.x+view.width-1 && maxY>=view.y+view.height-1,
                     tileCount:images.length,zoom:Number(layer.dataset.zoom)};
                 }""")
+                # A fixed 800:340 aspect ratio can hide OSM sidebars at the
+                # expense of an unusably short mobile map. Preserve the
+                # original responsive panel height and match its SVG viewBox.
+                panel_height=await page.locator("#course-map").evaluate("(el)=>el.getBoundingClientRect().height")
+                assert panel_height >= (210 if width==390 else 330),(width,"responsive OSM map too shallow",panel_height)
                 assert tile_coverage["full"],(width,"OSM side strips",tile_coverage)
                 assert 1<=tile_coverage["tileCount"]<=24,(width,"OSM tile budget",tile_coverage)
                 assert 8<=tile_coverage["zoom"]<=15,(width,"OSM tile zoom",tile_coverage)
