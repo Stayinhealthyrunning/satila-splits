@@ -31,7 +31,7 @@ def geo(a,b):
 def main():
     inventory=json.loads((ROOT/"route-inventory.json").read_text(encoding="utf-8"))
     organizer=[x for x in inventory if x.get("type")=="OFFICIAL_ORGANIZER"]
-    participant=[x for x in inventory if x.get("type")=="VERIFIED_PARTICIPANT"]
+    participant=[x for x in inventory if x.get("type") in ("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL")]
     assert len(organizer)==len(CHECKSUMS)
     assert {x["family"] for x in organizer}==set(CHECKSUMS)
     assert len(organizer)+len(participant)==len(inventory)
