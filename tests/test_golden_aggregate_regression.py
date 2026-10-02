@@ -40,8 +40,8 @@ GOLDEN={
  "2023-trail43":{
    "results":103,"finishers":86,"median_finish":16938.065,
    "segments":[
-    ("Start","Torrås",8.0,85,6054.81,15,70),
-    ("Torrås","Almered",16.0,84,2434.15,15,69),
+    ("Start","Torrås",16.2,85,6054.81,15,70),
+    ("Torrås","Almered",7.8,84,2434.15,15,69),
     ("Almered","Skolan",7.0,8,4164.615,4,4),
     ("Skolan","Ramhulta",6.0,8,4058.165,4,4),
     ("Ramhulta","Smälteryd",4.5,85,2581.4,15,70),
