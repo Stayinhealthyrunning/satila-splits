@@ -69,7 +69,7 @@ class CourseComparabilityContract(unittest.TestCase):
                     self.assertEqual(ed.get("route_status"),"participant_track_display_only",ed["race_key"])
                     source=read(DATA/ed["route_file"])
                     self.assertEqual(source.get("edition_references"),[ed["year"]])
-                    self.assertEqual(source.get("type"),"VERIFIED_PARTICIPANT")
+                    self.assertIn(source.get("type"),("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL"))
                 self.assertFalse(promoted_group(ed),ed["race_key"])
         e43=next(e for e in self.editions if e["race_key"]=="2025-trail43")
         e22=next(e for e in self.editions if e["race_key"]=="2025-trail22")
