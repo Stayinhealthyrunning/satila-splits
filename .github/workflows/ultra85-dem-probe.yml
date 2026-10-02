@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/ultra85-dem-probe.yml"
       - "tools/audit_dem_candidates.py"
+      - "tools/refine_dem_profile.py"
 permissions:
   contents: read
 jobs:
@@ -63,6 +64,34 @@ jobs:
             --dem /tmp/satila-dem/COP30_N57E012.tif \
             --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
             --report /tmp/satila-dem/candidates/DEM_HEIGHT_QUALITY.json
+      - name: Produce explicitly labeled filtered DSM surface candidate routes
+        run: |
+          python tools/refine_dem_profile.py \
+            --input-dir /tmp/satila-dem/candidates \
+            --output-dir /tmp/satila-dem/candidates/refined
+          python tools/audit_dem_candidates.py \
+            --candidate-dir /tmp/satila-dem/candidates/refined \
+            --dem /tmp/satila-dem/COP30_N57E012.tif \
+            --reference docs/data/routes/ultra85-2026.json docs/data/routes/trail43-2025-2026.json docs/data/routes/2024-trail43-participant.json \
+            --report /tmp/satila-dem/candidates/refined/DEM_FILTERED_QUALITY.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("/tmp/satila-dem/candidates")
+          raw=json.loads((root/"DEM_HEIGHT_QUALITY.json").read_text())
+          smooth=json.loads((root/"refined/DEM_FILTERED_QUALITY.json").read_text())
+          before={r["route"]:r for r in raw["historical_candidate_checks"]}
+          for a in smooth["historical_candidate_checks"]:
+              old=before[a["route"]]
+              print("SMOOTH_QA",a["route"],"before_p95",old["short_step_abs_jump_p95_m"],"after_p95",a["short_step_abs_jump_p95_m"],"before_Dplus",old["dsm_100m_resampled_positive_gain_m"],"after_Dplus",a["dsm_100m_resampled_positive_gain_m"])
+              assert a["short_step_abs_jump_p95_m"]<old["short_step_abs_jump_p95_m"],(a,old)
+              p=root/"refined"/a["route"]
+              oldroute=json.loads((root/a["route"]).read_text())
+              newroute=json.loads(p.read_text())
+              assert newroute["elevation_provenance"]["type"]=="DSM_RECONSTRUCTED_SURFACE"
+              assert newroute["source_sha256"]==oldroute["source_sha256"]
+              assert [q[:3] for q in newroute["points"]]==[q[:3] for q in oldroute["points"]]
+          PY
       - name: Assert QA and retain only sanitized candidates
         run: |
           python - <<'PY'
