@@ -3,8 +3,9 @@
 
 2023 and 2024 trail43 have known timing-km metadata anomalies at Torrås -> Almered.
 The 2019 and 2021 ultra editions also have an 82 km EQ Timing axis but an
-organizer-advertised 85 km distance. TIME remains valid, while physical pace is
-withheld wherever the required distance denominator is not source-safe.
+organizer-advertised 85 km distance. Their year-specific participant geometry
+is kept distinct from both values and enables explicitly sourced display and
+whole-course pace without changing any official TIME observation.
 """
 import asyncio,json,os,re
 from pathlib import Path
@@ -124,16 +125,20 @@ async def main():
                 assert "EQ Timing-distans 82,0 km" in intel,intel
                 assert "Arrangörsdistans 85,0 km" in intel,intel
                 pacing=(await page.locator("#segment-pacing").inner_text()).lower()
-                assert "olika helbanedistans" in pacing,pacing
+                assert "eget hel-loppssnitt" in pacing,pacing
                 result_row=page.locator("#results-table tbody tr").first
                 row_text=(await result_row.inner_text()).replace("\n"," ")
                 assert "85,0 km annonserat" in row_text and "EQ Timing 82,0 km" in row_text,row_text
                 await result_row.locator("button[data-open]").click()
                 profile=(await page.locator("#profile-content").inner_text()).replace("\n"," ")
-                assert "Snittfart Distanskonflikt" in profile,profile
-                assert "Helbanetempo visas inte" in profile,profile
+                assert "Snittfart" in profile and "Distanskonflikt" not in profile,profile
+                assert "Helbanetempo visas inte" not in profile,profile
                 await page.locator('[data-close="profile-dialog"]').click()
-                assert await page.locator("#course-map svg").count()==0
+                assert await page.locator("#course-map svg").count()==1
+                intel=(await page.locator("#course-intelligence").inner_text()).replace("\n"," ")
+                assert "Verifierat deltagarspår · endast display" in intel,intel
+                assert "Höjddata saknas i källspåret" in intel,intel
+                assert "NaN" not in intel,intel
                 print("RELEASE DISTANCE-SEMANTICS ACCEPTANCE PASSED",year,flush=True)
         finally:
             await browser.close()

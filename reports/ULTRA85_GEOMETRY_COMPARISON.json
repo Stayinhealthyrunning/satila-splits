@@ -1,0 +1,334 @@
+{
+  "method": "Symmetric nearest 50m-sampled track positions; not time-aligned; 25/50/100m corridor percentage and P95 offset. Quantization and sparse GPS are limitations. Cross-year comparability remains unapproved.",
+  "matrix": [
+    {
+      "year": 2018,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2019": {
+          "within_25m_percent": 88.4,
+          "within_50m_percent": 93.8,
+          "within_100m_percent": 95.6,
+          "p95_deviation_m": 73.3
+        },
+        "2021": {
+          "within_25m_percent": 86.0,
+          "within_50m_percent": 89.9,
+          "within_100m_percent": 91.8,
+          "p95_deviation_m": 327.5
+        },
+        "2022": {
+          "within_25m_percent": 91.7,
+          "within_50m_percent": 94.1,
+          "within_100m_percent": 96.2,
+          "p95_deviation_m": 66.1
+        },
+        "2023": {
+          "within_25m_percent": 81.9,
+          "within_50m_percent": 87.0,
+          "within_100m_percent": 89.4,
+          "p95_deviation_m": 483.4
+        },
+        "2024": {
+          "within_25m_percent": 84.5,
+          "within_50m_percent": 87.0,
+          "within_100m_percent": 89.5,
+          "p95_deviation_m": 472.8
+        },
+        "2025": {
+          "within_25m_percent": 79.7,
+          "within_50m_percent": 85.3,
+          "within_100m_percent": 88.1,
+          "p95_deviation_m": 465.9
+        }
+      }
+    },
+    {
+      "year": 2019,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 88.4,
+          "within_50m_percent": 93.8,
+          "within_100m_percent": 95.6,
+          "p95_deviation_m": 73.3
+        },
+        "2019": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2021": {
+          "within_25m_percent": 88.3,
+          "within_50m_percent": 94.3,
+          "within_100m_percent": 95.0,
+          "p95_deviation_m": 100.4
+        },
+        "2022": {
+          "within_25m_percent": 86.8,
+          "within_50m_percent": 97.5,
+          "within_100m_percent": 98.7,
+          "p95_deviation_m": 37.2
+        },
+        "2023": {
+          "within_25m_percent": 81.9,
+          "within_50m_percent": 90.2,
+          "within_100m_percent": 91.5,
+          "p95_deviation_m": 384.4
+        },
+        "2024": {
+          "within_25m_percent": 81.1,
+          "within_50m_percent": 89.8,
+          "within_100m_percent": 91.6,
+          "p95_deviation_m": 364.5
+        },
+        "2025": {
+          "within_25m_percent": 80.9,
+          "within_50m_percent": 88.0,
+          "within_100m_percent": 89.9,
+          "p95_deviation_m": 376.1
+        }
+      }
+    },
+    {
+      "year": 2021,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 86.0,
+          "within_50m_percent": 89.9,
+          "within_100m_percent": 91.8,
+          "p95_deviation_m": 327.5
+        },
+        "2019": {
+          "within_25m_percent": 88.3,
+          "within_50m_percent": 94.3,
+          "within_100m_percent": 95.0,
+          "p95_deviation_m": 100.4
+        },
+        "2021": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2022": {
+          "within_25m_percent": 86.8,
+          "within_50m_percent": 93.7,
+          "within_100m_percent": 94.7,
+          "p95_deviation_m": 131.6
+        },
+        "2023": {
+          "within_25m_percent": 90.3,
+          "within_50m_percent": 96.1,
+          "within_100m_percent": 96.9,
+          "p95_deviation_m": 34.1
+        },
+        "2024": {
+          "within_25m_percent": 90.1,
+          "within_50m_percent": 95.8,
+          "within_100m_percent": 96.9,
+          "p95_deviation_m": 36.9
+        },
+        "2025": {
+          "within_25m_percent": 89.2,
+          "within_50m_percent": 93.8,
+          "within_100m_percent": 95.1,
+          "p95_deviation_m": 93.2
+        }
+      }
+    },
+    {
+      "year": 2022,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 91.7,
+          "within_50m_percent": 94.1,
+          "within_100m_percent": 96.2,
+          "p95_deviation_m": 66.1
+        },
+        "2019": {
+          "within_25m_percent": 86.8,
+          "within_50m_percent": 97.5,
+          "within_100m_percent": 98.7,
+          "p95_deviation_m": 37.2
+        },
+        "2021": {
+          "within_25m_percent": 86.8,
+          "within_50m_percent": 93.7,
+          "within_100m_percent": 94.7,
+          "p95_deviation_m": 131.6
+        },
+        "2022": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2023": {
+          "within_25m_percent": 80.5,
+          "within_50m_percent": 89.5,
+          "within_100m_percent": 91.4,
+          "p95_deviation_m": 374.4
+        },
+        "2024": {
+          "within_25m_percent": 86.5,
+          "within_50m_percent": 89.5,
+          "within_100m_percent": 91.4,
+          "p95_deviation_m": 361.0
+        },
+        "2025": {
+          "within_25m_percent": 79.6,
+          "within_50m_percent": 87.8,
+          "within_100m_percent": 89.9,
+          "p95_deviation_m": 362.0
+        }
+      }
+    },
+    {
+      "year": 2023,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 81.9,
+          "within_50m_percent": 87.0,
+          "within_100m_percent": 89.4,
+          "p95_deviation_m": 483.4
+        },
+        "2019": {
+          "within_25m_percent": 81.9,
+          "within_50m_percent": 90.2,
+          "within_100m_percent": 91.5,
+          "p95_deviation_m": 384.4
+        },
+        "2021": {
+          "within_25m_percent": 90.3,
+          "within_50m_percent": 96.1,
+          "within_100m_percent": 96.9,
+          "p95_deviation_m": 34.1
+        },
+        "2022": {
+          "within_25m_percent": 80.5,
+          "within_50m_percent": 89.5,
+          "within_100m_percent": 91.4,
+          "p95_deviation_m": 374.4
+        },
+        "2023": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2024": {
+          "within_25m_percent": 94.6,
+          "within_50m_percent": 99.6,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 25.3
+        },
+        "2025": {
+          "within_25m_percent": 90.6,
+          "within_50m_percent": 96.6,
+          "within_100m_percent": 98.1,
+          "p95_deviation_m": 32.4
+        }
+      }
+    },
+    {
+      "year": 2024,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 84.5,
+          "within_50m_percent": 87.0,
+          "within_100m_percent": 89.5,
+          "p95_deviation_m": 472.8
+        },
+        "2019": {
+          "within_25m_percent": 81.1,
+          "within_50m_percent": 89.8,
+          "within_100m_percent": 91.6,
+          "p95_deviation_m": 364.5
+        },
+        "2021": {
+          "within_25m_percent": 90.1,
+          "within_50m_percent": 95.8,
+          "within_100m_percent": 96.9,
+          "p95_deviation_m": 36.9
+        },
+        "2022": {
+          "within_25m_percent": 86.5,
+          "within_50m_percent": 89.5,
+          "within_100m_percent": 91.4,
+          "p95_deviation_m": 361.0
+        },
+        "2023": {
+          "within_25m_percent": 94.6,
+          "within_50m_percent": 99.6,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 25.3
+        },
+        "2024": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        },
+        "2025": {
+          "within_25m_percent": 90.5,
+          "within_50m_percent": 96.9,
+          "within_100m_percent": 98.2,
+          "p95_deviation_m": 32.7
+        }
+      }
+    },
+    {
+      "year": 2025,
+      "comparison": {
+        "2018": {
+          "within_25m_percent": 79.7,
+          "within_50m_percent": 85.3,
+          "within_100m_percent": 88.1,
+          "p95_deviation_m": 465.9
+        },
+        "2019": {
+          "within_25m_percent": 80.9,
+          "within_50m_percent": 88.0,
+          "within_100m_percent": 89.9,
+          "p95_deviation_m": 376.1
+        },
+        "2021": {
+          "within_25m_percent": 89.2,
+          "within_50m_percent": 93.8,
+          "within_100m_percent": 95.1,
+          "p95_deviation_m": 93.2
+        },
+        "2022": {
+          "within_25m_percent": 79.6,
+          "within_50m_percent": 87.8,
+          "within_100m_percent": 89.9,
+          "p95_deviation_m": 362.0
+        },
+        "2023": {
+          "within_25m_percent": 90.6,
+          "within_50m_percent": 96.6,
+          "within_100m_percent": 98.1,
+          "p95_deviation_m": 32.4
+        },
+        "2024": {
+          "within_25m_percent": 90.5,
+          "within_50m_percent": 96.9,
+          "within_100m_percent": 98.2,
+          "p95_deviation_m": 32.7
+        },
+        "2025": {
+          "within_25m_percent": 100.0,
+          "within_50m_percent": 100.0,
+          "within_100m_percent": 100.0,
+          "p95_deviation_m": 0.0
+        }
+      }
+    }
+  ]
+}

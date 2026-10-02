@@ -15,6 +15,7 @@ SOURCE=[
  ["python","tools/audit_station_coverage.py"],
  ["python","tools/audit_segment_distance_capability.py"],
  ["python","tests/test_route_geometry_integrity.py"],
+ ["python","tests/test_ultra85_historical_routes.py"],
  ["python","tests/test_participant_route_import.py"],
  ["python","tests/test_restored_43km_gpx.py"],
  ["python","tools/audit_ui_capabilities.py"],
@@ -38,6 +39,7 @@ SOURCE=[
 RELEASE_COPY=[["python","tests/test_release_copy_acceptance.py"]]
 BROWSER=[
  ["python","tests/browser_prepublish_polish_acceptance.py"],
+ ["python","tests/browser_ultra85_historical_routes_acceptance.py"],
  ["python","tests/browser_release_selection_state_acceptance.py"],
  ["python","tests/browser_synced_scrub_acceptance.py"],
  ["python","tests/browser_all_editions_acceptance.py"],

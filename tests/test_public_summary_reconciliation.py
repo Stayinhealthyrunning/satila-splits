@@ -71,13 +71,21 @@ class PublicSummaryReconciliation(unittest.TestCase):
                 self.assertEqual(obj["organizer_advertised_km"],85.0)
                 self.assertEqual(obj["distance_semantics_status"],"organizer_eq_discrepancy")
                 self.assertEqual(obj["distance_source_urls"],[url])
-                self.assertNotIn("measured_route_geometry_km",obj)
-                self.assertFalse(obj.get("route_file"))
+                self.assertEqual(obj["route_status"],"participant_track_display_only")
+                self.assertEqual(obj["route_file"],f"routes/{key}-participant.json")
+                self.assertIn("participant-display-not-canonical",obj["course_version"])
+                route=load(DATA/obj["route_file"])
+                self.assertEqual(obj["measured_route_geometry_km"],route["geometry_length_km"])
+                self.assertNotAlmostEqual(obj["measured_route_geometry_km"],obj["eq_timing_leg_km"],places=2)
 
         # Analysis-family membership is not evidence for an organizer distance.
         for key in ("2018-ultra85","2022-ultra85","2025-ultra85"):
             ed=next(x for x in self.catalog if x["race_key"]==key)
-            self.assertNotIn("organizer_advertised_km",ed,key)
+            race=self.races[key]
+            for obj in (ed,race):
+                self.assertNotIn("organizer_advertised_km",obj,key)
+                self.assertEqual(obj["route_status"],"participant_track_display_only")
+                self.assertTrue(obj["route_file"].endswith("-participant.json"))
 
     def test_measured_geometry_is_only_attached_to_authorized_editions(self):
         routed=[ed for ed in self.catalog if ed.get("route_file")]
