@@ -191,6 +191,12 @@ function mapProjection(points,W,H,pad=17){
  const inverseCoord=(x,y)=>{const m=ymin+(H-y-oy)/scale;return [(2*Math.atan(Math.exp(m))-Math.PI/2)*180/Math.PI,(xmin+(x-ox)/scale)*180/Math.PI]};
  return {project:point=>projectCoord(point[1],point[2]),projectCoord,inverseCoord}
 }
+function mapViewport(host,H){
+ // Match the geographic SVG viewBox to the actual visible map panel ratio.
+ // Unlike scaling the SVG arbitrarily, this preserves correct GPX geography.
+ const bounds=host.getBoundingClientRect(),w=bounds.width||host.clientWidth||760,h=bounds.height||host.clientHeight||H;
+ return {W:Math.max(160,Math.round(H*w/Math.max(1,h))),H};
+}
 function project(points,W,H,pad=17){const projection=mapProjection(points,W,H,pad);return points.map(projection.project)}
 function osmTiles(points,W,H,pad=17){
  if(!points.length)return'';
@@ -225,7 +231,7 @@ function nearestSegmentPath(path,p){let best={index:0,fraction:0,dist:Infinity};
 function pathFor(path){return path.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ')}
 function elevationSvg(pts,d,interactive=true){if(!pts.length)return empty();let W=780,H=135,P=17,min=Math.min(...pts.map(p=>num(p[3])?p[3]:0)),max=Math.max(...pts.map(p=>num(p[3])?p[3]:0)),md=pts.at(-1)[0],x=p=>P+p[0]/md*(W-2*P),y=p=>H-P-(num(p[3])?(p[3]-min)/Math.max(1,max-min)*(H-2*P):0);let line=pts.map((p,i)=>(i?'L':'M')+x(p).toFixed(1)+' '+y(p).toFixed(1)).join(' '),dot=pointAtDistance(pts,d??0),xx=dot?x(dot):P,yy=dot?y(dot):H-P;return svg(W,H,`<path class="elev-area" d="${line}L${x(pts.at(-1))} ${H-P}L${P} ${H-P}Z"/><path class="elev-line" d="${line}"/><line class="chart-cursor" x1="${xx}" x2="${xx}" y1="${P}" y2="${H-P}"/><circle class="elev-dot" cx="${xx}" cy="${yy}" r="5"/><text x="${P}" y="12" fill="#526855" font-size="10">${Math.round(min)}–${Math.round(max)} m · GPX-höjd</text><text x="${W-P-80}" y="12" fill="#526855" font-size="10">${fmtKm(md)} km</text>${interactive?`<rect data-elev-hit="1" x="${P}" y="0" width="${W-2*P}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="${md}" aria-valuenow="${d??0}" aria-label="Välj position längs höjdprofilen"/>`:''}`,'Interaktiv höjdprofil')}
 function attachElevation(host,pts,callback){let el=$('[data-elev-hit]',host);if(!el)return;let md=pts.at(-1)[0];function seek(e){let box=el.ownerSVGElement.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*780,km=Math.max(0,Math.min(md,(x-17)/(780-34)*md));callback(km)}el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);seek(e)});el.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)seek(e)});el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();let d=Number(el.getAttribute('aria-valuenow'))||0,d2=e.key==='Home'?0:e.key==='End'?md:d+(e.key==='ArrowLeft'?-md/100:md/100);callback(Math.max(0,Math.min(md,d2)))}})}
-function renderCourseMap(){let host=$('#course-map'),height=$('#course-elevation'),pts=routePoints();if(!pts.length){host.innerHTML=empty('Ingen godkänd lokal ruttskiss är registrerad för den historiska upplagan. Resultatanalysen är ändå komplett.');height.innerHTML='';$('#course-scrub-label').textContent='Ingen rutt kopplad till denna upplaga.';return}let W=800,H=340,path=project(pts,W,H,20),d=Number.isFinite(S.courseD)?S.courseD:0,mark=pointAtDistance(pts,d),midx=project(mark?[mark]:[pts[0]],W,H,20)[0]; // mark projected on same immutable bounds below
+function renderCourseMap(){let host=$('#course-map'),height=$('#course-elevation'),pts=routePoints();if(!pts.length){host.innerHTML=empty('Ingen godkänd lokal ruttskiss är registrerad för den historiska upplagan. Resultatanalysen är ändå komplett.');height.innerHTML='';$('#course-scrub-label').textContent='Ingen rutt kopplad till denna upplaga.';return}let {W,H}=mapViewport(host,340),path=project(pts,W,H,20),d=Number.isFinite(S.courseD)?S.courseD:0,mark=pointAtDistance(pts,d),midx=project(mark?[mark]:[pts[0]],W,H,20)[0]; // mark projected on same immutable bounds below
 let idx=1;while(idx<pts.length-1&&pts[idx][0]<d)idx++;let a=pts[idx-1],b=pts[idx],f=(d-a[0])/Math.max(1e-7,b[0]-a[0]),px=path[idx-1][0]+(path[idx][0]-path[idx-1][0])*f,py=path[idx-1][1]+(path[idx][1]-path[idx-1][1])*f;
 host.innerHTML=svg(W,H,`${osmTiles(pts,W,H,20)}<path class="route-base" d="${pathFor(path)}"/><path class="route-gold" d="${pathFor(path)}"/><circle class="map-crosshair" cx="${px}" cy="${py}" r="7"/><text class="map-label" x="25" y="27">SÄTILA · OFFICIELL REFERENSGEOMETRI</text><text class="map-label" x="25" y="${H-18}">${fmtKm(d)} / ${fmtKm(pts.at(-1)[0])} km</text><rect data-map-hit="course" x="0" y="0" width="${W}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-label="Välj position på banan" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}"/>`,'Interaktiv OpenStreetMap-bakgrund med faktisk GPX-form')+osmAttribution();height.innerHTML=elevationSvg(pts,d);let seek=n=>{
   // Keep the current SVG and its captured pointer in place while scrubbing.
@@ -341,7 +347,7 @@ function profileInsights(r){
 }
 
 let openId=null;
-function openProfile(id){let r=findRecord(id);if(!r)return;S.profileReturnFocus=document.activeElement;openId=id;$('#profile-title').textContent=r.name;renderProfile(r);let d=$('#profile-dialog');if(!d.open)d.showModal();}
+function openProfile(id){let r=findRecord(id);if(!r)return;S.profileReturnFocus=document.activeElement;openId=id;$('#profile-title').textContent=r.name;renderProfile(r);let d=$('#profile-dialog');if(!d.open)d.showModal();requestAnimationFrame(()=>{$('#profile-replay-range')?.dispatchEvent(new Event('input'))});}
 function renderProfileIfOpen(){if(openId&&$('#profile-dialog').open){let r=findRecord(openId);if(r)renderProfile(r)}}
 function renderProfile(r){
   const segments=pairs(r),passages=splitsFor(r.id),insights=profileInsights(r);
@@ -443,7 +449,7 @@ function renderProfileReplay(r){
 function runnerAnchors(r){let arr=[{km:0,t:0,name:'Start'}];let cp=S.race.stations.filter(st=>st.is_analysis_boundary).sort((a,b)=>a.km-b.km);let factor=(routePoints().at(-1)?.[0]||S.race.nominal_km)/S.race.nominal_km;for(let st of cp){let s=observed(r,st);if(s&&num(s.elapsed_seconds)&&num(st.km)&&st.km>0){let last=arr.at(-1);if(s.elapsed_seconds>last.t&&st.km*factor>last.km){arr.push({km:Math.min(st.km*factor,routePoints().at(-1)?.[0]||Infinity),t:s.elapsed_seconds,name:st.name})}}}return arr}
 function estimatedAt(anchors,d){if(!anchors?.length)return null;d=Math.max(0,d);if(d>anchors.at(-1).km+1e-6)return null;for(let i=1;i<anchors.length;i++){let a=anchors[i-1],b=anchors[i];if(d>=a.km&&d<=b.km){let f=(d-a.km)/Math.max(1e-6,b.km-a.km);return a.t+(b.t-a.t)*f}}return d===0?0:null}
 function drawSimpleRoute(host,pts,d,markers=null){
-  const W=760,H=280,path=project(pts,W,H,18);
+  const {W,H}=mapViewport(host,280),path=project(pts,W,H,18);
   const xyAt=km=>{
     let i=1;
     while(i<pts.length-1&&pts[i][0]<km)i++;
@@ -451,10 +457,11 @@ function drawSimpleRoute(host,pts,d,markers=null){
     return [path[i-1][0]+(path[i][0]-path[i-1][0])*f,path[i-1][1]+(path[i][1]-path[i-1][1])*f];
   };
   let routeSvg=host.querySelector('svg'),hit=host.querySelector('[data-local-hit]');
+  if(routeSvg&&Math.abs(Number(routeSvg.dataset.fullMapWidth||W)-W)>2){host.innerHTML='';routeSvg=null;hit=null}
   if(!routeSvg){
     const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" stroke="#fff" stroke-width="2"><title>${html(marker.label)}</title></circle>`).join(''):'';
     host.innerHTML=svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/><circle data-route-cursor r="9" fill="#fff" stroke="#d4a858" stroke-width="3"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Interaktiv GPX-rutt över OpenStreetMap')+osmAttribution();
-    routeSvg=host.querySelector('svg');hit=host.querySelector('[data-local-hit]');
+    routeSvg=host.querySelector('svg');routeSvg.dataset.fullMapWidth=String(W);hit=host.querySelector('[data-local-hit]');
     const seek=event=>{
       const rect=routeSvg.getBoundingClientRect(),box=routeSvg.viewBox.baseVal;
       const point=[box.x+(event.clientX-rect.left)/rect.width*box.width,box.y+(event.clientY-rect.top)/rect.height*box.height];
