@@ -19,6 +19,7 @@ SOURCE=[
  ["python","tests/test_dem_elevation_enrichment.py"],
  ["python","tests/test_participant_route_import.py"],
  ["python","tests/test_restored_43km_gpx.py"],
+ ["python","tests/test_2023_trail43_spatial_height_transfer.py"],
  ["python","tools/audit_ui_capabilities.py"],
  ["python","tests/test_publication_privacy.py"],
  ["python","-m","unittest","discover","-s","tests","-p","test_statistics_contract.py","-v"],
