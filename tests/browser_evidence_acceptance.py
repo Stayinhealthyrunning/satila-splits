@@ -56,20 +56,21 @@ async def main():
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km')")
             seg=page.locator("#segment-table tbody tr")
             count=await seg.count()
-            assert count==7,("2025 43 km: expected seven REAL combined analysis segments, not eight metadata segments",count)
+            assert count==6,("2025 43 km: expected six REAL analysis segments after removal of the nonofficial early station",count)
             names=await seg.all_text_contents()
-            assert any("Grind" in s and "Torrås" in s for s in names)
+            assert any("Start" in s and "Torrås" in s for s in names)
+            assert all("Grind" not in s for s in names)
             assert all("Tostared" not in s for s in names)
             # Metadata-only Tostared cannot create a false field-dropout dip.
             await page.wait_for_function("document.querySelector('#segment-retention')?.textContent.includes('Stationsmetadata utan TIME')")
             retention_titles=await page.locator('#segment-retention svg circle title').all_text_contents()
-            assert len(retention_titles)==7 and all('Tostared' not in x for x in retention_titles),retention_titles
+            assert len(retention_titles)==6 and all('Tostared' not in x for x in retention_titles),retention_titles
             assert 'Tostared · endast metadata (0 TIME)' in await page.locator('#flow-chart').inner_text()
             # All published DNF records currently lack a linked public TIME passage.
             # A numeric zero in the segment-exit column would incorrectly imply
             # that actual last checkpoints are known and none exited here.
             dnf_cells=await seg.locator("td:nth-child(9)").all_text_contents()
-            assert len(dnf_cells)==7 and all(value.strip()=="Okänt" for value in dnf_cells),dnf_cells
+            assert len(dnf_cells)==6 and all(value.strip()=="Okänt" for value in dnf_cells),dnf_cells
             assert "inte noll avbrott" in await page.locator("#segments").inner_text()
             # D22 Course Intelligence must follow the SAME selected real segment
             # as the timing table, without inventing a DNF exit or segment ascent.
@@ -97,7 +98,7 @@ async def main():
             assert await page.locator('#segment-q1090 [data-extra-segment="3"]').get_attribute('aria-pressed')=='true'
             assert 'selected' in (await page.locator('#segment-heatmap [data-extra-segment="3"]').first.get_attribute('class') or '')
             spread_labels=page.locator('#checkpoint-spread .checkpoint-axis-label')
-            assert await spread_labels.count()==7
+            assert await spread_labels.count()==6
             boxes=[await spread_labels.nth(i).bounding_box() for i in range(await spread_labels.count())]
             assert all(boxes[i]['x']+boxes[i]['width']<=boxes[i+1]['x']+1 for i in range(len(boxes)-1)),boxes
             segment_name=await seg.nth(3).locator('td').first.inner_text()
@@ -175,15 +176,15 @@ async def main():
             # T07: route publication and provenance reservation are explicitly separate.
             await page.wait_for_function("document.querySelector('#course-provenance')?.textContent.includes('Publik displayrutt')")
             assert "Verifieringsreservation" in await page.locator("#course-provenance").text_content()
-            # A target plan should reflect all seven real measured segments.
+            # A target plan should reflect all six accepted analytical segments.
             await page.locator("#target-time").fill("10:00:00")
             await page.locator("#calculate-plan").click()
             plan=page.locator("#plan-table tbody tr")
-            assert await plan.count()==7,"2025/43: a source-only pacing plan has exactly seven effective sections"
+            assert await plan.count()==6,"2025/43: exactly six accepted effective sections"
             methods=await plan.locator("td:nth-child(4)").all_text_contents()
-            assert len(methods)==7 and all("Historisk" in s for s in methods),methods
+            assert len(methods)==6 and all("Historisk" in s for s in methods),methods
             summary=await page.locator("#plan-summary").inner_text()
-            assert "7/7" in summary,summary
+            assert "6/6" in summary,summary
             # The native hidden property of the optional reference-class
             # label must survive the responsive author CSS display rules.
             optional_class=page.locator("#plan-class-label")
@@ -197,9 +198,9 @@ async def main():
             plan_head=await page.locator('#plan-table thead th').all_text_contents()
             assert plan_head[-2:]==['D+/D−*','Underlag'],plan_head
             elevation=await plan.locator('td:nth-child(8)').all_text_contents()
-            assert len(elevation)==7 and all(x.strip()=='Ej verifierat' for x in elevation),elevation
+            assert len(elevation)==6 and all(x.strip()=='Ej verifierat' for x in elevation),elevation
             sources=await plan.locator('td:nth-child(9)').all_text_contents()
-            assert len(sources)==7 and all('EQ Timing TIME-par' in x and 'observerad tidsandel' in x for x in sources),sources
+            assert len(sources)==6 and all('EQ Timing TIME-par' in x and 'observerad tidsandel' in x for x in sources),sources
             assert 'Ingen höjd per timingsegment' in await page.locator('#plan-table').locator('xpath=../following-sibling::p').inner_text()
             if w<=700:
                 assert 'Svep i sidled' in await page.locator('#plan-summary + p.mobile-table-hint').inner_text()

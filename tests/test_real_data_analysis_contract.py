@@ -31,7 +31,7 @@ def edition(key):
 def observed_segments(race):
     """Build analysis pairs using only globally observed public TIME anchors.
 
-    Source station metadata is not removed from the underlying race record.
+    Owner-rejected Grind station and its readings are excluded from curated race records; raw source remains archived.
     PRE/FV technical stations are not promoted to analysis boundaries.
     """
     count=collections.Counter(s["station_uid"] for s in race["splits"])
@@ -114,16 +114,16 @@ class RealSourceContract(unittest.TestCase):
                     wanted="observed_relative_median" if row["source_n"]>=5 else "distance_only_planning_fallback"
                     self.assertEqual(row["method"],wanted,(key,seg["to"]))
 
-    def test_2025_trail43_uses_real_grind_torras_bridge(self):
+    def test_2025_trail43_bypasses_nonofficial_grind_and_metadata_only_tostared(self):
         race=self.races["2025-trail43"]
         self.assertEqual(len([x for x in race["splits"] if x["station_uid"]==1416266]),0)
+        self.assertFalse(any(s["name"]=="Grind" for s in race["stations"]))
         _,_,segments=observed_segments(race)
-        bridge=[s for s in segments if s["from"]=="Grind" and s["to"]=="Torrås"]
-        self.assertEqual(len(bridge),1)
-        self.assertAlmostEqual(bridge[0]["km"],15.0)
-        self.assertEqual(len(bridge[0]["observations"]),130)
-        self.assertFalse(any(s["to"]=="Tostared" or s["from"]=="Tostared" for s in segments))
-        self.assertEqual(len(segments),7)
+        start=next(s for s in segments if s["from"]=="Start" and s["to"]=="Torrås")
+        self.assertAlmostEqual(start["km"],16.2)
+        self.assertEqual(len(start["observations"]),130)
+        self.assertFalse(any(s["to"] in ("Grind","Tostared") or s["from"] in ("Grind","Tostared") for s in segments))
+        self.assertEqual(len(segments),6)
 
     def test_2023_two_sparse_segments_are_not_overinterpreted(self):
         _,_,segments=observed_segments(self.races["2023-trail43"])

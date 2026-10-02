@@ -39,7 +39,10 @@ def parse(root,out,source_cat):
    family=racefamily(rv)
    if not family:continue
    leg=int(rv['UID']);racekey=f'{year}-{family}'
-   stations=[s for s in manifest['public_stations'] if s['race_uid']==leg]
+   # Owner-confirmed: Grind (1.2 km) is a nonofficial measurement and MUST NOT
+   # enter curated stations, split observations or any exported segment.
+   # Raw EQ Timing files remain immutable in the separate source archive.
+   stations=[s for s in manifest['public_stations'] if s['race_uid']==leg and str(s.get('station_name') or '').strip().casefold()!='grind']
    if not stations:continue
    db.execute('INSERT OR REPLACE INTO editions VALUES(?,?,?,?,?,?,?,?)',(racekey,year,leg,e['event_id'],family,rv.get('Navn'),rv.get('Km'),e['url']))
    stations.sort(key=lambda s:(s['sort'],float(s.get('km') or 0),s['station_uid']))
