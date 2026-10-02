@@ -30,10 +30,13 @@ def geo(a,b):
 
 def main():
     inventory=json.loads((ROOT/"route-inventory.json").read_text(encoding="utf-8"))
-    assert len(inventory)==len(CHECKSUMS)
-    assert {x["family"] for x in inventory}==set(CHECKSUMS)
+    organizer=[x for x in inventory if x.get("type")=="OFFICIAL_ORGANIZER"]
+    participant=[x for x in inventory if x.get("type")=="VERIFIED_PARTICIPANT"]
+    assert len(organizer)==len(CHECKSUMS)
+    assert {x["family"] for x in organizer}==set(CHECKSUMS)
+    assert len(organizer)+len(participant)==len(inventory)
     total_bytes=0
-    for route in inventory:
+    for route in organizer:
         family=route["family"]
         assert route["source_sha256"]==CHECKSUMS[family],f"{family}: raw provenance checksum changed"
         assert route.get("type")=="OFFICIAL_ORGANIZER"
@@ -72,7 +75,24 @@ def main():
         assert retention>=.998,f"{family}: rendered polyline retains only {retention:.3%} of source length"
         assert abs(drawn-item["published_polyline_length_km"])<=.002
         print(f"PASS {family}: {len(pts)} source-faithful display points, {drawn:.3f}/{item['geometry_length_km']:.3f} km ({retention:.3%}), {file_bytes} bytes, official source sha256 {item['source_sha256'][:12]}…")
-    assert total_bytes<=512_000,f"All route assets exceed 512 kB raw: {total_bytes}"
+    assert total_bytes<=512_000,f"Official route assets exceed 512 kB raw: {total_bytes}"
+    for route in participant:
+        key=route["race_key"];year=int(key.split("-",1)[0])
+        assert route["edition_references"]==[year],f"{key}: GPX must only apply to its own year"
+        asset=ROOT/"routes"/f"{key}-participant.json"
+        assert asset.is_file(),f"{key}: missing display route"
+        obj=json.loads(asset.read_text(encoding="utf-8"))
+        assert obj["source_sha256"]==route["source_sha256"]
+        assert obj["race_key"]==key and obj["edition_references"]==[year]
+        points=obj["points"]
+        assert len(points)>=100 and len(points)==route["published_points"]
+        assert all(len(p)==4 and 56<=p[1]<=59 and 11<=p[2]<=14 and
+                   (p[3] is None or math.isfinite(p[3])) for p in points)
+        assert abs(points[0][0])<.001
+        assert all(cur[0]>prev[0] for prev,cur in zip(points,points[1:]))
+        assert abs(points[-1][0]-route["geometry_length_km"])<.002
+        assert not any(k in obj for k in ("raw_gpx","participant_name","timestamps"))
+        print(f"PASS {key}: {len(points)} GPX display points with year-locked source")
 
     # A tight synthetic switchback verifies the exporter itself rather than only
     # the already generated assets. Every real bend must survive publication.
