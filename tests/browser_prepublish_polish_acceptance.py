@@ -99,6 +99,22 @@ async def main():
 
                 # 7: the main geographic map has real OSM tile images and attribution.
                 assert await page.locator("#course-map .osm-tile-layer image").count()>0
+                # Real OSM imagery must cover the full SVG viewBox, not only the
+                # route bounding box; long thin tracks previously had grey strips.
+                tile_coverage=await page.locator("#course-map").evaluate("""host=>{
+                  const svg=host.querySelector('svg'),layer=svg.querySelector('.osm-tile-layer'),
+                    images=Array.from(layer.querySelectorAll('image')),view=svg.viewBox.baseVal;
+                  const minX=Math.min(...images.map(img=>img.x.baseVal.value)),
+                    minY=Math.min(...images.map(img=>img.y.baseVal.value)),
+                    maxX=Math.max(...images.map(img=>img.x.baseVal.value+img.width.baseVal.value)),
+                    maxY=Math.max(...images.map(img=>img.y.baseVal.value+img.height.baseVal.value));
+                  return {full:minX<=view.x+1 && minY<=view.y+1 &&
+                    maxX>=view.x+view.width-1 && maxY>=view.y+view.height-1,
+                    tileCount:images.length,zoom:Number(layer.dataset.zoom)};
+                }""")
+                assert tile_coverage["full"],(width,"OSM side strips",tile_coverage)
+                assert 1<=tile_coverage["tileCount"]<=24,(width,"OSM tile budget",tile_coverage)
+                assert 8<=tile_coverage["zoom"]<=15,(width,"OSM tile zoom",tile_coverage)
                 attribution=page.locator("#course-map .osm-attribution")
                 assert "OpenStreetMap" in await attribution.inner_text()
                 assert await attribution.get_attribute("href")=="https://www.openstreetmap.org/copyright"
