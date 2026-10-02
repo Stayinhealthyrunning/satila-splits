@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detect stations declared public but containing zero TIME observations.
 
-The source station is always preserved. For an optional observed-only analysis
+Owner-rejected Grind is excluded from curated station and split bundles (raw source preserved). For an optional observed-only analysis
 axis, omit zero-observation intermediate boundaries and use the exact difference
 between the neighboring *recorded* TIME anchors. Never create a timestamp at an
 absent station or redistribute that observed span under false timing precision.
@@ -68,8 +68,8 @@ if __name__=="__main__":
     target=next(r for r in rows if r["race_key"]=="2025-trail43")
     assert any(x["name"]=="Tostared" and x["km"]==10.2 and x["uid"]==1416266
                for x in target["metadata_only_stations"])
-    bridge=next(x for x in target["observed_only_segments"] if x["from"]=="Grind" and x["to"]=="Torrås")
-    assert bridge["valid_exact_time_pairs"]>=100, bridge
+    bridge=next(x for x in target["observed_only_segments"] if x["from"]=="Start" and x["to"]=="Torrås")
+    assert bridge["timing_km"]==16.2 and bridge["valid_exact_time_pairs"]==130, bridge
     assert bridge["bypassed_zero_time_stations"]==["Tostared"], bridge
     assert all(s["valid_exact_time_pairs"]>=0 for r in rows for s in r["observed_only_segments"])
     assert len(rows)==27
