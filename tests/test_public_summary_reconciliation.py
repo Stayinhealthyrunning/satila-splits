@@ -71,8 +71,12 @@ class PublicSummaryReconciliation(unittest.TestCase):
                 self.assertEqual(obj["organizer_advertised_km"],85.0)
                 self.assertEqual(obj["distance_semantics_status"],"organizer_eq_discrepancy")
                 self.assertEqual(obj["distance_source_urls"],[url])
-                self.assertNotIn("measured_route_geometry_km",obj)
-                self.assertFalse(obj.get("route_file"))
+                # An independently sourced year-specific GPX may now coexist
+                # with historic EQ Timing 82 km and organizer-advertised 85 km.
+                # Its GPS measurement MUST NOT overwrite either distance axis.
+                self.assertEqual(obj.get("route_status"),"participant_track_display_only")
+                self.assertEqual(obj.get("route_file"),f"routes/{key}-participant.json")
+                self.assertGreater(obj.get("measured_route_geometry_km",0),75)
 
         # Analysis-family membership is not evidence for an organizer distance.
         for key in ("2018-ultra85","2022-ultra85","2025-ultra85"):
@@ -90,7 +94,7 @@ class PublicSummaryReconciliation(unittest.TestCase):
         for ed in routed:
             route=load(DATA/ed["route_file"])
             if ed["race_key"] not in baseline:
-                self.assertEqual(route["type"],"VERIFIED_PARTICIPANT")
+                self.assertIn(route["type"],("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL"))
                 self.assertEqual(route["edition_references"],[ed["year"]])
                 self.assertEqual(route["source_sha256"],ed["route_source_sha256"])
             self.assertEqual(ed["measured_route_geometry_km"],route["geometry_length_km"])

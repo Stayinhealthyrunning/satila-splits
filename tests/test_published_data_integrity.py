@@ -143,7 +143,7 @@ def audit(root):
                         failures.append(f"{key}: official route checksum does not match source registry")
                     if route.get("edition_references") != [2025, 2026]:
                         failures.append(f"{key}: unrecorded organizer reuse references")
-                elif route.get("type") == "VERIFIED_PARTICIPANT":
+                elif route.get("type") in ("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL"):
                     if ed.get("route_status") != "participant_track_display_only":
                         failures.append(f"{key}: participant course must remain display-only")
                     if route.get("race_key") != key or route.get("edition_references") != [year]:
@@ -177,7 +177,7 @@ def audit(root):
     inventory_file = root / "route-inventory.json"
     inventory = read(inventory_file) if inventory_file.exists() else []
     organizer = [route for route in inventory if route.get("type") == "OFFICIAL_ORGANIZER"]
-    participants = [route for route in inventory if route.get("type") == "VERIFIED_PARTICIPANT"]
+    participants = [route for route in inventory if route.get("type") in ("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL")]
     if len(organizer) != 5 or {route["family"] for route in organizer} != set(COURSE_SHA):
         failures.append("Five checksum-locked organizer sources must remain present")
     if len(organizer) + len(participants) != len(inventory):
