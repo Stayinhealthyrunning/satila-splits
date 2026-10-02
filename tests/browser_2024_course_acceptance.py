@@ -54,7 +54,7 @@ async def main():
             assert "43 km · 2024" in await page.locator("#race-title").inner_text()
             assert await page.locator("#course-map .simple-route-line").count()==0
             assert await page.locator("#course-map .route-base").count()==1,(width,"map missing")
-            assert await page.locator("#course-elevation .elev-line").count()==1,(width,"elevation missing")
+            assert await page.locator("#course-elevation svg line[stroke]").count()>1,(width,"colored elevation segments missing")
             assert "DELTAGARSPÅR" in await page.locator("#course-map .map-label").first.text_content()
             assert await page.locator("#course-map [data-map-hit]").count()==1
             assert await page.locator("#course-elevation [data-elev-hit]").count()==1
