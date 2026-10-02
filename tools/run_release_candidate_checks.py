@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=[
  ["python","tests/test_published_data_integrity.py"],
+ ["python","tests/test_grind_exclusion_contract.py"],
  ["python","tools/audit_segment_capabilities.py"],
  ["python","tools/audit_station_coverage.py"],
  ["python","tools/audit_segment_distance_capability.py"],
