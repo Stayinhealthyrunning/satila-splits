@@ -123,7 +123,15 @@ def promote(gpx,year,family):
     for obj in (edition,race):obj.update(updates)
     coverage_path=DATA/"coverage.json";coverage=load(coverage_path)
     for obj in coverage:
-        if obj["race_key"]==key:obj.update(updates)
+        if obj["race_key"]==key:
+            obj.update(updates)
+            obj.update({
+                "route_sha256":sha,
+                "route_source_type":"VERIFIED_PARTICIPANT",
+                "route_source_filename":gpx.name,
+                "route_geometry_km":meta["geometry_length_km"],
+                "route_evidence_note":meta["evidence_note"],
+            })
     registry_path=ROOT/"config/source-registry.json";registry=load(registry_path)
     registry.setdefault("participant_gpx",{}).setdefault(family,{})[str(year)]={
         "status":"VERIFIED_PARTICIPANT","source_sha256":sha,
