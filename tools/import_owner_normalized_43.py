@@ -15,8 +15,8 @@ ORIGINAL={
  2025:("suuntoapp-Running-2025-11-08T09-00-05Z-route.gpx","f090e7d461e0ae53e06561c340b1a87bab30f10454e49ebaface2cd19468502b"),
 }
 NORMAL={
- "trail43-2021-2022-normalized":("1ffe961c9194fe427603c5b6c6de478ba9c4913a41a8a055275054c323d90bf3",1090,44.30917),
- "trail43-2023-2025-normalized":("ef7a31e0c7ba1a68154549fac90184a27793dc5589f853b0f1e66fa3bc6773ff",822,41.873734),
+ "trail43-2021-2022-normalized":("e0cf97e943f01d09995b40be2e4c6e6f7a4ca720d991e8ae9416f52fbb43b967",1090,44.30917),
+ "trail43-2023-2025-normalized":("bb46f69cd304451b3caca315e80936ded07e0c5b18d0333b63f262ecec13e15c",822,41.873734),
 }
 def digest(blob):return hashlib.sha256(blob).hexdigest()
 def main():
@@ -44,6 +44,11 @@ def main():
     gpx=work/(key+".gpx")
     gpx.write_bytes(z.read("normalized/"+key+".gpx"))
     promote(gpx,year,"trail43")
+    # The source is archived inside the durable ZIP, not at the transient runner path.
+    registry_file=ROOT/"config/source-registry.json"
+    registry=json.loads(registry_file.read_text(encoding="utf-8"))
+    registry["participant_gpx"]["trail43"][str(year)]["source_file"]=str(PACKAGE.relative_to(ROOT))+"#normalized/"+key+".gpx"
+    registry_file.write_text(json.dumps(registry,ensure_ascii=False,separators=(",",":"))+"\\n",encoding="utf-8")
   # The 2024 same-corridor source is already published and checksum locked;
   # 2025 official organizer route is retained, never silently replaced.
   boot=json.loads((ROOT/"docs/data/bootstrap.json").read_text())
