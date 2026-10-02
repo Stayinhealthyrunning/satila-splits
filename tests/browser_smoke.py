@@ -162,11 +162,16 @@ async def main():
    assert await page.locator('#duel-map .osm-tile-layer image').count()>0
    assert await page.locator('#duel-map .osm-attribution').count()==1
    await assert_full_osm(page,'#duel-map')
+   # The geographic viewBox now follows the rendered map container rather
+   # than a hard-coded 760x280; fit must restore the measured base width.
+   duel_base=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
+   assert duel_base>0
    await page.locator('#duel-zoom').fill('2')
-   zoomed=await page.locator('#duel-map svg').get_attribute('viewBox')
-   assert float(zoomed.split()[2])<760
+   zoomed=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
+   assert 0<zoomed<duel_base,(duel_base,zoomed)
    await page.locator('#duel-fit').click()
-   assert float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])==760
+   restored=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
+   assert abs(restored-duel_base)<.01,(duel_base,restored)
    await page.locator('#duel-elevation svg').click(position={'x':120,'y':60})
    assert float(await page.locator('#duel-range').input_value())>0
    await page.locator('[data-close="compare-dialog"]').click()
@@ -178,10 +183,14 @@ async def main():
    assert await page.locator('#map-duel-map .osm-attribution').count()==1
    await assert_full_osm(page,'#map-duel-map')
    assert await page.locator('#map-duel-leaderboard tbody tr').count()==2
+   map_duel_base=float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])
+   assert map_duel_base>0
    await page.locator('#map-duel-camera').select_option('leader')
-   assert float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])<760
+   map_duel_zoomed=float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])
+   assert 0<map_duel_zoomed<map_duel_base,(map_duel_base,map_duel_zoomed)
    await page.locator('#map-duel-fit').click()
-   assert float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])==760
+   map_duel_restored=float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])
+   assert abs(map_duel_restored-map_duel_base)<.01,(map_duel_base,map_duel_restored)
    await page.locator('#map-duel-play').click()
    await page.wait_for_timeout(250)
    await page.locator('#map-duel-play').click()
