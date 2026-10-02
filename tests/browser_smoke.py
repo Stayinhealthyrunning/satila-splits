@@ -13,16 +13,21 @@ async def assert_full_osm(page,host):
    const svg=node.querySelector('svg'),layer=svg?.querySelector('.osm-tile-layer'),
      images=Array.from(layer?.querySelectorAll('image')||[]);
    if(!svg||!images.length)return {full:false,tileCount:0};
-   const view=svg.viewBox.baseVal;
+   const view=svg.viewBox.baseVal,rect=svg.getBoundingClientRect(),
+     container=node.getBoundingClientRect(),
+     ratioOk=Math.abs(rect.width/rect.height-view.width/view.height)<.035 &&
+       Math.abs(container.width/Math.max(1,container.height)-view.width/view.height)<.035;
    const minX=Math.min(...images.map(img=>img.x.baseVal.value)),
      minY=Math.min(...images.map(img=>img.y.baseVal.value)),
      maxX=Math.max(...images.map(img=>img.x.baseVal.value+img.width.baseVal.value)),
      maxY=Math.max(...images.map(img=>img.y.baseVal.value+img.height.baseVal.value));
-   return {full:minX<=view.x+1&&minY<=view.y+1&&
+   return {ratioOk,containerW:container.width,containerH:container.height,
+     full:minX<=view.x+1&&minY<=view.y+1&&
      maxX>=view.x+view.width-1&&maxY>=view.y+view.height-1,
      tileCount:images.length,zoom:Number(layer.dataset.zoom)};
  }""")
  assert result["full"],(host,"OSM must fill SVG map viewport",result)
+ assert result["ratioOk"],(host,"OSM SVG must fit map panel without unfilled sidebars",result)
  assert 1<=result["tileCount"]<=24,(host,"OSM tile budget",result)
  assert 8<=result["zoom"]<=15,(host,"OSM adaptive zoom",result)
 
