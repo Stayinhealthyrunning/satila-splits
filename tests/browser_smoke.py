@@ -52,7 +52,7 @@ async def main():
     print("STARTUP_DIAGNOSTICS",width,"title",await page.locator('#race-title').inner_text(),"errors",errors,"missing",await page.evaluate("window.__missing||[]"),flush=True)
     raise
    await page.wait_for_selector("#extra-overview",timeout=20000)
-   assert "85 km" in await page.locator("#race-title").inner_text()
+   assert "43 km" in await page.locator("#race-title").inner_text()
    assert await page.locator("#segment-table tbody tr").count()>0
    assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
    assert await page.locator('#results-table th').count()==11
@@ -75,6 +75,8 @@ async def main():
    assert "Ingen godkänd" in await page.locator("#course-map").inner_text()
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
+   assert await page.locator('#course-map .osm-tile-layer image').count()>0
+   assert await page.locator('#course-map .osm-attribution').count()==1
    assert await page.locator('#finish-series [data-finish-mode]').count()==3
    await page.locator('#finish-series [data-finish-mode="F"]').click()
    assert await page.locator('#finish-series [data-finish-mode="F"]').get_attribute('aria-pressed')=='true'
@@ -104,6 +106,8 @@ async def main():
    assert any('Sedan föregående verifierade' in value for value in await page.locator('#profile-content th').all_text_contents())
    assert await page.locator('#profile-content .insight small').count()>0
    assert await page.locator('#profile-replay-duration option').count()==4
+   assert await page.locator('#profile-mini-map .osm-tile-layer image').count()>0
+   assert await page.locator('#profile-mini-map .osm-attribution').count()==1
    await page.locator('#profile-replay-play').click()
    await page.wait_for_timeout(550)
    assert float(await page.locator('#profile-replay-range').input_value())>0
@@ -129,6 +133,8 @@ async def main():
    assert await page.locator('#compare-dialog').evaluate('e=>e.open')
    assert any('A segment' in value for value in await page.locator('#compare-dialog th').all_text_contents())
    assert await page.locator('#duel-map svg').count()==1
+   assert await page.locator('#duel-map .osm-tile-layer image').count()>0
+   assert await page.locator('#duel-map .osm-attribution').count()==1
    await page.locator('#duel-zoom').fill('2')
    zoomed=await page.locator('#duel-map svg').get_attribute('viewBox')
    assert float(zoomed.split()[2])<760
@@ -141,6 +147,8 @@ async def main():
    await page.locator('#open-map-duel').click()
    assert await page.locator('#map-duel-dialog').evaluate('e=>e.open')
    assert await page.locator('#map-duel-map [data-runner-marker]').count()==2
+   assert await page.locator('#map-duel-map .osm-tile-layer image').count()>0
+   assert await page.locator('#map-duel-map .osm-attribution').count()==1
    assert await page.locator('#map-duel-leaderboard tbody tr').count()==2
    await page.locator('#map-duel-camera').select_option('leader')
    assert float((await page.locator('#map-duel-map svg').get_attribute('viewBox')).split()[2])<760

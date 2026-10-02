@@ -63,7 +63,7 @@ async def main():
             assert not await page.locator("#primary-nav").evaluate("n=>n.classList.contains('open')")
 
             # Keyboard autocomplete: no mouse needed to open runner profile.
-            race=fixtures["data/races/2025-ultra85.json"]
+            race=fixtures["data/races/2025-trail43.json"]
             runner=next(r for r in race["results"] if r["status"]=="FINISHED" and r.get("name"))
             search=page.locator("#runner-search")
             await search.fill(runner["name"][:max(3,len(runner["name"].split()[0]))])
