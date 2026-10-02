@@ -22,8 +22,9 @@ jobs:
           python tests/test_participant_route_import.py
       - name: Full deterministic source and release checks
         run: python tools/run_release_candidate_checks.py --source
-      - name: Verify 2024 maps in Chromium desktop and mobile
+      - name: Verify historical maps in Chromium desktop and mobile
         run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium
           python tests/browser_2024_course_acceptance.py
+          python tests/browser_ultra85_historical_routes_acceptance.py
