@@ -85,7 +85,7 @@ def test_coverage():
         if row.get("route_file"):
             assert len(row.get("route_sha256") or "")==64,row["race_key"]
             source_type=row.get("route_source_type")
-            assert source_type in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT"),row["race_key"]
+            assert source_type in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT","TRACE_DE_TRAIL"),row["race_key"]
             if source_type=="VERIFIED_PARTICIPANT":
                 assert row["route_status"]=="participant_track_display_only",row["race_key"]
                 display=json.loads((ROOT/"data"/row["route_file"]).read_text(encoding="utf-8"))
