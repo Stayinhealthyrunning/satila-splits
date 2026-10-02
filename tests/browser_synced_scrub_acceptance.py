@@ -109,7 +109,8 @@ async def main():
                 near(after_overlay,await position(page,course_elev))
                 # Pick two DIFFERENT real 2025 trail43 finishers via actual UI.
                 race=data["data/races/2025-trail43.json"]
-                finishers=sorted((r for r in race["results"] if r["status"]=="FINISHED"),key=lambda r:r["finish_seconds"])[:2]
+                sorted_finishers=sorted((r for r in race["results"] if r["status"]=="FINISHED"),key=lambda r:r["finish_seconds"])
+                finishers=[sorted_finishers[0],sorted_finishers[-1]]  # Distinct real pacing for common-clock QA.
                 assert len(finishers)==2 and finishers[0]["id"]!=finishers[1]["id"]
                 for runner in finishers:
                     await page.locator("#runner-search").fill(runner["name"])
@@ -125,6 +126,27 @@ async def main():
                 assert "(2/2)" in await page.locator("#compare-counter").inner_text()
                 await page.locator("#open-compare").click()
                 assert await page.locator("#compare-dialog").evaluate("x=>x.open")
+                # Both markers MUST use the same elapsed clock, but their own
+                # EQ TIME anchor interpolation: fast and slow finisher cannot
+                # be tied to the same distance as in the old comparison bug.
+                assert await page.locator("#duel-progress-chart svg").count()==1
+                assert await page.locator("#duel-clock").count()==1
+                await page.locator("#duel-clock").evaluate(
+                    "(el,v)=>{el.value=String(v);el.dispatchEvent(new Event('input',{bubbles:true}))}",
+                    finishers[0]["finish_seconds"],
+                )
+                positions=await page.locator("#duel-map [data-runner-marker]").evaluate_all(
+                    "els=>els.map(el=>[Number(el.getAttribute('cx')),Number(el.getAttribute('cy'))])"
+                )
+                assert len(positions)==2
+                separation=sum((a-b)**2 for a,b in zip(*positions))**.5
+                assert separation>5,(width,positions,separation,"common-clock runners still overlap")
+                clock_readout=await page.locator("#duel-readout").inner_text()
+                assert "Gemensam tävlingsklocka" in clock_readout
+                assert "Positionsskillnad A−B:" in clock_readout
+                assert "Tidslucka A−B:" in clock_readout
+                # Return to Start before testing distance-driven map/elevation.
+                await page.locator("#duel-reset").click()
                 duel_map="#duel-map [data-local-hit]"
                 duel_elev="#duel-elevation [data-elev-hit]"
                 assert await page.locator(duel_map).count()==await page.locator(duel_elev).count()==1
