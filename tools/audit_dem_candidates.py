@@ -85,7 +85,7 @@ def main():
         pts=r["points"]
         heights=[v[3] for v in pts]
         assert all(isinstance(v,(int,float)) and math.isfinite(v) for v in heights),p
-        assert r["elevation_provenance"]["type"]=="DEM_RECONSTRUCTED_TERRAIN"
+        assert r["elevation_provenance"]["type"] in ("DEM_RECONSTRUCTED_TERRAIN","DSM_RECONSTRUCTED_SURFACE")
         jumps=[(abs(b[3]-a[3]),(b[0]-a[0])*1000) for a,b in zip(pts,pts[1:])]
         short=[dz for dz,horiz in jumps if horiz>0 and horiz<=100]
         steep=[(dz,horiz) for dz,horiz in jumps if horiz>=5 and dz/horiz>.8]
