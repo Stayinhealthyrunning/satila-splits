@@ -4,7 +4,7 @@
 Only public curated results are used. Switching race/year must not silently
 carry a prior race's default goal time or hide selected groups outside top ten.
 """
-import asyncio,json,os,re
+import asyncio,json,os,re,statistics
 from pathlib import Path
 from playwright.async_api import async_playwright
 
@@ -35,14 +35,17 @@ async def assert_selection_consistent(page,where):
     assert set(state["selected"]).issubset(set(state["visible"])),(where,state)
     return state
 
-async def assert_default_goal(page,where):
-    await page.wait_for_function("""()=>{
-      const goal=document.querySelector('#goal-placement-time')?.value;
-      const median=[...document.querySelectorAll('#kpis .kpi')].find(k=>k.textContent.includes('Median sluttid'))?.querySelector('strong')?.textContent?.trim();
-      return goal && median && goal===median;
-    }""",timeout=10000)
+def fmt_time(seconds):
+    seconds=round(seconds);hours=seconds//3600;minutes=seconds%3600//60;secs=seconds%60
+    return f"{hours}:{minutes:02d}:{secs:02d}" if hours else f"{minutes}:{secs:02d}"
+
+async def assert_default_goal(page,data,race_key,where):
+    finish=[r["finish_seconds"] for r in data[f"data/races/{race_key}.json"]["results"] if r["status"]=="FINISHED" and r.get("finish_seconds",0)>0]
+    expected=fmt_time(statistics.mean(finish))
+    await page.wait_for_function("expected=>document.querySelector('#goal-placement-time')?.value===expected",arg=expected,timeout=10000)
     val=await page.locator("#goal-placement-time").input_value()
-    assert val,(where,val)
+    assert val==expected,(where,val,expected)
+    assert await page.locator("#goal-placement-time").get_attribute("data-default-source")=="finished-mean"
     return val
 
 async def main():
@@ -72,14 +75,17 @@ async def main():
                    };
                 }""",data)
                 await page.add_script_tag(content=script)
-                await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('85 km · 2025')")
-                original=await assert_default_goal(page,(width,"ultra85"))
-                await assert_selection_consistent(page,(width,"ultra85"))
+                await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2025')")
+                original=await assert_default_goal(page,data,"2025-trail43",(width,"trail43-default"))
+                await assert_selection_consistent(page,(width,"trail43-default"))
                 await page.locator("#goal-placement-time").fill("15:55:44")
+                await page.locator('[data-family="ultra85"]').click()
+                await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('85 km · 2025')")
+                changed=await assert_default_goal(page,data,"2025-ultra85",(width,"ultra85"))
+                assert original!=changed,(width,original,changed)
                 await page.locator('[data-family="trail43"]').click()
                 await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2025')")
-                changed=await assert_default_goal(page,(width,"trail43"))
-                assert original!=changed,(width,original,changed)
+                await assert_default_goal(page,data,"2025-trail43",(width,"trail43-return"))
                 selection=await assert_selection_consistent(page,(width,"trail43"))
                 assert len(selection["checked"])==3,(width,selection)
                 first_unchecked=page.locator("#club-chart input[data-club-choice]:not(:checked):not(:disabled)").first
@@ -98,7 +104,7 @@ async def main():
                 await page.locator("#goal-placement-time").fill("14:10:05")
                 await page.locator("#year-select").select_option("2024")
                 await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2024')")
-                await assert_default_goal(page,(width,"2024"))
+                await assert_default_goal(page,data,"2024-trail43",(width,"2024"))
                 selection=await assert_selection_consistent(page,(width,"year-changed"))
                 assert len(selection["checked"])==3,(width,selection)
                 assert not errors,(width,errors)
