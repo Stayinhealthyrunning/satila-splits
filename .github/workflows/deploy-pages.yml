@@ -1,0 +1,51 @@
+name: Deploy standalone Sätila Splits review site
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-pages.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: satila-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source package is sanitized
+        run: |
+          python tools/run_release_candidate_checks.py --source
+          python - <<'PY'
+          from pathlib import Path
+          root = Path("docs")
+          assert (root / "index.html").is_file()
+          assert (root / "data" / "bootstrap.json").is_file()
+          bad = [p for p in root.rglob("*") if p.is_file() and (p.suffix.lower() in {".gpx", ".sqlite", ".db", ".zip"} or p.name == "contestants.json")]
+          if bad:
+              raise SystemExit("Unexpected raw source in publishable docs/: " + ", ".join(map(str, bad)))
+          print("Sanitized standalone site verified")
+          PY
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload sanitized site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+      - name: Deploy site
+        id: deployment
+        uses: actions/deploy-pages@v4
