@@ -59,15 +59,19 @@ class HistoricalUltra85Routes(unittest.TestCase):
             self.assertEqual(len(route["points"]), point_count)
             self.assertAlmostEqual(route["geometry_length_km"], length, places=6)
 
-    def test_missing_elevation_is_explicit_and_safe(self):
+    def test_reconstructed_surface_elevation_is_explicit_and_source_locked(self):
         app = (ROOT / "docs" / "assets" / "app.js").read_text(encoding="utf-8")
         self.assertIn("Höjddata saknas i detta historiska deltagarspår", app)
-        self.assertIn("Höjddata saknas i källspåret", app)
+        self.assertIn("Copernicus DSM · rekonstruerad ythöjd", app)
+        self.assertIn("Copernicus WorldDEM-30", app)
         for year in EXPECTED:
             key = f"{year}-ultra85"
             route = load(DATA / "routes" / f"{key}-participant.json")
-            self.assertFalse(self.inventory[key]["elevation_available"], key)
-            self.assertTrue(all(point[3] is None for point in route["points"]), key)
+            self.assertTrue(self.inventory[key]["elevation_available"], key)
+            self.assertEqual(route["elevation_provenance"]["type"], "DSM_RECONSTRUCTED_SURFACE", key)
+            self.assertEqual(route["elevation_provenance"]["vertical_datum"], "EGM2008 (EPSG:3855)", key)
+            self.assertTrue(route["elevation_provenance"]["surface_not_ground"], key)
+            self.assertTrue(all(isinstance(point[3], (int, float)) and math.isfinite(point[3]) for point in route["points"]), key)
             self.assertTrue(all(math.isfinite(point[0]) for point in route["points"]), key)
 
     def test_participant_timestamps_never_become_official_splits(self):
