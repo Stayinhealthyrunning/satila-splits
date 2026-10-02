@@ -35,6 +35,8 @@ SOURCE=[
 ]
 RELEASE_COPY=[["python","tests/test_release_copy_acceptance.py"]]
 BROWSER=[
+ ["python","tests/browser_prepublish_polish_acceptance.py"],
+ ["python","tests/browser_release_selection_state_acceptance.py"],
  ["python","tests/browser_synced_scrub_acceptance.py"],
  ["python","tests/browser_all_editions_acceptance.py"],
  ["python","tests/browser_evidence_acceptance.py"],
