@@ -135,7 +135,7 @@ async def main():
                 near(d,await position(page,duel_map))
                 near(d,float(await page.locator("#duel-range").input_value()),.051)
                 # A real click ON THE DRAWN ROUTE must drive elevation and range.
-                point=await page.locator("#duel-map svg > path").evaluate("""path=>{
+                point=await page.locator("#duel-map .simple-route-line").evaluate("""path=>{
                   let p=path.getPointAtLength(path.getTotalLength()*.35),m=path.getScreenCTM();
                   return {x:m.a*p.x+m.c*p.y+m.e,y:m.b*p.x+m.d*p.y+m.f};
                 }""")
