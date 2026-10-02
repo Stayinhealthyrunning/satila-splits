@@ -48,7 +48,7 @@ def main():
     registry_file=ROOT/"config/source-registry.json"
     registry=json.loads(registry_file.read_text(encoding="utf-8"))
     registry["participant_gpx"]["trail43"][str(year)]["source_file"]=str(PACKAGE.relative_to(ROOT))+"#normalized/"+key+".gpx"
-    registry_file.write_text(json.dumps(registry,ensure_ascii=False,separators=(",",":"))+"\\n",encoding="utf-8")
+    registry_file.write_text(json.dumps(registry,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
   # The 2024 same-corridor source is already published and checksum locked;
   # 2025 official organizer route is retained, never silently replaced.
   boot=json.loads((ROOT/"docs/data/bootstrap.json").read_text())
