@@ -6,6 +6,7 @@ on:
     branches: [fix/historical-participant-route-partial-splits-2026-10-02]
     paths:
       - 'data/participant-gpx/trail43-2024.gpx'
+      - 'tools/promote_participant_gpx.py'
       - '.github/workflows/import-historical-gpx.yml'
 
 permissions:
