@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "STANDALONE_PAGES_DEPLOYED_SOUNDTRACK_QA_PASS",
+  "status": "STANDALONE_LIVE_REAL_2024_43KM_ROUTE",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -153,7 +153,7 @@
     "Original independent source package must be verified in main/data/source-archive, not assumed committed just because the preservation workflow was created.",
     "Portal PR #8 remains deliberately unmerged; standalone Pages must be activated and verified first."
   ],
-  "next_action": "Owner to review Pages deployment at https://www.loppanalys.se/satila-splits/ and test soundtrack in personal Replay and kartduell; verify URL/asset reachability after DNS/Pages propagation if needed. Portal PR #8 remains separate/unmerged.",
+  "next_action": "Owner to inspect https://www.loppanalys.se/satila-splits/#family=trail43&year=2024, refresh cache if needed. Next source promotion: verified 2023 GPX, separate 2021/22 corrected course candidate with wrong-turn caveats; never backfill another year's route automatically. Portal PR #8 remains draft pending owner approval.",
   "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
   "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md",
   "release": {
@@ -175,6 +175,23 @@
       "qa_run": 36984894494,
       "qa_result": "SUCCESS: JS syntax, soundtrack controller behavior, release source/privacy gates, Chromium browser smoke",
       "behavior": "Personal Replay and map duel: music enabled by default, initial volume 0.35, persistent mute/volume. Track loops and continues after finish until popup close; manual pause and reset stop it."
+    },
+    "historical_route_2024": {
+      "pr": 16,
+      "merge_sha": "1e9781ee201335ef370bc57dc83d73da3324a144",
+      "source": "data/participant-gpx/trail43-2024.gpx",
+      "source_sha256": "d83bfad962e94a69ed0ea53a0c063679478234cccd3a780d714900ae7640c4b4",
+      "display": "docs/data/routes/2024-trail43-participant.json",
+      "source_type": "VERIFIED_PARTICIPANT",
+      "year_scoped": true,
+      "points": 1018,
+      "geometry_km": 41.948369,
+      "original_time_observations": 850,
+      "qa_source_and_browser_run": 36987620440,
+      "qa_soundtrack_and_browser_run": 36987620445,
+      "deploy_run": 36987966408,
+      "deploy_status": "SUCCESS",
+      "note": "GPX displays despite partial timing checkpoints; interpolated playback only on actual TIME anchors. Browser accepted at 1440 and 390 px. Site HTTP outside GitHub deployment not independently observed."
     }
   }
 }
