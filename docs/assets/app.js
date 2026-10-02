@@ -508,7 +508,54 @@ function renderProfileReplay(r){
   draw(0);
 }
 
-function runnerAnchors(r){let arr=[{km:0,t:0,name:'Start'}];let cp=S.race.stations.filter(st=>st.is_analysis_boundary).sort((a,b)=>a.km-b.km);let factor=(routePoints().at(-1)?.[0]||S.race.nominal_km)/S.race.nominal_km;for(let st of cp){let s=observed(r,st);if(s&&num(s.elapsed_seconds)&&num(st.km)&&st.km>0){let last=arr.at(-1);if(s.elapsed_seconds>last.t&&st.km*factor>last.km){arr.push({km:Math.min(st.km*factor,routePoints().at(-1)?.[0]||Infinity),t:s.elapsed_seconds,name:st.name})}}}return arr}
+// Replay-only model. All returned synthetic anchors remain local to animation;
+ // they are never written to EQ observations, results, journey or segment statistics.
+function runnerAnchors(r){
+  const endKm=routePoints().at(-1)?.[0]||S.race.nominal_km;
+  const factor=endKm/S.race.nominal_km;
+  const stations=S.race.stations.filter(st=>st.is_analysis_boundary&&num(st.km)&&st.km>0&&st.km<=S.race.nominal_km).sort((a,b)=>a.km-b.km);
+  const raw=[{km:0,t:0,name:'Start',mode:'observed',station:null}];
+  for(const st of stations){
+    const obs=observed(r,st),last=raw.at(-1),km=Math.min(endKm,st.km*factor);
+    if(obs&&num(obs.elapsed_seconds)&&obs.elapsed_seconds>last.t&&km>last.km+1e-6)
+      raw.push({km,t:obs.elapsed_seconds,name:st.name,mode:'observed',station:st});
+  }
+  if(raw.length<2)return raw;
+  const all=[raw[0]];
+  for(let i=1;i<raw.length;i++){
+    const from=raw[i-1],to=raw[i];
+    const missing=stations.filter(st=>st.km*factor>from.km+1e-5&&st.km*factor<to.km-1e-5);
+    if(!missing.length){all.push(to);continue}
+    const boundaries=[from,...missing.map(st=>({km:st.km*factor,station:st,name:st.name})),to];
+    const peers=[];
+    for(const peer of records().filter(finish)){
+      if(peer.id===r.id)continue;
+      const times=boundaries.map((p,j)=>j===0&&p.station===null?0:observed(peer,p.station)?.elapsed_seconds);
+      if(times.some(t=>!num(t)))continue;
+      const durations=times.slice(1).map((t,j)=>t-times[j]);
+      if(durations.some(t=>t<=0))continue;
+      const span=times.at(-1)-times[0];
+      // Select peers by observed elapsed duration over this same bounding interval,
+      // not by an unrelated split or the participant's nominal pace.
+      peers.push({durations,span,closeness:Math.abs(Math.log(span/(to.t-from.t)))});
+    }
+    peers.sort((a,b)=>a.closeness-b.closeness);
+    const cohort=peers.slice(0,30);
+    if(cohort.length<5){all.push(to);continue} // explicit linear fallback
+    const median=values=>{const v=values.slice().sort((a,b)=>a-b);return (v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
+    const shares=missing.map((_,j)=>median(cohort.map(p=>p.durations[j]/p.span)));
+    shares.push(median(cohort.map(p=>p.durations[missing.length]/p.span)));
+    const total=shares.reduce((a,b)=>a+b,0);
+    if(!(total>0)||shares.some(v=>!(v>0))){all.push(to);continue}
+    let elapsed=from.t;
+    for(let j=0;j<missing.length;j++){
+      elapsed+=(to.t-from.t)*shares[j]/total;
+      all.push({km:missing[j].km*factor,t:elapsed,name:missing[j].name,mode:'cohort_estimate',referenceCount:cohort.length});
+    }
+    all.push(to); // exact observed endpoint preserved, with no drift
+  }
+  return all;
+}
 function estimatedAt(anchors,d){if(!anchors?.length)return null;d=Math.max(0,d);if(d>anchors.at(-1).km+1e-6)return null;for(let i=1;i<anchors.length;i++){let a=anchors[i-1],b=anchors[i];if(d>=a.km&&d<=b.km){let f=(d-a.km)/Math.max(1e-6,b.km-a.km);return a.t+(b.t-a.t)*f}}return d===0?0:null}
 function drawSimpleRoute(host,pts,d,markers=null){
   const {W,H}=mapViewport(host,280),path=project(pts,W,H,18);
@@ -613,7 +660,7 @@ function progressSvg(x,y){
 function setupCompareInteractions(x,y){
   $('#compare-info')?.addEventListener('click',()=>{
     $('#help-title').textContent='Jämför två lopp';
-    $('#help-content').textContent='De två löparna har en gemensam tävlingsklocka men varsin beräknad position mellan faktiska EQ Timing-kontroller. Grön och guld distanskurva visar hur långt de kommit vid samma tid. Sökning på karta/höjd använder A:s passagetid vid vald illustrativ distans; B visas vid samma klockslag. Inga nya källpassager skapas.';
+    $('#help-content').textContent='De två löparna har en gemensam tävlingsklocka men varsin beräknad position mellan faktiska EQ Timing-kontroller. Saknade mellankontroller får en uppskattad fartprofil från minst fem jämförbara löpare med kompletta passager; annars används jämn fart. Dessa uppskattningar är enbart för animationen och visas aldrig som resultat. Grön och guld distanskurva visar hur långt de kommit vid samma tid. Sökning på karta/höjd använder A:s passagetid vid vald illustrativ distans; B visas vid samma klockslag. Inga nya källpassager skapas.';
     $('#help-dialog').showModal();
   });
   const pts=routePoints(),xa=runnerAnchors(x),ya=runnerAnchors(y),maxClock=Math.max(xa.at(-1).t,ya.at(-1).t);
@@ -756,7 +803,7 @@ function openMapDuel(){
   const pts=routePoints(),maxClock=Math.max(0,...data.map(item=>item.anchors.at(-1).t));
   let clock=0,playing=false,startedAt=0,startedClock=0;
   S.mapDuelCamera='full';
-  host.innerHTML=`<p class="muted small">Gemensam tävlingsklocka. Markörerna interpoleras endast mellan varje löpares verkliga EQ-passager och fryser vid sista säkra ankarpunkt. De är inte uppmätta GPS-positioner.</p><div class="compare-dashboard"><div id="map-duel-map" class="duel-map"></div><div id="map-duel-elevation" class="duel-elevation"></div></div><div class="map-duel-playback"><button type="button" class="btn green" id="map-duel-play">Spela</button><button type="button" class="btn text-btn" id="map-duel-reset">Börja om</button><label>Hastighet<select id="map-duel-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Kamera<select id="map-duel-camera"><option value="full">Hela banan</option><option value="leader">Följ ledaren</option></select></label><button type="button" class="btn text-btn" id="map-duel-fit">Visa hela banan</button><button type="button" class="btn text-btn replay-music-toggle" data-replay-music aria-label="Slå av eller på musik" aria-pressed="true">♫ Musik</button><label class="replay-music-volume">Volym <input data-replay-volume type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Musikvolym"></label><span data-replay-audio-note class="muted small" role="status" hidden></span></div><label>Delad tävlingsklocka<input id="map-duel-clock" type="range" min="0" max="${maxClock}" step="1" value="0" aria-label="Sök i kartduellens tävlingsklocka"/></label><p id="map-duel-readout" class="duel-readout"></p><h3>Position och ordning vid vald tid</h3><div id="map-duel-leaderboard"></div>`;
+  host.innerHTML=`<p class="muted small">Gemensam tävlingsklocka. Markörerna följer verifierade EQ-passager. Vid saknade mellankontroller används en robust fartprofil från minst fem närliggande löpare med kompletta passager; annars jämn medelfart mellan de verifierade punkterna. Uppskattningarna används enbart för animeringen, visas inte som resultat och markörerna fryser efter sista säkra ankarpunkt. De är inte uppmätta GPS-positioner.</p><div class="compare-dashboard"><div id="map-duel-map" class="duel-map"></div><div id="map-duel-elevation" class="duel-elevation"></div></div><div class="map-duel-playback"><button type="button" class="btn green" id="map-duel-play">Spela</button><button type="button" class="btn text-btn" id="map-duel-reset">Börja om</button><label>Hastighet<select id="map-duel-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Kamera<select id="map-duel-camera"><option value="full">Hela banan</option><option value="leader">Följ ledaren</option></select></label><button type="button" class="btn text-btn" id="map-duel-fit">Visa hela banan</button><button type="button" class="btn text-btn replay-music-toggle" data-replay-music aria-label="Slå av eller på musik" aria-pressed="true">♫ Musik</button><label class="replay-music-volume">Volym <input data-replay-volume type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Musikvolym"></label><span data-replay-audio-note class="muted small" role="status" hidden></span></div><label>Delad tävlingsklocka<input id="map-duel-clock" type="range" min="0" max="${maxClock}" step="1" value="0" aria-label="Sök i kartduellens tävlingsklocka"/></label><p id="map-duel-readout" class="duel-readout"></p><h3>Position och ordning vid vald tid</h3><div id="map-duel-leaderboard"></div>`;
   dialog.showModal();
   const map=$('#map-duel-map'),elev=$('#map-duel-elevation'),play=$('#map-duel-play'),range=$('#map-duel-clock');
   replaySoundtrack.bind(host);

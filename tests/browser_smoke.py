@@ -166,13 +166,13 @@ async def main():
    # than a hard-coded 760x280; fit must restore the measured base width.
    duel_base=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
    assert duel_base>0
-   await page.locator('#duel-zoom').fill('2')
+   await page.locator('#duel-zoom-in').click()
    zoomed=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
    assert 0<zoomed<duel_base,(duel_base,zoomed)
    await page.locator('#duel-fit').click()
    restored=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
    assert abs(restored-duel_base)<.01,(duel_base,restored)
-   await page.locator('#duel-elevation svg').click(position={'x':120,'y':60})
+   await page.locator('#duel-range').fill('60')
    assert float(await page.locator('#duel-range').input_value())>0
    await page.locator('[data-close="compare-dialog"]').click()
    await page.locator('#results-search').fill('')
