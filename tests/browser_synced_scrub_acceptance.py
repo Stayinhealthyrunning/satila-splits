@@ -146,7 +146,8 @@ async def main():
                 near(new,float(await page.locator("#duel-range").input_value()),.051)
                 info=await page.locator("#duel-readout").inner_text()
                 assert "GPX-distans" in info and "Tidslucka A−B" in info,info
-                # A modern 2025 display route must not appear in the 2024 edition.
+                # A route from another family or edition must not leak into a
+                # genuinely route-less historical edition.
                 compare_dialog=page.locator("#compare-dialog")
                 assert await compare_dialog.evaluate("(d)=>d.scrollWidth<=d.clientWidth+1"),(
                     width,"comparison dialog has horizontal overflow")
@@ -154,6 +155,8 @@ async def main():
                 await compare_dialog.evaluate("(d)=>d.scrollTop=0")
                 await compare_dialog.screenshot(path=str(OUT/f"duel-{width}.png"),animations="disabled")
                 await page.locator('[data-close="compare-dialog"]').click()
+                await page.locator('[data-family="trail22"]').click()
+                await page.wait_for_function("document.querySelector('#race-title').textContent.includes('22 km')")
                 await page.locator("#year-select").select_option("2024")
                 await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2024')")
                 assert await page.locator("#course-map svg").count()==0
