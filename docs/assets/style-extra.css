@@ -39,3 +39,12 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 
 /* Keep the optional class reference invisible outside class-cohort mode. */
 #plan-class-label[hidden]{display:none!important}
+
+
+/* Ultravasan-parity soundtrack controls in personal Replay and kartduell. */
+.replay-music-toggle[aria-pressed="true"]{background:var(--forest);color:#fff}
+.replay-music-toggle[aria-pressed="false"]{opacity:.8}
+.replay-music-volume{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;min-width:145px}
+.replay-music-volume input[type="range"]{width:115px;min-width:75px;accent-color:var(--forest);cursor:pointer}
+[data-replay-audio-note]:not([hidden]){flex-basis:100%;line-height:1.4}
+@media(max-width:480px){.replay-music-volume{flex:1 1 100%;justify-content:space-between}.replay-music-volume input[type="range"]{width:min(62%,200px)}}
