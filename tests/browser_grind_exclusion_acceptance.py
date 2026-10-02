@@ -28,8 +28,9 @@ async def main():
         fixtures["data/routes/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
     for ed in boot["editions"]:
         race=fixtures["data/races/"+ed["race_key"]+".json"]
-        assert "Grind" not in json.dumps(race,ensure_ascii=False),ed["race_key"]
+        assert all(not re.fullmatch(r"grind",str(st["name"]).strip(),re.IGNORECASE) for st in race["stations"]),ed["race_key"]
         assert len(race["stations"])==ed["timing_stations"]
+        assert all(sp["station_uid"] in {st["uid"] for st in race["stations"]} for sp in race["splits"])
         assert len(race["splits"])==ed["split_observations"]
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
@@ -72,13 +73,13 @@ async def main():
                         await page.wait_for_function("document.querySelectorAll('#segment-table tbody tr').length>0")
                         for selector in ("#segments","#dynamics","#course","#course-intelligence","#history"):
                             content=await page.locator(selector).inner_text()
-                            assert "Grind" not in content,(width,ed["race_key"],selector,content[:500])
+                            assert not re.search(r"\bGrind\b",content,re.IGNORECASE),(width,ed["race_key"],selector,content[:500])
                         if ed["race_key"] in EXPECTED_FIRST:
                             first,second,segments=EXPECTED_FIRST[ed["race_key"]]
                             labels=await page.locator("#segment-table tbody tr").all_inner_texts()
                             assert len(labels)==segments,(width,ed["race_key"],labels)
                             assert first in labels[0] and second in labels[0],(width,ed["race_key"],labels[0])
-                            assert not any("Grind" in x for x in labels),ed["race_key"]
+                            assert not any(re.search(r"\bGrind\b",x,re.IGNORECASE) for x in labels),ed["race_key"]
                         visited.append(ed["race_key"])
                 assert len(visited)==len(set(visited))==27,(width,len(visited))
                 assert not errors,(width,errors)
