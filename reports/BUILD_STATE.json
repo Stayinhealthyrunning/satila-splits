@@ -1,0 +1,48 @@
+{
+  "schema_version": 2,
+  "project": "Sätila Splits",
+  "blueprint": "reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md",
+  "branch": "build/saetila-first-draft",
+  "sprint": "S4-S10 QA checkpoint",
+  "status": "LOCAL_BROWSER_QA_GREEN_CI_PENDING",
+  "base_sha": "ee3db94d84de760f59c7a4022ecaff95769a5b21",
+  "verified_code_head_sha": "a6a3f6c448fd3dcf8ef0705c9d793a6901cb9814",
+  "done": [
+    {
+      "sprint": "S0",
+      "scope": "Selective merge of source foundation, official EQ event catalog retained; artifact fetched in original working session",
+      "status": "PARTIAL"
+    },
+    {
+      "sprint": "S1",
+      "scope": "Parser tools/build_satila.py implemented; local source count 27 selected editions, 3272 appearances, 2649 finishers, 16525 TIME passage observations",
+      "status": "LOCAL_CHECK_ONLY"
+    },
+    {
+      "sprint": "S2",
+      "scope": "Official organizer GPX parser implemented, actual route files not committed; participant GPX not available",
+      "status": "PARTIAL"
+    },
+    {
+      "sprint": "S3-S8",
+      "scope": "Static page and app.js/CSS, approved hero.webp and design-reference.webp committed",
+      "status": "CODE_ONLY"
+    }
+  ],
+  "inputs": [
+    "EQ artifact 11142571759 run 36818159977 (expires after 30 days)",
+    "Five organizer GPX attached to conversation but not yet in GitHub",
+    "PR #1 source foundation integrated on branch"
+  ],
+  "checks": [
+    "GitHub tree inspected; docs/index.html, docs/assets/app.js, style.css, hero.webp, design-reference.webp and tools/build_satila.py present",
+    "Actions run 36831622132 successful: raw EQ ZIP restored, exactly 9 events, 27 selected race editions, 3272 unique results, node --check app.js and required static assets passed; 29 files committed including 27 real race bundles, SQLite and bootstrap.",
+    "Offline Chromium local QA passed at 1440x900, 900x900 and 390x844: all three families, 2016/2025, 2025 route gating, profile, no JS errors, no horizontal document overflow after tablet podium fix."
+  ],
+  "known_limits": [
+    "Original participant GPX 2021–2025 not in GitHub",
+    "Five official GPX 2026 not yet repository/CI backed",
+    "Source ZIP only persisted in previous session and in GitHub Actions artifact"
+  ],
+  "next_action": "Verify independent frontend-regression workflow; then expand route interactions, source locking, and full S4-S11 features. Do not rebuild completed race bundles."
+}

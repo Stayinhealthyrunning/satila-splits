@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "project": "Sätila Splits",
+  "branch": "codex/saetila-final-visual-qa-2026-10-01",
+  "updated": "2026-10-01",
+  "resume_rule": "Read reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md and AGENTS.md; start a NEW isolated worktree from latest origin/integration/codex-independent-qa-2026-10-01. Preserve the original owner's Codex worktree and reports/qa-local. Do not restart EQ imports, alter verified source bundles, merge to main or publish without owner review.",
+  "sprints": {
+    "S0": {
+      "status": "complete",
+      "evidence": "reports/S0_SOURCE_LOCK.md; source registry; checksum-locked organizer GPX"
+    },
+    "S1": {
+      "status": "complete",
+      "evidence": "GitHub Actions 36835282859: 27 editions, 3272 results, 2649 FINISHED and 16525 TIME observations"
+    },
+    "S2": {
+      "status": "first_draft_complete_with_known_gaps",
+      "evidence": "2025/26 organizer GPX routes and explicit capability gates; historic GPX enrichment deferred"
+    },
+    "S3": {
+      "status": "complete",
+      "evidence": "docs/data/bootstrap.json and docs/data/races/ with 27 race bundles"
+    },
+    "S4": {
+      "status": "first_draft_complete",
+      "evidence": "approved Hero, branding, desktop/mobile UI, years and families"
+    },
+    "S5": {
+      "status": "extended_first_draft_qa_green",
+      "evidence": "overview, result filters, podiums and history"
+    },
+    "S6": {
+      "status": "extended_first_draft_qa_green",
+      "evidence": "observed timing segments and field dynamics"
+    },
+    "S7": {
+      "status": "first_draft_complete",
+      "evidence": "individual profile with additional insights, favorites and head-to-head"
+    },
+    "S8": {
+      "status": "extended_first_draft_qa_green",
+      "evidence": "interactive 2025 route and synced map/elevation scrubbing; historical routes not fabricated"
+    },
+    "S9": {
+      "status": "extended_first_draft_qa_green",
+      "evidence": "split-based personal goal plan and descriptive annual participation"
+    },
+    "S10": {
+      "status": "extended_first_draft_QA_green_with_a11y_budget_gates",
+      "evidence": "Chromium 36839581103 success; fast a11y/performance 36839729757 success"
+    },
+    "S11": {
+      "status": "feature_branch_ready_for_integration_qa",
+      "evidence": "Local full release candidate checks PASS at e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9; reports/CODEX_FINAL_VISUAL_QA_2026-10-01.md and reports/CODEX_FINAL_SOURCE_AND_ROUTE_QA_2026-10-01.md. The previous integrated 4/4 workflow remains baseline evidence only."
+    }
+  },
+  "verified_local_checkpoint": {
+    "editions": 27,
+    "result_appearances": 3272,
+    "browser_viewports_passed": [
+      1440,
+      900,
+      390
+    ],
+    "browser_errors": 0,
+    "horizontal_overflow_px": 0
+  },
+  "status": "READY_FOR_INTEGRATION_QA",
+  "verified": {
+    "editions": 27,
+    "result_appearances": 3272,
+    "finishers": 2649,
+    "observed_time_passages": 16525,
+    "latest_green_ci": 36870339072,
+    "independent_data_ci": 36835282859,
+    "browser_viewports": [
+      "1440x900",
+      "900x900",
+      "768x900",
+      "390x844"
+    ],
+    "zero_browser_exceptions": true,
+    "zero_horizontal_overflow": true,
+    "deep_map_elevation_scrub": true,
+    "extended_analytics_ci": 36838917833,
+    "verified_build_head": "1f1305e251d5269f95778eec674bba01b5689e96",
+    "module": "docs/assets/analytics-extra.js integrated inside docs/assets/app.js",
+    "review_zip": {
+      "run_id": 36870339072,
+      "artifact_id": 11165319775,
+      "inner_zip_bytes": 831095,
+      "sha256": "bbdb308224132c4f360df53ba6cec39f6d0943ebcddb967a99ac3df8659bda05",
+      "public_files": 44,
+      "source_sha": "1f1305e251d5269f95778eec674bba01b5689e96",
+      "latest_frontend_code_sha": "1aea98877a7b921a2616dafe3e4ae0053d7a10de"
+    },
+    "accessibility_release_gate": "tests/test_accessibility_performance.py PASS",
+    "dialog_labelling_commit": "8e82f6bb97771d6c599d226756bc08c7590e648c",
+    "latest_green_chromium": "36870339072",
+    "review_zip_workflow": "36870339072",
+    "review_zip_artifact_id": 11165319775,
+    "review_zip_digest": "sha256:bbdb308224132c4f360df53ba6cec39f6d0943ebcddb967a99ac3df8659bda05",
+    "critical_initial_bytes": 335164,
+    "latest_local_code_commit": "e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9",
+    "local_release_candidate": {
+      "base_sha": "e8a5be1fe542d669f8939bdc1186ef0e12cd55de",
+      "tested_code_sha": "e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9",
+      "draft_pr": "https://github.com/Stayinhealthyrunning/satila-splits/pull/9",
+      "full_local_release_checks": "PASS",
+      "browser_smoke_widths": [1440, 900, 768, 390],
+      "browser_errors": 0,
+      "document_horizontal_overflow_px": 0,
+      "source_or_provenance_changes": true,
+      "source_change_note": "Verified organizer route re-export only; raw SHA-256 unchanged. EQ 82 km preserved with separate organizer 85 km metadata for 2019/2021 ultra.",
+      "route_geometry_retention": "100.000% within published coordinate precision for all five organizer routes",
+      "integration_workflow_status": "NOT_RUN_ON_FEATURE_BRANCH"
+    },
+    "integration": {
+      "verified_code_commit": "1aea98877a7b921a2616dafe3e4ae0053d7a10de",
+      "workflow_run_id": 36870339072,
+      "workflow_url": "https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36870339072",
+      "source_and_method": "PASS",
+      "browser_core": "PASS",
+      "release_gates": "PASS",
+      "review_package": "PASS",
+      "screenshot_artifact_id": 11167225221,
+      "source_report_artifact_id": 11166148266,
+      "review_artifact_id": 11165319775,
+      "browser_fullpage_widths": [
+        1440,
+        900,
+        768,
+        390
+      ],
+      "browser_document_horizontal_overflow_px": 0,
+      "all_27_editions_desktop_and_mobile": "PASS",
+      "synced_map_elevation_h2h": "PASS",
+      "special_evidence_cases": "PASS: 2025 Tostared metadata-only excluded from field coverage, Grind-Torrås n130, 2023 n8, 2016 female podium2, DNF unknown, D07 scatter 2-stage zoom/reset, D11/D18/D19/D21/D22/T07",
+      "source_commit": "1f1305e251d5269f95778eec674bba01b5689e96"
+    }
+  },
+  "known_limits": [
+    "Final Codex visual pass is complete; actual owner visual signoff remains pending and CI is not authorization to publish.",
+    "K02 historical two-route overlay and D25 linked whole-course performance trend remain gated by unpromoted historical route/equivalence evidence; D26 comparable records likewise gated.",
+    "Organizer 21/43 km 2025/2026 route reuse is an explicit project assumption; separate 85 km 2026 geometry does not validate 2025 ultra.",
+    "No linked public TIME passages for the current 128 DNF; cannot infer withdrawal checkpoint, location or km.",
+    "D23/K01 physical checkpoint anchors and T06 segment D+/D- require validated physical anchoring/elevation; no synthetic route interpolation may be presented as measured.",
+    "Owner visual approval is still required. T01, K03, K04, K05 and T06 pass local Chromium regression at e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9.",
+    "The feature branch has not run the integration-only four-job workflow; READY_FOR_INTEGRATION_QA is not an integrated green claim.",
+    "Original private EQ Timing source archive needs owner-controlled long-term backup before artifact expiry 2026-10-31; issue #6.",
+    "No merge of Draft PR #7 into main and no production publication on Loppanalys.se."
+  ],
+  "next_action": "Review Draft PR #9 from codex/saetila-final-visual-qa-2026-10-01 into integration/codex-independent-qa-2026-10-01. After approved integration, require all four integration-candidate jobs and a review ZIP from that exact integrated SHA. Do not merge to main or publish before owner approval.",
+  "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
+  "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md"
+}
