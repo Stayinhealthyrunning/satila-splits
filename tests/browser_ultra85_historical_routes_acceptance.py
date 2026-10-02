@@ -33,7 +33,8 @@ async def main():
         assert route["type"] == "VERIFIED_PARTICIPANT"
         assert route["edition_references"] == [year]
         assert len(route["points"]) == POINTS[year]
-        assert all(point[3] is None for point in route["points"])
+        assert all(isinstance(point[3], (int, float)) for point in route["points"])
+        assert route["elevation_provenance"]["type"] == "DSM_RECONSTRUCTED_SURFACE"
 
     markup = (ROOT / "index.html").read_text(encoding="utf-8")
     markup = re.sub(r"<link [^>]*>", "", markup)
@@ -85,11 +86,14 @@ async def main():
                     )
                     assert await page.locator("#course-map .route-base").count() == 1, (width, year)
                     assert await page.locator("#course-map .osm-attribution").count() == 1, (width, year)
-                    assert await page.locator("#course-elevation .elev-line").count() == 0, (width, year)
+                    assert await page.locator("#course-elevation .elev-line").count() == 1, (width, year)
                     elevation_copy = await page.locator("#course-elevation").inner_text()
-                    assert "Höjddata saknas" in elevation_copy, (width, year, elevation_copy)
+                    assert "Rekonstruerad ytmodell" in elevation_copy, (width, year, elevation_copy)
+                    assert "Copernicus GLO-30" in elevation_copy, (width, year, elevation_copy)
                     source_copy = await page.locator("#course-source").inner_text()
                     assert "deltagar" in source_copy.lower(), (width, year, source_copy)
+                    assert "rekonstruerad" in source_copy.lower(), (width, year, source_copy)
+                    assert "inte uppmätt löparhöjd" in source_copy.lower(), (width, year, source_copy)
 
                     hit = page.locator("#course-map [data-map-hit]")
                     await hit.focus()
@@ -102,7 +106,7 @@ async def main():
                     )
                     assert overflow <= 1, (width, year, overflow)
                     print(
-                        f"PASS {width}px {year}/Ultra85: map works, elevation absence explicit, no overflow",
+                        f"PASS {width}px {year}/Ultra85: map and reconstructed DSM elevation render with provenance, no overflow",
                         flush=True,
                     )
 
