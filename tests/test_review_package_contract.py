@@ -40,8 +40,8 @@ def expected_paths():
     races={"data/races/"+e["race_key"]+".json" for e in catalog}
     assert len(races)==27
     inventory=json.loads((SITE/"data/route-inventory.json").read_text(encoding="utf-8"))
-    participant={"data/routes/"+v["race_key"]+"-participant.json" for v in inventory if v.get("type")=="VERIFIED_PARTICIPANT"}
-    assert all(v.get("type") in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT") for v in inventory)
+    participant={"data/routes/"+v["race_key"]+"-participant.json" for v in inventory if v.get("type") in ("VERIFIED_PARTICIPANT","TRACE_DE_TRAIL")}
+    assert all(v.get("type") in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT","TRACE_DE_TRAIL") for v in inventory)
     return {"index.html","DATA_MODEL.md"}|ASSETS|MANIFESTS|EXPECTED_ROUTE|participant|races
 
 def actual_paths():
