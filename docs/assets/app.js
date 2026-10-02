@@ -452,7 +452,12 @@ function renderProfileReplay(r){
   }
   const pts=routePoints(),anchors=runnerAnchors(r),maxDistance=anchors.at(-1)?.km||0;
   if(anchors.length<2||maxDistance<=0){
-    host.innerHTML=empty('GPX-banan visas i Banprofil. Den här löparen saknar en senare registrerad TIME-passage, så en personlig rörelse kan inte beräknas utan att hitta på data.');
+    // Source geometry still belongs in the personal popup. Only the runner
+    // animation is disabled where the participant has no usable TIME after Start.
+    host.innerHTML='<h3>Bana och höjd · tillgänglig GPX</h3><div class="course-map" id="profile-mini-map"></div><div class="course-elevation" id="profile-mini-elev"></div><p class="muted small">Banan finns, men denna löpare saknar en senare registrerad TIME-passage. Replay-rörelse kan därför inte beräknas utan att hitta på data.</p>';
+    const map=$('#profile-mini-map'),{W,H}=mapViewport(map,280),path=project(pts,W,H,18);
+    map.innerHTML=svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/>`,'Statisk verifierad GPX-rutt över OpenStreetMap')+osmAttribution();
+    $('#profile-mini-elev').innerHTML=elevationSvg(pts,0,false);
     return;
   }
   let d=0,playing=false,startedAt=0,startedKm=0;
