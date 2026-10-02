@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "project": "Sätila Splits",
-  "branch": "codex/saetila-final-visual-qa-2026-10-01",
-  "updated": "2026-10-01",
-  "resume_rule": "Read reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md and AGENTS.md; start a NEW isolated worktree from latest origin/integration/codex-independent-qa-2026-10-01. Preserve the original owner's Codex worktree and reports/qa-local. Do not restart EQ imports, alter verified source bundles, merge to main or publish without owner review.",
+  "branch": "main",
+  "updated": "2026-10-02",
+  "resume_rule": "Read README.md and reports/RELEASE_CHECKPOINT_2026-10-02.md. PR #13 is merged into main; do not resume historical integration/Codex branches. Do not merge portal PR #8 before standalone site is live and owner-approved.",
   "sprints": {
     "S0": {
       "status": "complete",
@@ -65,7 +65,7 @@
     "browser_errors": 0,
     "horizontal_overflow_px": 0
   },
-  "status": "READY_FOR_INTEGRATION_QA",
+  "status": "FIRST_STANDALONE_RELEASE_MERGED_HOSTING_PENDING",
   "verified": {
     "editions": 27,
     "result_appearances": 3272,
@@ -107,7 +107,12 @@
       "tested_code_sha": "e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9",
       "draft_pr": "https://github.com/Stayinhealthyrunning/satila-splits/pull/9",
       "full_local_release_checks": "PASS",
-      "browser_smoke_widths": [1440, 900, 768, 390],
+      "browser_smoke_widths": [
+        1440,
+        900,
+        768,
+        390
+      ],
       "browser_errors": 0,
       "document_horizontal_overflow_px": 0,
       "source_or_provenance_changes": true,
@@ -140,17 +145,27 @@
     }
   },
   "known_limits": [
-    "Final Codex visual pass is complete; actual owner visual signoff remains pending and CI is not authorization to publish.",
     "K02 historical two-route overlay and D25 linked whole-course performance trend remain gated by unpromoted historical route/equivalence evidence; D26 comparable records likewise gated.",
     "Organizer 21/43 km 2025/2026 route reuse is an explicit project assumption; separate 85 km 2026 geometry does not validate 2025 ultra.",
     "No linked public TIME passages for the current 128 DNF; cannot infer withdrawal checkpoint, location or km.",
     "D23/K01 physical checkpoint anchors and T06 segment D+/D- require validated physical anchoring/elevation; no synthetic route interpolation may be presented as measured.",
-    "Owner visual approval is still required. T01, K03, K04, K05 and T06 pass local Chromium regression at e994e5b108f8ab3f3f537e35ade9bd3f5d52c7a9.",
-    "The feature branch has not run the integration-only four-job workflow; READY_FOR_INTEGRATION_QA is not an integrated green claim.",
     "Original private EQ Timing source archive needs owner-controlled long-term backup before artifact expiry 2026-10-31; issue #6.",
-    "No merge of Draft PR #7 into main and no production publication on Loppanalys.se."
+    "Original independent source package must be verified in main/data/source-archive, not assumed committed just because the preservation workflow was created.",
+    "Portal PR #8 remains deliberately unmerged; standalone Pages must be activated and verified first."
   ],
-  "next_action": "Review Draft PR #9 from codex/saetila-final-visual-qa-2026-10-01 into integration/codex-independent-qa-2026-10-01. After approved integration, require all four integration-candidate jobs and a review ZIP from that exact integrated SHA. Do not merge to main or publish before owner approval.",
+  "next_action": "Verify source-preservation workflow success and ZIP hash in Git; enable Pages using GitHub Actions in repository Settings > Pages if necessary; verify live deployed URL, then get owner visual approval. Keep portal PR #8 draft until then.",
   "parity_audit": "reports/CODEX_PARITY_AUDIT.md",
-  "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md"
+  "integration_handoff": "reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md",
+  "release": {
+    "source_integration_sha": "93f375d614cb07438a13fa1be22b87a181d2698f",
+    "integration_actions_run": 36979936937,
+    "integrated_checks": "4/4 SUCCESS",
+    "release_pr": 13,
+    "release_main_commit": "c1aaf81c1636c19fbcdcf05deb1fc1de2e078795",
+    "pages_workflow": ".github/workflows/deploy-pages.yml",
+    "pages_status": "Configuration and live URL must be verified. GitHub Pages requires Settings > Pages > Source: GitHub Actions if not enabled.",
+    "source_archive_workflow": ".github/workflows/preserve-eqtiming-source.yml",
+    "source_archive_status": "Workflow installed; verify archived ZIP is committed to data/source-archive/ and verify 422 original eqtiming-full source members.",
+    "portal_pr": "Stayinhealthyrunning/Stayinhealthyrunning.github.io#8 - keep draft/unmerged"
+  }
 }
