@@ -1,0 +1,20 @@
+# Sätila EQ Timing – permanent source archive
+
+The canonical public reconstruction input is `satila-eqtiming-full-source-2026-10-01.zip` (to be uploaded alongside this README).
+
+- Source: GitHub Actions run `36818159977`, artifact ID `11142571759`, created 2026-10-01.
+- This ZIP retains **all 422 files from `eqtiming-full/`**, for the years 2016–2019 and 2021–2025, and adds `SOURCE_MANIFEST.json` with per-file SHA-256 and byte counts.
+- Expected ZIP size: **5,234,521 bytes**.
+- Expected SHA-256: `868770e34d892e6dbf792e3d04ee7848cc977fc236aee068d74eb936b00c7dc4`.
+- The original temporary artifact also included 138 ancillary `eqtiming/` browser/network traces. They are **not** part of the reconstruction database and include access/connection negotiation tokens; they must not be committed publicly.
+- The archive is stored outside `docs/` and is not a GitHub Pages site asset. Do not put personal access credentials or other non-race technical traces here.
+
+## Validation
+
+```bash
+python -c "import hashlib,pathlib; p=pathlib.Path('data/source-archive/satila-eqtiming-full-source-2026-10-01.zip'); print(p.stat().st_size,hashlib.sha256(p.read_bytes()).hexdigest())"
+```
+
+Expected: `5234521 868770e34d892e6dbf792e3d04ee7848cc977fc236aee068d74eb936b00c7dc4`.
+
+Then unpack the archive in a temporary directory and inspect `SOURCE_MANIFEST.json`. Do not replace the published, sanitized `docs/data/` with unprocessed source files.
