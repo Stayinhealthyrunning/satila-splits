@@ -61,3 +61,15 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 #compare-dialog .duel-controls{grid-template-columns:minmax(0,1fr)}
 #compare-dialog .duel-map [data-runner-marker]{pointer-events:none}
 @media(max-width:600px){#compare-dialog .duel-map{min-height:300px}#compare-dialog .duel-map>svg{height:300px}#compare-dialog .duel-map-toolbar{right:6px;top:6px}}
+
+/* Shared vertical map/profile composition across comparison, map duel and personal Replay. */
+#map-duel-dialog .compare-dashboard{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px;width:100%;min-width:0}
+#map-duel-dialog #map-duel-map{width:100%;height:390px;min-width:0;position:relative}
+#map-duel-dialog #map-duel-map>svg{display:block;width:100%;height:100%}
+#map-duel-dialog #map-duel-elevation{width:100%;min-width:0;height:auto;min-height:145px}
+#map-duel-dialog #map-duel-elevation>svg{display:block;width:100%;height:auto;max-height:none}
+#profile-replay #profile-mini-map{width:100%;height:390px;min-width:0;position:relative;margin-bottom:12px}
+#profile-replay #profile-mini-map>svg{display:block;width:100%;height:100%}
+#profile-replay #profile-mini-elev{width:100%;min-width:0;height:auto;min-height:145px;margin-top:0}
+#profile-replay #profile-mini-elev>svg{display:block;width:100%;height:auto;max-height:none}
+@media(max-width:600px){#map-duel-dialog #map-duel-map,#profile-replay #profile-mini-map{height:300px}}
