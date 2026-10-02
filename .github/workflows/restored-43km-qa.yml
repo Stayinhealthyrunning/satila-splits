@@ -6,6 +6,9 @@ on:
       - 'data/participant-gpx/**'
       - 'data/normalized-gpx/**'
       - 'docs/data/**'
+      - 'docs/assets/app.js'
+      - 'tools/run_release_candidate_checks.py'
+      - 'tests/browser_43km_all_routed_years_acceptance.py'
       - 'config/**'
       - 'tools/rebuild_owner_normalized_43.py'
       - 'tests/test_restored_43km_gpx.py'
@@ -36,5 +39,6 @@ jobs:
           python tools/run_release_candidate_checks.py --source
       - name: Browser checks for 2024 sparse checkpoints and all historical editions
         run: |
+          SATILA_SITE=docs python tests/browser_43km_all_routed_years_acceptance.py
           SATILA_SITE=docs python tests/browser_2024_course_acceptance.py
           SATILA_SITE=docs python tests/browser_all_editions_acceptance.py
