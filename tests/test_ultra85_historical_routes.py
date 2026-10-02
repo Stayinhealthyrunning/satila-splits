@@ -64,6 +64,9 @@ class HistoricalUltra85Routes(unittest.TestCase):
         self.assertIn("Höjddata saknas i detta historiska deltagarspår", app)
         self.assertIn("Copernicus DSM · rekonstruerad ythöjd", app)
         self.assertIn("Copernicus WorldDEM-30", app)
+        page = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("produced using Copernicus WorldDEM-30", page)
+        self.assertIn("do not incur any liability", page)
         for year in EXPECTED:
             key = f"{year}-ultra85"
             route = load(DATA / "routes" / f"{key}-participant.json")
