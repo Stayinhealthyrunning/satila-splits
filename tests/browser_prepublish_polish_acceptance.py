@@ -113,6 +113,25 @@ async def main():
                 await page.locator("#course-map").screenshot(path=str(OUT/f"satila-prepublish-map-{width}.png"),animations="disabled")
 
                 if width==1440:
+                    # 2021 22 km has one UNKNOWN record with no public TIME.
+                    # Excluding only DNS would incorrectly claim this person started.
+                    await page.evaluate("location.hash='#family=trail22&year=2021'")
+                    await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('22 km · 2021')")
+                    await page.wait_for_function("document.querySelector('#status-chart .status-summary')!==null")
+                    historic=data["data/races/2021-trail22.json"]["results"]
+                    assert sum(r["status"]=="UNKNOWN" for r in historic)==1
+                    historic_values=[int(v.replace("\\xa0","")) for v in await page.locator("#status-chart .status-summary article>strong").all_text_contents()]
+                    known_starters=sum(r["status"] in ("FINISHED","DNF","DSQ") for r in historic)
+                    expected_historic=[
+                        len(historic),known_starters,
+                        sum(r["status"]=="DNF" for r in historic),
+                        sum(r["status"]=="FINISHED" for r in historic)
+                    ]
+                    assert historic_values==expected_historic,("UNKNOWN is not a verified starter",historic_values,expected_historic)
+                    await page.locator("#dynamics .info").first.click()
+                    help_text=await page.locator("#help-content").inner_text()
+                    assert "okänd status räknas inte som bekräftad start" in help_text,help_text
+                    await page.locator('#help-dialog [data-close="help-dialog"]').click()
                     await page.evaluate("location.hash='#family=trail22&year=2024'")
                     await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('22 km · 2024')")
                 print("PASS prepublish polish",width,height,"overflow",overflow,flush=True)
