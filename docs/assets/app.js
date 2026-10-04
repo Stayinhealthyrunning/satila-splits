@@ -125,7 +125,7 @@ const SEX_COLORS={F:'#d65a91',M:'#3479c5',unknown:'#aab3ad'};
 function chartYTicks(left,right,top,bottom,min,max,format,steps=4){
   return Array.from({length:steps+1},(_,i)=>{
     const value=min+(max-min)*i/steps,y=bottom-(bottom-top)*i/steps;
-    return `<line x1="${left}" x2="${right}" y1="${y}" y2="${y}" stroke="currentColor" opacity="${i===0?.27:.12}"/><text x="${left-6}" y="${y+3}" text-anchor="end">${format(value)}</text>`;
+    return `<line x1="${left}" x2="${right}" y1="${y}" y2="${y}" stroke="currentColor" opacity="${i===0 ? .27 : .12}"/><text x="${left-6}" y="${y+3}" text-anchor="end">${format(value)}</text>`;
   }).join('');
 }
 function chartXTicks(left,right,y,min,max,format,steps=6){
