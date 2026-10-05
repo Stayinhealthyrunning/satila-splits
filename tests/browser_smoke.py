@@ -184,6 +184,13 @@ async def main():
    assert await page.locator(".suggestion").count()>0
    await page.locator(".suggestion").first.click()
    assert await page.locator("#profile-dialog").evaluate("e=>e.open")
+   assert await page.locator("#profile-content .profile-quick-nav button").count()==5
+   assert await page.locator("#profile-content .profile2-facts article").count()==7
+   assert await page.locator("#personal-summary").count()==1
+   assert await page.locator("#profile-replay .profile-replay-grid").count()==1
+   assert await page.locator("#profile-journey .profile-journey-card").count()>=3
+   assert await page.locator("#profile-relative svg").count()==1
+   assert await page.locator("#profile-splits table").count()==1
    assert await page.locator(".insight").count()>0
    assert any('Sedan föregående verifierade' in value for value in await page.locator('#profile-content th').all_text_contents())
    assert await page.locator('#profile-content .insight small').count()>0
