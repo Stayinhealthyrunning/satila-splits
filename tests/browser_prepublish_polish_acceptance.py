@@ -60,6 +60,18 @@ async def main():
                 page,errors=await build_page(browser,data,markup,script,width,height)
                 await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2025')")
 
+                # The two analysis entry flows should follow the race status and
+                # each other with an intentionally compact, still readable rhythm.
+                gaps=await page.evaluate("""() => {
+                  const rect=selector=>document.querySelector(selector).getBoundingClientRect();
+                  return {
+                    statusToRunner:rect('#runner-tools .section-heading').top-rect('#race-context .source-status').bottom,
+                    searchToMap:rect('#map-duel-builder .section-heading').top-rect('#runner-tools .runner-search-panel').bottom
+                  };
+                }""")
+                assert 12<=gaps["statusToRunner"]<=52,(width,gaps,"race status to runner heading rhythm")
+                assert 18<=gaps["searchToMap"]<=58,(width,gaps,"runner search to map heading rhythm")
+
                 # 1–2: default latest 43 km and real arithmetic FINISHED mean.
                 assert await page.locator("#goal-placement-time").input_value()==expected_mean
                 assert await page.locator("#goal-placement-time").get_attribute("data-default-source")=="finished-mean"

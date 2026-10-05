@@ -567,6 +567,10 @@ function runnerAnchors(r){
     if(obs&&num(obs.elapsed_seconds)&&obs.elapsed_seconds>last.t&&km>last.km+1e-6)
       raw.push({km,t:obs.elapsed_seconds,name:st.name,mode:'observed',station:st});
   }
+  // An official FINISHED result supplies the observed terminal TIME even if the
+  // source bundle has no separately linked public finish passage.
+  if(finish(r)&&num(r.finish_seconds)&&r.finish_seconds>raw.at(-1).t)
+    raw.push({km:endKm,t:r.finish_seconds,name:'Mål',mode:'observed',station:null});
   if(raw.length<2)return raw;
   const all=[raw[0]];
   for(let i=1;i<raw.length;i++){
@@ -615,7 +619,7 @@ function drawSimpleRoute(host,pts,d,markers=null){
   let routeSvg=host.querySelector('svg'),hit=host.querySelector('[data-local-hit]');
   if(routeSvg&&Math.abs(Number(routeSvg.dataset.fullMapWidth||W)-W)>2){routeSvg.remove();host.querySelectorAll('.osm-attribution').forEach(node=>node.remove());routeSvg=null;hit=null}
   if(!routeSvg){
-    const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" stroke="#173b2a" stroke-width="1.5"><title>${html(marker.label)}</title></circle>`).join(''):'';
+    const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" fill-opacity=".72" stroke="#173b2a" stroke-width="1.5" stroke-opacity=".82"><title>${html(marker.label)}</title></circle>`).join(''):'';
     host.insertAdjacentHTML('beforeend',svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/><circle data-route-cursor r="5" fill="#d4a858" stroke="#173b2a" stroke-width="1" opacity=".65"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Interaktiv GPX-rutt över OpenStreetMap')+osmAttribution());
     routeSvg=host.querySelector('svg');routeSvg.dataset.fullMapWidth=String(W);hit=host.querySelector('[data-local-hit]');
     const seek=event=>{
@@ -645,7 +649,9 @@ function drawSimpleRoute(host,pts,d,markers=null){
   cursor.setAttribute('cx',x);cursor.setAttribute('cy',y);
   if(Array.isArray(markers))markers.forEach((marker,i)=>{
     const point=xyAt(marker.km),node=host.querySelector('[data-runner-marker="'+i+'"]');
-    if(node){node.setAttribute('cx',point[0]+(markers.length>1&&Math.abs(markers[0].km-marker.km)<.001?(i?5:-5):0));node.setAttribute('cy',point[1])}
+    // Identical route positions share one exact projected coordinate. A visual
+    // offset would imply a positional gap; translucent fills show the overlap.
+    if(node){node.setAttribute('cx',point[0]);node.setAttribute('cy',point[1])}
   });
   const zoom=host.id==='duel-map'?(S.duelZoom||1):host.id==='profile-mini-map'&&S.profileFollow?2.2:host.id==='map-duel-map'&&S.mapDuelCamera==='leader'?2.2:1,width=W/zoom,height=H/zoom;
   const vx=Math.max(0,Math.min(W-width,x-width/2)),vy=Math.max(0,Math.min(H-height,y-height/2));
@@ -672,7 +678,7 @@ function renderCompareContent(x,y){
     largest?`Största observerade lucka: ${signed(largest.diff)} vid ${largest.st.name}.`:'Minst en gemensam tidskontroll krävs för observerad lucka.'
   ];
   const routeReady=validRouteComparison();
-  const compareMaxClock=Math.max(runnerAnchors(x).at(-1).t,runnerAnchors(y).at(-1).t);
+  const compareMaxClock=Math.ceil(Math.max(runnerAnchors(x).at(-1).t,runnerAnchors(y).at(-1).t));
   return `<div class="compare-profiles"><article><p class="eyebrow">LOPP A</p><span class="avatar" aria-hidden="true">${html(initial(x.name))}</span><h3>${html(x.name)}</h3><p class="muted small">${html(x.class_name)} · #${html(x.bib)}</p><strong>${time(x.finish_seconds)}</strong><p>Placering ${x.place??'—'} · ${html(x.status)}</p></article><div class="versus">VS${finishGap!==null?`<small style="display:block;font-size:12px">${signed(finishGap)}</small>`:''}</div><article><p class="eyebrow">LOPP B</p><span class="avatar" aria-hidden="true">${html(initial(y.name))}</span><h3>${html(y.name)}</h3><p class="muted small">${html(y.class_name)} · #${html(y.bib)}</p><strong>${time(y.finish_seconds)}</strong><p>Placering ${y.place??'—'} · ${html(y.status)}</p></article></div><div class="panel-heading"><h3>Jämför löparnas framfart</h3><button class="info" type="button" id="compare-info" aria-label="Metod för jämförelsen">i</button></div><div id="duel-progress-chart" class="chart-host">${progressSvg(x,y)}</div><h4 class="subchart-title">Observerad tidslucka (A−B) vid gemensamma kontroller</h4><div id="duel-gap-chart" class="chart-host">${gapSvg(shared)}</div><p class="muted small">Grön = lopp A, guld = lopp B. Linjerna är enbart illustrativ linjär interpolation mellan respektive löpares verkliga EQ Timing-passager. En streckad fortsättning betyder att positionen fryser efter sista observerade kontroll.</p><div class="duel-insights"><h3>Vad hände mellan kontrollerna?</h3><ul>${insights.map(value=>`<li>${html(value)}</li>`).join('')}</ul></div><h3>Verkliga passager och delsträckor</h3><div class="table-scroll"><table><thead><tr><th>Kontroll</th><th>Timing-km</th><th>A ack.</th><th>B ack.</th><th>A segment</th><th>B segment</th><th>A plats</th><th>B plats</th><th>A−B</th><th>Visa</th></tr></thead><tbody>${rows.map(row=>{
     const xa=xParts.find(p=>p.to.uid===row.st.uid),yb=yParts.find(p=>p.to.uid===row.st.uid);
     return `<tr><td>${html(row.st.name)}</td><td>${fmtKm(row.km)}</td><td>${time(row.a?.elapsed_seconds)}</td><td>${time(row.b?.elapsed_seconds)}</td><td>${time(xa?.seconds)}</td><td>${time(yb?.seconds)}</td><td>${row.a?.place??'—'}</td><td>${row.b?.place??'—'}</td><td>${signed(row.diff)}</td><td><button type="button" data-duel-ck="${row.st.uid}">Följ ↗</button></td></tr>`;
@@ -756,8 +762,8 @@ function setupCompareInteractions(x,y){
 function drawCompareMap(x,y,d,clock){
   const pts=routePoints(),map=$('#duel-map'),elev=$('#duel-elevation');
   if(!map||!pts.length)return;
-  const xa=runnerAnchors(x),ya=runnerAnchors(y),t=Number.isFinite(clock)?clock:0;
-  const aKm=distanceAtTime(xa,t),bKm=distanceAtTime(ya,t);
+  const xa=runnerAnchors(x),ya=runnerAnchors(y),t=Number.isFinite(clock)?clock:0,routeEnd=pts.at(-1)[0];
+  const aKm=displayDistanceAtTime(xa,t,routeEnd),bKm=displayDistanceAtTime(ya,t,routeEnd);
   drawSimpleRoute(map,pts,aKm,[{km:aKm,color:'#315f41',label:'A · beräknad position vid gemensam tid'},{km:bKm,color:'#b48b44',label:'B · beräknad position vid gemensam tid'}]);
   const a=estimatedAt(xa,aKm),b=estimatedAt(ya,aKm),gap=num(a)&&num(b)?a-b:null;
   if(!elev.querySelector('svg')){
@@ -774,7 +780,7 @@ function drawCompareMap(x,y,d,clock){
   const indicator=$('#duel-progress-chart [data-compare-clock-cursor]');
   if(indicator){const cx=32+t/Math.max(1,xa.at(-1).t,ya.at(-1).t)*(750-64);indicator.setAttribute('x1',cx);indicator.setAttribute('x2',cx)}
   const lead=aKm-bKm;
-  $('#duel-readout').innerHTML=`<strong>Gemensam tävlingsklocka ${time(t)}</strong> · <span style="color:#315f41">A ${html(x.name)}: ${fmtKm(aKm)} km</span> · <span style="color:#a47b37">B ${html(y.name)}: ${fmtKm(bKm)} km</span> · <strong>Positionsskillnad A−B: ${lead>=0?'+':''}${lead.toFixed(1)} km</strong><br>Vid A:s GPX-distans ${fmtKm(aKm)} km: beräknad passagetid A ${time(a)}, B ${time(b)} · Tidslucka A−B: ${signed(gap)}. Mellan exakta kontroller är båda positionerna illustrativa. ${t>xa.at(-1).t||t>ya.at(-1).t?'Löpare utan senare TIME-ankare fryser vid sista observerade position.':''}`;
+  $('#duel-readout').innerHTML=`<strong>Gemensam tävlingsklocka ${time(t)}</strong> · <span style="color:#315f41">A ${html(x.name)} är cirka ${fmtKm(aKm)} km in i loppet</span> · <span style="color:#a47b37">B ${html(y.name)} befinner sig vid cirka ${fmtKm(bKm)} km på banan</span> · <strong>Positionsskillnad A−B: ${lead>=0?'+':''}${lead.toFixed(1)} km</strong><br>Vid A:s position cirka ${fmtKm(aKm)} km in på visningsrutten: beräknad passagetid A ${time(a)}, B ${time(b)} · Tidslucka A−B: ${signed(gap)}. Mellan exakta kontroller är båda positionerna illustrativa. ${t>xa.at(-1).t||t>ya.at(-1).t?'Löpare utan senare TIME-ankare fryser vid sista observerade position.':''}`;
 }
 function renderCumulativeFinish(){
   const host=$('#percentile-chart'),finishers=S.filtered.filter(finish);
@@ -838,6 +844,12 @@ function distanceAtTime(anchors,elapsed){
   }
   return anchors.at(-1).km;
 }
+function displayDistanceAtTime(anchors,elapsed,routeEnd){
+  const km=distanceAtTime(anchors,elapsed),last=anchors.at(-1);
+  // Finish anchors may differ by tiny source-axis rounding. Once a runner is
+  // actually at the route endpoint, use that one canonical endpoint.
+  return last&&elapsed>=last.t&&Math.abs(last.km-routeEnd)<.05?routeEnd:km;
+}
 function openMapDuel(){
   replaySoundtrack.close();
   const dialog=$('#map-duel-dialog'),host=$('#map-duel-content'),runners=S.mapDuel.map(findRecord).filter(Boolean);
@@ -850,7 +862,7 @@ function openMapDuel(){
   const data=runners.map((runner,i)=>({runner,anchors:runnerAnchors(runner),color:['#d8ad62','#69a07b','#8e9dc4','#d28975','#b58ec4'][i]}));
   // The map remains available when timing coverage is sparse. Each runner
   // freezes at their last actual TIME; without one they stay at Start.
-  const pts=routePoints(),maxClock=Math.max(0,...data.map(item=>item.anchors.at(-1).t));
+  const pts=routePoints(),maxClock=Math.ceil(Math.max(0,...data.map(item=>item.anchors.at(-1).t)));
   let clock=0,playing=false,startedAt=0,startedClock=0;
   S.mapDuelCamera='full';
   host.innerHTML=`<p class="muted small">Gemensam tävlingsklocka. Markörerna följer verifierade EQ-passager. Vid saknade mellankontroller används en robust fartprofil från minst fem närliggande löpare med kompletta passager; annars jämn medelfart mellan de verifierade punkterna. Uppskattningarna används enbart för animeringen, visas inte som resultat och markörerna fryser efter sista säkra ankarpunkt. De är inte uppmätta GPS-positioner.</p><div class="compare-dashboard"><div id="map-duel-map" class="duel-map"></div><div id="map-duel-elevation" class="duel-elevation"></div></div><div class="map-duel-playback"><button type="button" class="btn green" id="map-duel-play">Spela</button><button type="button" class="btn text-btn" id="map-duel-reset">Börja om</button><label>Hastighet<select id="map-duel-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Kamera<select id="map-duel-camera"><option value="full">Hela banan</option><option value="leader">Följ ledaren</option></select></label><button type="button" class="btn text-btn" id="map-duel-fit">Visa hela banan</button><button type="button" class="btn text-btn replay-music-toggle" data-replay-music aria-label="Slå av eller på musik" aria-pressed="true">♫ Musik</button><label class="replay-music-volume">Volym <input data-replay-volume type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Musikvolym"></label><span data-replay-audio-note class="muted small" role="status" hidden></span></div><label>Delad tävlingsklocka<input id="map-duel-clock" type="range" min="0" max="${maxClock}" step="1" value="0" aria-label="Sök i kartduellens tävlingsklocka"/></label><p id="map-duel-readout" class="duel-readout"></p><h3>Position och ordning vid vald tid</h3><div id="map-duel-leaderboard"></div>`;
@@ -860,15 +872,15 @@ function openMapDuel(){
   const stop=(pauseMusic=true)=>{playing=false;cancelAnimationFrame(S._mapDuelFrame);play.textContent='Spela';if(pauseMusic)replaySoundtrack.pause()};
   function draw(next){
     clock=Math.max(0,Math.min(maxClock,next));range.value=clock;
-    const positions=data.map(item=>({...item,km:distanceAtTime(item.anchors,clock)}));
+    const positions=data.map(item=>({...item,km:displayDistanceAtTime(item.anchors,clock,pts.at(-1)[0])}));
     const leader=positions.slice().sort((a,b)=>b.km-a.km)[0];
-    drawSimpleRoute(map,pts,leader.km,positions.map(item=>({km:item.km,color:item.color,label:`${item.runner.name} · illustrativ position`})));
+    drawSimpleRoute(map,pts,leader.km,positions.map(item=>({km:item.km,color:item.color,label:`${item.runner.name} · cirka ${fmtKm(item.km)} km in på visningsrutten`})));
     updateReplayElevation(elev,pts,leader.km,km=>{
       const target=estimatedAt(data[0].anchors,km);
       if(num(target)){stop();draw(target)}
     });
-    $('#map-duel-readout').textContent=`Tävlingsklocka ${time(clock)} · ledare på visningsrutten: ${leader.runner.name} · ${fmtKm(leader.km)} km. Positioner mellan kontroller är beräknade.`;
-    $('#map-duel-leaderboard').innerHTML=`<div class="table-scroll"><table><thead><tr><th>Ordning*</th><th>Löpare</th><th>Status</th><th>Illustrativ km</th><th>Sista exakta kontroll</th></tr></thead><tbody>${positions.sort((a,b)=>b.km-a.km).map((item,i)=>`<tr><td>${i+1}</td><td><i class="duel-color" style="background:${item.color}"></i>${html(item.runner.name)}</td><td>${html(item.runner.status)}</td><td>${fmtKm(item.km)}</td><td>${html(item.anchors.at(-1).name)}</td></tr>`).join('')}</tbody></table></div><p class="small muted">* Ordningen är en illustrativ interpolation mellan registrerade kontroller, inte en officiell mellanplacering.</p>`;
+    $('#map-duel-readout').textContent=`Tävlingsklocka ${time(clock)} · längst fram just nu: ${leader.runner.name}, som är cirka ${fmtKm(leader.km)} km in på visningsrutten. Positioner mellan kontroller är beräknade.`;
+    $('#map-duel-leaderboard').innerHTML=`<div class="table-scroll"><table><thead><tr><th>Ordning*</th><th>Löpare</th><th>Status</th><th>Position på visningsrutt</th><th>Sista exakta kontroll</th></tr></thead><tbody>${positions.sort((a,b)=>b.km-a.km).map((item,i)=>`<tr><td>${i+1}</td><td><i class="duel-color" style="background:${item.color}"></i>${html(item.runner.name)}</td><td>${html(item.runner.status)}</td><td>Cirka ${fmtKm(item.km)} km in</td><td>${html(item.anchors.at(-1).name)}</td></tr>`).join('')}</tbody></table></div><p class="small muted">* Ordningen är en illustrativ interpolation mellan registrerade kontroller, inte en officiell mellanplacering.</p>`;
   }
   function frame(now){
     if(!playing)return;
