@@ -1,44 +1,76 @@
-# AGENTS.md – Sätila Splits / 2026-10-01 post-integration
+# AGENTS.md – Sätila Splits
 
-**NY AUKTORITATIV CHECKPOINT:** 790dcd78, [Actions #36878403527 (4/4 PASS)](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36878403527). Läs först [VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md](reports/VERIFIED_PRE_CODEX_CHECKPOINT_2026-10-01.md). K03 och T06-underlagskolumner är genomförda och browser-testade. Även markerad kartlinje har `pointer-events:none` och valfri klass i loppplanen döljs utanför klassläget; båda har nya Chromiumregressioner. Äldre pekare i BUILD_STATE och historisk parity-audit är inte aktuell Codex-att-göra-lista.
+## Current authoritative state
 
+Use **current `main`** as the starting point. The old 2026-10-01 build/integration branches and their Draft PR instructions are historical and must not be used as the active handoff.
 
-## Current stage: do not restart source discovery
+As of 2026-10-05:
 
-The original AGENTS.md previously described the source-discovery phase. That is historical. The first complete source foundation and an integrated release-review candidate now exist.
+- the standalone site is deployed from `docs/` through GitHub Pages,
+- historical Ultra85 display routes for 2018, 2019 and 2021–2025 are integrated,
+- 43 km route coverage for 2021–2025 is integrated,
+- the non-official Grind checkpoint is excluded from published analysis,
+- Torrås semantics for 2023–2025 are corrected,
+- sex palette/axis-density changes are integrated,
+- privacy/identity suppression is integrated,
+- the individual runner analysis has been rebuilt from the Gotaleden profile architecture,
+- there are no open pull requests after repository cleanup.
 
-- Continue from origin/integration/codex-independent-qa-2026-10-01, Draft PR #7. Not from main or the older first-draft build.
-- First read reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md, current BUILD_STATE.json, reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md, and latest GitHub Actions result for the actual current code SHA.
-- reports/CODEX_PARITY_AUDIT.md refers to an older Codex checkpoint; K04 Replay, K05 map duel and T09 pagination have since been implemented. Do not rebuild them.
-- Preserve original Codex branch codex/saetila-complete-first-draft at a71a5ef and owner's C:\Git\satila-splits\reports\qa-local. No reset --hard, clean -fd, checkout -f, force push, overwrite or reclone.
-- For work after quota reset, inspect git status, existing worktrees and branches; create a NEW dedicated Git worktree based on the latest origin/integration/codex-independent-qa-2026-10-01, then a Draft PR back to that integration branch. No automatic merge to main or publication.
+Before changing code, inspect current `main`, current open PRs, and the latest Actions result for the exact candidate SHA. Do not trust an old report or hard-coded SHA over the repository state.
 
-## Fixed verified source contract
+## Source contract
 
-- Nine EQ Timing result years: 2016–2019 and 2021–2025; three main families (ultra85/trail43/trail22) each year. 27 RaceEdition, 3,272 result rows, 2,649 FINISHED, 128 DNF, 494 DNS, 1 UNKNOWN, 16,525 actual public TIME observations. 2020 is an archive gap, not a zero-participant result. There are no invented 2026 race results.
-- Public curated assets: docs/data/bootstrap.json, docs/data/races/*.json, docs/data/coverage.json, docs/data/source-fingerprints.json, docs/data/routes/*.json. All original raw EQ Timing and participant GPX data remain private, never under docs/, public Git history, public release or review package.
-- Five organizer GPX files are SHA-locked; 21/43 km 2025/26 reuse is an explicitly documented assumption. The 85 km 2026 organizer route is a separate prospective version and must not be borrowed for 2025. Never infer old CourseVersion equivalence from unchanged race label.
-- 2025 trail43 Tostared is metadata-only (zero TIME). Real Grind→Torrås is one 15.0 timing-km observed segment with n=130; seven effective segments. Preserve Tostared in station/field metadata, exclude it from observed passage-coverage curves to avoid a false zero dip.
-- 2023 trail43 has two n=8 segments (F=4, M=4), so pooled median but no quartiles or sex medians. 2016 ultra85 has only two female FINISHED, never show bronze or female median.
-- 2023/24 trail43 Torrås→Almered: real TIME/n valid, physical timing-distance pace/min/km not verified. The official timing-axis and GPX route-display-distance are separate.
-- Currently all 128 DNF have no linked public TIME passage in published bundles. DNF count is valid, but last checkpoint/exit is UNKNOWN. DNS is excluded from known starters, UNKNOWN status remains separate.
-- Median requires n>=5; quartiles n>=10; deciles n>=20; group/sex median n>=5 in that subset. No manufactured splits, ranks, age, person matches across years, or runner photos from social media.
-- Preserve source registry and exact chainage per edition. A participant GPX is evidence of the path run, not automatically official intended race geometry.
+- Nine EQ Timing result years: 2016–2019 and 2021–2025.
+- Three main families: `ultra85`, `trail43`, `trail22`.
+- 27 RaceEdition and 3,272 result rows.
+- 2,649 FINISHED, 128 DNF, 494 DNS, 1 UNKNOWN.
+- The current public analytical bundles contain **14,466 source-supported TIME observations** after exclusion of the rejected non-official Grind observations.
+- Public curated assets live under `docs/data/`.
+- Raw EQ Timing dumps and original participant GPX must never be added to public `docs/`, public release artifacts, or otherwise exposed unintentionally.
+- Participant-derived route geometry is display/provenance evidence, not automatically an official intended race course.
+- Organizer 21/43 km 2025/2026 reuse remains an explicit project assumption.
+- Ultra85 2026 geometry does not validate older Ultra85 editions.
+- 2023/2024 trail43 Torrås→Almered supports TIME/n but not a trustworthy physical min/km value.
+- Do not invent missing passage times, ranks, checkpoints, ages, identities, course equivalence, DNF exit locations, or route elevation.
 
-## Implementation already done; regress rather than rebuild
+Statistical minimums remain source-aware: median n≥5, quartiles n≥10, deciles n≥20, and group/sex medians n≥5 in the relevant subset.
 
-- Profiles, result filters, podiums, source-gated segment stats, individual split-based goal plan, linked official-route SVG map/elevation, history, status/coverage, age/class/club analytics, D16 pacingindex.
-- K04 timed personal Replay and K05 2–5-runner map duel with shared clock, leaderboard and two-way map/elevation scrub.
-- D07 interactive percentile zoom/reset with source-class tooltips and mobile segment-table swipe hint; D11 last actual positive segment strength; D18 class selector, D19 synchronized heatmap, D21 variable source-n disclosure, D22 segment-linked Course Intelligence, T07 route publication/reservation. DNF unknown, metadata-only Tostared, and source-aware pace/quantile gating.
-- Hero copy, mobile Escape/ARIA, Back/Forward deep links, dialog focus, missing-edition error and public privacy controls are already corrected.
-- Original official runner/hero visual assets are locked. Do not substitute or scrape athlete photographs.
+## Implementation state
 
-## Next Codex pass after 16:13
+The main frontend already contains:
 
-1. Review real desktop/mobile screenshots at 1440/900/768/390 against docs/assets/design-reference.webp and approved Hero. Confirm long tables on mobile and remove only actual visual/interaction defects.
-2. T01 now has 11 source-aware native sort options and keyboard/ordering E2E **4/4 green at `4335672e`** (Actions 36871477578); D07 zoom/reset, D11/D18/D19/D21/D22/T07 and K04/K05 are also implemented. Do not rebuild them. Finish genuinely residual K03 full selected-segment synchronization and visual/accessible UX only where screenshot/browser evidence shows a concrete gap.
-3. K01/D23 physical checkpoint anchors, tiles and T06 segment D+/D- depend on accepted source geometry/anchor evidence. K02 historic dual-route overlay, D25 joined interyear performance and D26 comparable records remain evidence-gated. Do not invent physical anchors or borrow courses to force completion.
-4. Run the entire regression on each final candidate: python tools/run_release_candidate_checks.py --all. The integrated CI workflow is .github/workflows/integration-candidate.yml. Require source-and-method, browser-core, release-gates and dependent review-package GREEN on exactly the final code SHA. Verify no source/provenance drift.
-5. Generate new screenshot and static review ZIP on that same SHA, then wait for project owner visual approval. Never auto-merge to main or publish to Loppanalys.se.
+- overview, results, historical trends and segment analyses,
+- source-aware sex breakdowns and the approved blue/pink palette,
+- individual runner profile with Gotaleden-style summary, Replay, gap/placement journey, relative speed and split table,
+- shared-clock two-runner comparison and map duel,
+- route/elevation interaction with source gating,
+- personal target-time planning,
+- privacy/identity suppression,
+- responsive/mobile behavior and accessibility regression coverage.
 
-Private raw archive artifact 11142571759 expires 2026-10-31. Owner secure backup guidance: issue #6, preferably complete by October 25.
+Regress existing behavior before rebuilding it. Historical reports under `reports/` are evidence/checkpoints; they are not automatically current implementation instructions.
+
+## Working method
+
+For a new change:
+
+1. Start from current `main`.
+2. Keep data/provenance changes separate from purely visual changes where practical.
+3. Run `python tools/run_release_candidate_checks.py --source` after source/data changes.
+4. Run the relevant browser acceptance tests for UI/interactivity; for a release candidate use `python tools/run_release_candidate_checks.py --all`.
+5. For a PR, require the relevant current pull-request workflows to be green on the exact head SHA.
+6. Merge/publish only when the project owner has requested it and the candidate is green. Standalone Pages deploys from `main`; changes to the separate Loppanalys portal require a separate explicit task.
+
+Do not resurrect completed first-draft workflows or obsolete integration branches just to reproduce an old process. The active workflow set on `main` is intentionally smaller after housekeeping.
+
+## Historical references
+
+Useful historical documentation remains in:
+
+- `reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md`
+- `reports/CODEX_PARITY_AUDIT.md`
+- `reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md`
+- `reports/FINAL_INTEGRATION_HANDOFF_2026-10-01.md`
+- `reports/QA_EVIDENCE_INDEX_2026-10-01.md`
+
+Treat their old branch names, workflow names and release SHAs as historical evidence only.
