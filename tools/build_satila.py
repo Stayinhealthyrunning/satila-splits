@@ -7,7 +7,9 @@ The browser receives a small catalogue + one race-bundle at a time.
 import json,re,math,hashlib,argparse,collections,statistics,sqlite3,unicodedata,xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
-ROOT=Path(__file__).resolve().parents[1] if Path(__file__).resolve().parent.name=='tools' else Path(__file__).resolve().parent
+from privacy import load_rules, sanitize_identity, opaque_result_id
+ROOT=Path(__file__).resolve().parents[1]
+PRIVACY=ROOT/'config'/'privacy-suppressions.json' if Path(__file__).resolve().parent.name=='tools' else Path(__file__).resolve().parent
 FAMS=('ultra85','trail43','trail22')
 def js(path,thing):
  p=Path(path);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(thing,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
@@ -21,6 +23,7 @@ def racefamily(r):
  return None
 
 def parse(root,out,source_cat):
+ privacy_rules=load_rules(PRIVACY)
  events=load(source_cat)['events'];catalog=[];history=[];samples=[];coverage=[];archive_hashes={};(out/'satila.sqlite').unlink(missing_ok=True);db=sqlite3.connect(str(out/'satila.sqlite'));db.executescript('''
  CREATE TABLE IF NOT EXISTS editions(race_key TEXT PRIMARY KEY,year INT,leg_uid INT,event_id INT,family TEXT,name TEXT,source_distance REAL,source TEXT);
  CREATE TABLE IF NOT EXISTS results(result_id TEXT PRIMARY KEY,race_key TEXT,entrant_uid INT,name TEXT,bib TEXT,sex TEXT,age INT,class TEXT,club TEXT,status TEXT,finish_seconds REAL,place INT,raw_json TEXT,FOREIGN KEY(race_key) REFERENCES editions(race_key));
@@ -80,8 +83,11 @@ def parse(root,out,source_cat):
     resultid=f'eq-{year}-{leg}-{uid}';tim=sec(finish.get('AkkumulertTid')) if status=='FINISHED' else None
     pl=(finish.get('Plassering') or {}).get('Total') if status=='FINISHED' else None
     r={'id':resultid,'source_uid':uid,'name':name,'bib':str(c.get('Startnummer') or ed.get('Startnummer') or ''),'sex':sex,'age':age,'class_name':cl.get('Navn') or '', 'club':club,'status':status,'finish_seconds':tim,'place':pl if isinstance(pl,int) and pl>0 else None}
-    rows.append(r)
     db.execute('INSERT OR REPLACE INTO results VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',(resultid,racekey,uid,name,r['bib'],sex,age,r['class_name'],club,status,tim,r['place'],json.dumps({'contestant':c,'entry':ed},ensure_ascii=False)))
+    public_resultid=resultid
+    if sanitize_identity(r,privacy_rules):
+     public_resultid=opaque_result_id(racekey,resultid);r['id']=public_resultid;r['source_uid']=None
+    rows.append(r)
     prev=-1
     for st in stations:
      row=station_obs.get(st['station_uid'])
@@ -90,7 +96,7 @@ def parse(root,out,source_cat):
      if t is None or t<=0:continue
      # retain source observations, but never synthesize missing checkpoints or nonmonotone elapsed time
      rank=(row.get('Plassering') or {}).get('Total')
-     s={'result_id':resultid,'station_uid':st['station_uid'],'elapsed_seconds':t,'place':rank if isinstance(rank,int) and rank>0 else None}
+     s={'result_id':public_resultid,'station_uid':st['station_uid'],'elapsed_seconds':t,'place':rank if isinstance(rank,int) and rank>0 else None}
      splits.append(s)
      db.execute('INSERT OR REPLACE INTO splits VALUES(?,?,?,?,?,?,?,?)',(resultid,st['station_uid'],st['station_name'],st['km'],t,s['place'],'TIME',json.dumps(row,ensure_ascii=False)))
    rows.sort(key=lambda r:((r['place'] is None),r['place'] or 999999,r['finish_seconds'] or 1e9,r['name']))
