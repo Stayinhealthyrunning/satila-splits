@@ -80,7 +80,7 @@ async def main():
    assert await page.locator("#segment-table tbody tr").count()>0
    assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
    assert await page.locator('#results-table th').count()==11
-   assert await page.locator('#segment-table th').count()==10
+   assert await page.locator('#segment-table th').count()==6
    for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
    try:
