@@ -11,6 +11,7 @@ import argparse
 import collections
 import json
 import math
+import re
 from pathlib import Path
 
 FAMILIES = ("ultra85", "trail43", "trail22")
@@ -30,6 +31,15 @@ def read(path):
 
 def finite_positive(n):
     return isinstance(n, (int, float)) and not isinstance(n, bool) and math.isfinite(n) and n > 0
+
+
+def explicit_class_sex(name):
+    value = str(name or "").strip().casefold()
+    if re.match(r"^(kvinna|kvinnor|dam)(\b|\s|$)", value):
+        return "F"
+    if re.match(r"^(man|män|herr)(\b|\s|$)", value):
+        return "M"
+    return None
 
 
 def audit(root):
@@ -108,6 +118,9 @@ def audit(root):
         anomalous_monotone = finish_discrepancy = finish_without_obs = dns_observations = 0
         for r in results:
             uid = r["id"]
+            class_sex = explicit_class_sex(r.get("class_name"))
+            if r.get("sex") in ("F", "M") and class_sex and r["sex"] != class_sex:
+                failures.append(f"{key}: explicit class/sex contradiction remains analytically classified: {uid}")
             obs = sorted(observations.get(uid, []), key=lambda sp: station_order.get(sp["station_uid"], 10**9))
             for a, b in zip(obs, obs[1:]):
                 if b["elapsed_seconds"] <= a["elapsed_seconds"]:
