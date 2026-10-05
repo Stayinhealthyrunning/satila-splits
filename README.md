@@ -2,7 +2,7 @@
 
 Källstyrd historisk loppanalys för Sätila Trail Run, med huvudfamiljerna **22 km, 43 km och 85 km**. Sätila bygger på samma Engine 1.0-principer som Ultravasan, Gotaleden och Österlen Spring Trail: verkliga observationer, transparenta statistiska gränser och explicit banproveniens.
 
-> **Release-status 2026-10-02:** första självständiga granskningsversionen är mergead till `main` genom [PR #13](https://github.com/Stayinhealthyrunning/satila-splits/pull/13). Sajtens publika källkatalog är `docs/`. Produktionskoden granskades på integration-SHA `93f375d614cb07438a13fa1be22b87a181d2698f` med [4/4 godkända jobb](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/36979936937). GitHub Pages / separat staging-host behöver aktiveras och verifieras innan någon skarp URL kommuniceras. Ingen ändring i Loppanalys-portalens `main` ingår.
+> **Aktuell release-status 2026-10-05:** den senaste visuella genomgången och den Gotaleden-baserade individuella analysen publicerades via [PR #43](https://github.com/Stayinhealthyrunning/satila-splits/pull/43). PR:en hade fem gröna slutkontroller på exakt head-SHA och mergeades som releasecommit `5b6fa3b3c6645641b7dd83e3cf031a50741af376`. Efterföljande housekeeping har endast rensat färdiga engångs-workflows och gamla PR-spår. GitHub Pages-deployen efter releasen är grön ([run 37345369803](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/37345369803)); även deploy-workflowens housekeeping-körning är grön ([run 37345766323](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/37345766323)). Det finns inga öppna pull requests i detta repo.
 
 ## Verifierad publiceringsdatagrund
 
@@ -13,51 +13,63 @@ Källstyrd historisk loppanalys för Sätila Trail Run, med huvudfamiljerna **22
 | Resultatrader | 3 272 |
 | FINISHED | 2 649 |
 | DNF / DNS / UNKNOWN | 128 / 494 / 1 |
-| Faktiska publika TIME-passager | 16 525 |
-| Arrangörs-GPX, kontrollerade mot SHA-256 | 5 |
+| Publicerade källstödda TIME-passager | 14 466 |
+| Historiska Ultra85-displayrutter | 2018, 2019, 2021–2025 |
+| Källstödda 43 km-rutter | 2021–2025 |
+| Arrangörs-GPX, checksummeverifierade | 5 |
 
-EQ Timing-event 2021–2025: `57767`, `62409`, `67695`, `72918`, `77864`. De äldre åren är också indexerade i `config/eqtiming-events.json`.
+EQ Timing-event 2021–2025: `57767`, `62409`, `67695`, `72918`, `77864`. De äldre åren är indexerade i `config/eqtiming-events.json`.
 
-- Frysta, sanerade publiceringsbundlar: `docs/data/races/*.json` och `docs/data/bootstrap.json`.
+- Sanerade publiceringsbundlar: `docs/data/races/*.json` och `docs/data/bootstrap.json`.
 - Publicerad källtäckning: `docs/data/coverage.json`, `docs/data/source-fingerprints.json`, `docs/data/route-inventory.json`.
-- Officiella sanerade displayrutter: `docs/data/routes/*.json`. Av dessa får historiska editioner använda rutt **endast** om den är uttryckligt knuten till editionen. Organisatörsfilerna för 21/43 km har ett dokumenterat återanvändningsantagande för 2025/2026; 85 km 2026 är en separat framtida rutt utan 2026-resultat.
-- `2025-trail43`: Tostared är stationsmetadata utan TIME. Det legitima sammanhängande observerade intervallet Grind→Torrås har n=130. `2023-trail43`: två n=8-segment får median men inte kvartiler. `2016-ultra85`: endast två kvinnor med FINISHED.
-- För `2023/2024 trail43` är Torrås→Almered time-only: verklig TIME och n får visas, fysisk min/km ska vara spärrad. Inget av dagens 128 DNF har kopplingsbar offentlig TIME; redovisa okänd sista station, inte noll avbrott.
+- Publicerade displayrutter: `docs/data/routes/*.json`. Historiska deltagarspår är uttryckligen **display/proveniens**, inte automatiskt officiell avsedd bana.
+- 21/43 km 2025/2026 har ett dokumenterat återanvändningsantagande. Ultra85 2026 är separat arrangörsgeometri och används inte som bevis för äldre lopp.
+- Den bortvalda icke-officiella kontrollen Grind finns kvar i källarkivet men ingår inte i de 14 466 publicerade TIME-observationerna eller i analyssegmenten.
+- För `2023/2024 trail43` är Torrås→Almered time-only: verklig TIME och n får visas, fysisk min/km är spärrad.
+- DNF redovisas utan uppfunnen sista kontroll när någon kopplingsbar offentlig TIME saknas.
 
-## Fristående hosting och rätt granskningsadress
+## Individuell analys
 
-Detta repo har ännu ingen aktiverad GitHub Pages-webbplats. För att publicera från GitHub, gå till **Settings → Pages → Build and deployment → Deploy from a branch → main /docs → Save**, men notera att kontots användarsajt har `www.loppanalys.se` som custom domain: enligt GitHubs regelverk ärvs den domänen av vanliga project sites. En verkligt fristående granskningsadress (inte under `loppanalys.se`) kräver separat projekt-hosting, alternativt en uttryckligen tilldelad separat custom domain. Lägg inte till Sätila-kortet i huvudportalen förrän projektägaren godkänt den skarpa preview-versionen.
+Den individuella löparanalysen följer nu Gotaledens informationsarkitektur, anpassad till Sätilas källregler:
 
-## Granska webbappen lokalt
+- sammanfattning och sju toppmått,
+- personlig Replay med karta och höjdprofil,
+- livejämförelse mot fält, klass och könsgrupp,
+- tidslucka och placeringsresa genom loppet,
+- pacing-fingeravtryck segment för segment,
+- fullbreddsanalys av relativ fart,
+- analytisk mellantidstabell och separat källpassage-audit,
+- delbar direktlänk till löparprofil.
 
-Välj senaste **grönt verifierade** arbetsflöde [Codex + independent QA integration](https://github.com/Stayinhealthyrunning/satila-splits/actions/workflows/integration-candidate.yml). Ladda ned artifact `satila-codex-integrated-review`, packa upp både Actions-arkivet och dess `satila-codex-integrated-review.zip`. Starta sedan en HTTP-server från undermappen `site/` (inte via `file://`):
+Replay-position mellan verifierade passager är illustrativ. Resultat, tabeller och prestationsjämförelser använder källstödda EQ Timing-observationer.
 
-```bash
-cd site
-python -m http.server 8080
-# Besök http://localhost:8080/
-```
+## Publicering
 
-Ingen automatisk produktionspublicering görs av integrationsworkflowen. `review-package` körs endast om `source-and-method`, `browser-core` och `release-gates` alla lyckas **på samma commit**.
+`docs/` är den publicerbara, sanerade statiska sajten. `.github/workflows/deploy-pages.yml` publicerar **endast från `main`** och kör käll-/integritetskontroll innan Pages-artifact skapas. Den exakta publika miljöadressen styrs av GitHub Pages/custom-domain-inställningen för repot.
 
-## Regressionstester
+Detta repo publicerar inte automatiskt något kort i huvudportalen Loppanalys.se. Portaländringar hanteras separat.
+
+## Lokal granskning och regression
+
+Kör den aktuella koden direkt från `main`:
 
 ```bash
 python tools/run_release_candidate_checks.py --source
 python tools/run_release_candidate_checks.py --browser
-# Kräver: pip install playwright && python -m playwright install chromium
+# Browsergruppen kräver Playwright + Chromium
 python tools/run_release_candidate_checks.py --all
 ```
 
-De källbaserade testerna kontrollerar bland annat statusnämnare, verkliga segmentpar, n≥5/10/20, rutt-SHA, källarkiv, privatliv, historisk banjämförbarhet och publika tabeller. Browsertesterna provar alla 27 editioner, riktig karta↔höjd-synk, H2H/Replay, personlig loppplan, sakliga edge cases, editionsspecifikt state, responsivitet, URL-historik, tangentbord och prestandakrav. Se `tests/browser_evidence_acceptance.py` för Tostared/DNF/D11/D18/D19/D22/T07.
+De källbaserade testerna kontrollerar bland annat statusnämnare, verkliga segmentpar, n-gränser, rutt-SHA/proveniens, privatliv, historisk banjämförbarhet och publiceringspaketet. Browsertesterna täcker alla 27 editioner, karta↔höjd-synk, H2H/Replay, individuella profiler, edge cases, responsivitet och tangentbord.
 
-## Arkitektur och överlämning
+Aktiva Actions-workflows är avsiktligt begränsade till nuvarande publicering, källunderhåll och regression. Färdiga engångsflöden från första byggfasen, gamla integrationsgrenar och DSM-releaseförberedelser har tagits bort från default branch.
+
+## Arkitektur och historik
 
 - Byggblueprint: `reports/SAETILA_SPLITS_BUILD_BLUEPRINT_2026-10-01.md`.
-- Historisk Codex-paritetsgranskning: `reports/CODEX_PARITY_AUDIT.md` (äldre checkpoint; en del komponentstatusar där har redan passerats).
-- Historiskt överlämningsdokument: `reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md` (äldre checkpoint, **inte** den aktuella releasen).
+- Historisk Codex-paritetsgranskning: `reports/CODEX_PARITY_AUDIT.md` — historiskt checkpoint, inte aktuell att-göra-lista.
+- Historiskt handoff: `reports/PRE_CODEX_FINAL_HANDOFF_2026-10-01.md`.
 - Data-/metodikspår: `reports/FINAL_INTEGRATION_HANDOFF_2026-10-01.md`, `reports/COMPONENT_READINESS_MATRIX.json`.
-- Maskinläsbar status: `BUILD_STATE.json`.
-- Säkerhetskopiera den tidsbegränsade privata EQ Timing-källan enligt [issue #6](https://github.com/Stayinhealthyrunning/satila-splits/issues/6) före den 31 oktober 2026 (rekommenderat senast 25 oktober). Råa EQ-resultatdumpningar och individuella deltagar-GPX ska **aldrig** publiceras i `docs/`, publikt Git-historik eller öppen release.
+- Maskinläsbar aktuell status: `BUILD_STATE.json`.
 
-Originalimport: `tools/fetch_eqtiming_archive.py` arkiverar publika XHR/JSON-svar och bevarar URL, status, content-type, SHA-256 och rå payload i privat råarkiv. Reproduktion och jämförelse mot de 36 publicerade JSON-byten dokumenteras i `reports/FULL_REBUILD_EQ_TIMING_VERIFICATION_2026-10-01.md`.
+Råa EQ-resultatdumpningar och ursprungliga deltagar-GPX får inte publiceras i `docs/`, publikt Git-historik eller öppen release. Originalimporten i `tools/fetch_eqtiming_archive.py` och source-registry/provenancefilerna ska bevaras för reproducerbarhet.
