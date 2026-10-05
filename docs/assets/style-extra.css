@@ -91,3 +91,31 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 /* Targeted post-review rhythm: keep the two entry flows close without merging them. */
 #race-context{padding-bottom:12px}#runner-tools{padding-top:clamp(22px,2.4vw,27px);padding-bottom:clamp(20px,2.4vw,30px)}#map-duel-builder{padding-top:clamp(22px,2.4vw,28px)}
 @media(max-width:760px){#race-context{padding-bottom:10px}#runner-tools{padding-top:22px;padding-bottom:22px}#map-duel-builder{padding-top:22px}}
+
+
+/* 2026-10-05 visual review part 2: balanced analytical cards and usable horizontal space. */
+#status-chart{grid-column:1/-1;width:100%;min-width:0}
+.kpi-status-summary{width:100%}
+.overview-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.overview-finish,.overview-percentiles{height:100%}
+.overview-groups-wide{grid-column:1/-1}
+#group-bars .barline{grid-template-columns:minmax(80px,110px) minmax(0,1fr) minmax(86px,100px)}
+#group-bars .barline>strong{min-width:0;white-space:nowrap;text-align:right}
+.extra-grid,.two-col,.course-intelligence-split{align-items:stretch}
+.extra-grid>.panel,.two-col>.panel,.course-intelligence-split>.panel{height:100%}
+.extra-grid>.panel+.panel,.two-col>.panel+.panel,.overview-layout>.panel+.panel,.course-intelligence-split>.panel+.panel{margin-top:0}
+#extra-dynamics>.panel:nth-child(1),#extra-dynamics>.panel:nth-child(2),
+#extra-overview>.panel:nth-child(1),#extra-overview>.panel:nth-child(2),
+#extra-segments>.panel:nth-child(1),#extra-segments>.panel:nth-child(2),
+#extra-history>.panel:nth-child(1),#extra-history>.panel:nth-child(2){align-self:stretch}
+.course-intelligence-row{grid-template-columns:1fr}
+.course-intelligence-split{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.course-intel-card .dimension-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:850px){
+  .overview-layout,.course-intelligence-split{grid-template-columns:1fr}
+  .overview-groups-wide{grid-column:auto}
+}
+@media(max-width:560px){
+  #group-bars .barline{grid-template-columns:minmax(70px,90px) minmax(0,1fr) minmax(78px,92px);gap:7px}
+  .course-intel-card .dimension-grid{grid-template-columns:1fr}
+}
