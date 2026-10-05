@@ -107,6 +107,10 @@ async def main():
    assert await page.locator('#finish-series [data-finish-mode="F"]').get_attribute('aria-pressed')=='true'
    await page.locator('#finish-series [data-finish-mode="all"]').click()
    assert await page.locator('#finish-series [data-finish-mode="all"]').get_attribute('aria-pressed')=='true'
+   assert await page.locator('#finish-chart rect[fill="#d65a91"]').count()>0
+   assert await page.locator('#finish-chart rect[fill="#3479c5"]').count()>0
+   sex_colors=await page.evaluate("()=>[getComputedStyle(document.querySelector('.sex-f')).backgroundColor,getComputedStyle(document.querySelector('.sex-m')).backgroundColor]")
+   assert sex_colors==['rgb(214, 90, 145)','rgb(52, 121, 197)'],sex_colors
    assert await page.locator('#group-table th').count()==5
    assert await page.locator('#group-table #group-next').count()==1
    await page.locator('#group-table #group-next').click()
