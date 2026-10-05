@@ -7,7 +7,10 @@ The browser receives a small catalogue + one race-bundle at a time.
 import json,re,math,hashlib,argparse,collections,statistics,sqlite3,unicodedata,xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
-from privacy import load_rules, sanitize_identity, opaque_result_id
+try:
+ from .privacy import load_rules, sanitize_identity, opaque_result_id
+except ImportError:
+ from privacy import load_rules, sanitize_identity, opaque_result_id
 ROOT=Path(__file__).resolve().parents[1]
 PRIVACY=ROOT/'config'/'privacy-suppressions.json' if Path(__file__).resolve().parent.name=='tools' else Path(__file__).resolve().parent
 FAMS=('ultra85','trail43','trail22')
