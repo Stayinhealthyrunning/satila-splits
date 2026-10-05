@@ -119,7 +119,7 @@ async def main():
    assert await page.locator('#segment-pacing circle[data-pacing-segment]').count()>0
    assert await page.locator('#percentile-chart svg').count()==1
    assert await page.locator('#segment-sex-extra svg').count()==1
-   assert await page.locator('#segment-groups svg').count()==1
+   assert await page.locator('#segment-groups').count()==0
    assert await page.locator('[data-class-series]:checked').count()<=5
    assert await page.locator('#segment-heatmap').count()==0
    assert await page.locator('#history-table th').count()==15
