@@ -283,7 +283,6 @@ async def main():
    assert not await page.evaluate("window.__missing||[]"),(width,"missing data")
    await page.locator('#results-search').fill('')
    await page.locator('#runner-search').fill('')
-   await page.locator('#clear-compare').click()
    await page.locator('#clear-map-duel').click()
    await page.evaluate("document.querySelectorAll('.table-scroll,.chart-host').forEach(el=>el.scrollLeft=0)")
    assert await page.evaluate("Array.from(document.querySelectorAll('.table-scroll,.chart-host')).every(el=>el.scrollLeft===0)")
