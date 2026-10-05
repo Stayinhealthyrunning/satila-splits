@@ -61,11 +61,10 @@ async def main():
             assert any("Start" in s and "Torrås" in s for s in names)
             assert all("Grind" not in s for s in names)
             assert all("Tostared" not in s for s in names)
-            # Metadata-only Tostared cannot create a false field-dropout dip.
-            await page.wait_for_function("document.querySelector('#segment-retention')?.textContent.includes('Stationsmetadata utan TIME')")
-            retention_titles=await page.locator('#segment-retention svg circle title').all_text_contents()
-            assert len(retention_titles)==6 and all('Tostared' not in x for x in retention_titles),retention_titles
-            assert 'Tostared · endast metadata (0 TIME)' in await page.locator('#flow-chart').inner_text()
+            # The redundant passage-coverage card is deliberately removed. The
+            # source rule still applies in the timing table: metadata-only
+            # Tostared must not create a false observed segment.
+            assert await page.locator('#segment-retention').count()==0
             # All published DNF records currently lack a linked public TIME passage.
             # A numeric zero in the segment-exit column would incorrectly imply
             # that actual last checkpoints are known and none exited here.
@@ -89,14 +88,13 @@ async def main():
             assert 'selected' in (await seg.nth(2).get_attribute('class') or '')
             await page.locator('#segment-chart [data-segment="1"]').click()
             assert await page.locator('#podium-segment-start').input_value()=='1'
-            await page.locator('#segment-q1090 [data-extra-segment="3"]').focus()
+            await page.locator('#segment-sex-extra [data-extra-segment="3"]').first.focus()
             await page.keyboard.press('Enter')
             await page.wait_for_function("document.querySelector('#podium-segment-start')?.value==='3'")
-            await page.wait_for_function("Array.from(document.querySelectorAll('#segment-q1090 [data-extra-segment]')).some(el=>el.dataset.extraSegment==='3'&&el.getAttribute('aria-pressed')==='true')")
+            await page.wait_for_function("Array.from(document.querySelectorAll('#segment-sex-extra [data-extra-segment]')).some(el=>el.dataset.extraSegment==='3'&&el.getAttribute('aria-pressed')==='true')")
             assert 'selected' in (await seg.nth(3).get_attribute('class') or '')
             assert await page.locator('#segment-chart [data-segment="3"]').get_attribute('r')=='7'
-            assert await page.locator('#segment-q1090 [data-extra-segment="3"]').get_attribute('aria-pressed')=='true'
-            assert 'selected' in (await page.locator('#segment-heatmap [data-extra-segment="3"]').first.get_attribute('class') or '')
+            assert await page.locator('#segment-sex-extra [data-extra-segment="3"]').first.get_attribute('aria-pressed')=='true'
             spread_labels=page.locator('#checkpoint-spread .checkpoint-axis-label')
             assert await spread_labels.count()==6
             boxes=[await spread_labels.nth(i).bounding_box() for i in range(await spread_labels.count())]
@@ -116,10 +114,7 @@ async def main():
             await page.locator('#segment-groups [data-extra-segment="5"]').first.focus()
             await page.keyboard.press(' ')
             await page.wait_for_function("document.querySelector('#podium-segment-start')?.value==='5'")
-            await page.locator('#segment-heatmap [data-extra-segment="2"]').first.click()
-            await page.wait_for_function("document.querySelector('#podium-segment-start')?.value==='2'")
-            assert await page.locator('#segment-chart [data-segment="2"]').get_attribute('r')=='7'
-            assert 'Vald delsträcka: '+(await seg.nth(2).locator('td').first.inner_text()) in await intel.inner_text()
+            assert await page.locator('#segment-heatmap').count()==0
             # D11: real last-segment strength is separate from last-third placing.
             await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Styrka på sista verifierade delsträckan')")
             assert "fältmedian" in await page.locator("#finish-progression").inner_text()
@@ -144,15 +139,14 @@ async def main():
             assert await scatter.locator("circle[data-open]").count()==count_full
             assert "Hela fältet" in await scatter.locator('[role="status"]').inner_text()
             await page.wait_for_function("document.querySelector('#checkpoint-spread')?.textContent.includes('Varje kontroll använder sitt eget observerade n')")
-            # D18/D19 use identical user-selected class groups, not separate top-N lists.
+            # D18 uses one explicit, capped class selector rather than a second
+            # opaque comparison or heatmap.
             await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
             checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            heat=await page.locator('#segment-heatmap .heat-label').all_text_contents()
-            assert heat==checked,("Default class and heatmap selections diverged",heat,checked)
+            assert 1<=len(checked)<=5,checked
             await page.locator('#segment-groups [data-class-series]').first.evaluate("(el)=>el.click()")
             checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            heat=await page.locator('#segment-heatmap .heat-label').all_text_contents()
-            assert len(checked)==1 and heat==checked,("Heatmap ignored changed user class selection",heat,checked)
+            assert len(checked)>=1,checked
             # T01: all varying source fields are selectable, and the native
             # control responds to keyboard interaction on desktop and mobile.
             sort=page.locator('#results-sort')
@@ -204,9 +198,7 @@ async def main():
             assert 'Ingen höjd per timingsegment' in await page.locator('#plan-table').locator('xpath=../following-sibling::p').inner_text()
             if w<=700:
                 assert 'Svep i sidled' in await page.locator('#plan-summary + p.mobile-table-hint').inner_text()
-            # Mobile heatmap must disclose horizontal overflow explicitly.
-            if w<=700:
-                assert 'Svep i sidled' in await page.locator('#segment-heatmap').locator('xpath=preceding-sibling::p[1]').inner_text()
+            assert await page.locator('#segment-q1090').count()==0
             # Case 2: two sparsely observed 2023 43-km segments do not get invented quartiles.
             await page.locator("#year-select").select_option("2023")
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2023')")
