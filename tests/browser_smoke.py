@@ -136,10 +136,15 @@ async def main():
     assert await page.locator('#club-chart [data-club-choice]:not(:checked):disabled').count()>0
     await page.locator('#club-chart [data-club-choice]:checked').last.click()
    assert await page.locator('#course-elevation [data-elev-segment]').count()>0
-   standout_groups=page.locator('#standouts .podium-group')
-   assert await standout_groups.count()==2
-   for idx in range(await standout_groups.count()):
-    assert await standout_groups.nth(idx).locator('.podium-row').count()==5
+   standout_tabs=page.locator('#standouts [data-standout-tab]')
+   assert await standout_tabs.count()==5
+   for tab_idx in range(5):
+    standout_tabs=page.locator('#standouts [data-standout-tab]')
+    await standout_tabs.nth(tab_idx).click()
+    standout_groups=page.locator('#standouts .podium-group')
+    assert await standout_groups.count()==2
+    for group_idx in range(2):
+     assert await standout_groups.nth(group_idx).locator('.podium-row').count()==5
    strength_groups=page.locator('#last-segment-strength .strength-pair section')
    assert await strength_groups.count()==2
    for idx in range(await strength_groups.count()):
