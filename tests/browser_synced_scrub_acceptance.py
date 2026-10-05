@@ -43,7 +43,7 @@ async def main():
             opts.update(executable_path="/usr/bin/chromium",args=["--no-sandbox"])
         browser=await p.chromium.launch(**opts)
         try:
-            for width,height in ((1440,900),(900,900),(390,844)):
+            for width,height in ((1440,900),(900,900),(768,900),(390,844)):
                 page=await browser.new_page(viewport={"width":width,"height":height})
                 page.set_default_timeout(6000)
                 errors=[]
@@ -156,8 +156,22 @@ async def main():
                 assert separation>5,(width,positions,separation,"common-clock runners still overlap")
                 clock_readout=await page.locator("#duel-readout").inner_text()
                 assert "Gemensam tävlingsklocka" in clock_readout
+                assert "är cirka" in clock_readout and "km in i loppet" in clock_readout
                 assert "Positionsskillnad A−B:" in clock_readout
                 assert "Tidslucka A−B:" in clock_readout
+                # At the shared final clock both runners are at the same finish
+                # coordinate. The map must not invent a separation for overlap.
+                await page.locator("#duel-clock").evaluate(
+                    "el=>{el.value=el.max;el.dispatchEvent(new Event('input',{bubbles:true}))}"
+                )
+                finish_positions=await page.locator("#duel-map [data-runner-marker]").evaluate_all(
+                    "els=>els.map(el=>[Number(el.getAttribute('cx')),Number(el.getAttribute('cy'))])"
+                )
+                assert finish_positions[0]==finish_positions[1],(width,finish_positions,"finish markers must coincide")
+                opacities=await page.locator("#duel-map [data-runner-marker]").evaluate_all(
+                    "els=>els.map(el=>Number(el.getAttribute('fill-opacity')))"
+                )
+                assert all(0<opacity<1 for opacity in opacities),(width,opacities,"overlap must remain legible")
                 # Return to Start before testing distance-driven map/elevation.
                 await page.locator("#duel-reset").click()
                 duel_map="#duel-map [data-local-hit]"
@@ -180,7 +194,7 @@ async def main():
                 near(new,await position(page,duel_elev))
                 near(new,float(await page.locator("#duel-range").input_value()),.051)
                 info=await page.locator("#duel-readout").inner_text()
-                assert "GPX-distans" in info and "Tidslucka A−B" in info,info
+                assert "position cirka" in info and "Tidslucka A−B" in info,info
                 # A route from another family or edition must not leak into a
                 # genuinely route-less historical edition.
                 compare_dialog=page.locator("#compare-dialog")
