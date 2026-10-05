@@ -81,7 +81,7 @@ async def main():
    assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
    assert await page.locator('#results-table th').count()==11
    assert await page.locator('#segment-table th').count()==10
-   for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
+   for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
    try:
     await page.wait_for_selector('#coverage-table table',timeout=5000)
@@ -121,7 +121,7 @@ async def main():
    assert await page.locator('#segment-sex-extra svg').count()==1
    assert await page.locator('#segment-groups svg').count()==1
    assert await page.locator('[data-class-series]:checked').count()<=5
-   assert await page.locator('#segment-heatmap .heat-cell small').count()>0
+   assert await page.locator('#segment-heatmap').count()==0
    assert await page.locator('#history-table th').count()==15
    assert await page.locator('#club-chart .club-choice').count()>0
    assert await page.locator('#status-chart article').count()==4
@@ -153,8 +153,9 @@ async def main():
    assert await strength_groups.count()==2
    for idx in range(await strength_groups.count()):
     assert await strength_groups.nth(idx).locator('.mini-result').count()==5
-   assert await page.locator('#segment-q1090 .distribution-median-line').count()>0
+   assert await page.locator('#segment-q1090').count()==0
    assert await page.locator('#segment-pacing .distribution-median-line').count()>0
+   assert await page.locator('#segment-pacing .chart-reference-line').count()==1
    assert await page.locator('#checkpoint-spread .distribution-median-line').count()>0
    # Drag-select a real plot window, then reset it.
    brush=page.locator('#placement-chart [data-placement-brush]')

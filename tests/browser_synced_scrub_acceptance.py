@@ -83,6 +83,19 @@ async def main():
                 assert distance>5,(width,distance)
                 near(distance,await position(page,course_elev))
                 assert "Illustrativ position" in await page.locator("#course-scrub-label").inner_text()
+                # Hover uses the real SVG viewBox, not a fixed CSS width:
+                # both edges must map to the ends even on responsive widths.
+                box=await page.locator(course_elev).bounding_box()
+                await page.locator(course_elev).hover(position={"x":1,"y":box["height"]*.5})
+                assert await position(page,course_elev)<.25,(width,"left elevation edge",await position(page,course_elev))
+                await page.locator(course_elev).hover(position={"x":box["width"]-1,"y":box["height"]*.5})
+                edge=await position(page,course_elev)
+                assert edge>float(await page.locator(course_elev).get_attribute("aria-valuemax"))*.98,(width,"right elevation edge",edge)
+                await page.locator(course_elev).focus()
+                await page.keyboard.press("Home")
+                assert await position(page,course_elev)==0
+                await page.keyboard.press("End")
+                near(await position(page,course_elev),float(await page.locator(course_elev).get_attribute("aria-valuemax")))
                 await page.locator(course_map).focus()
                 await page.keyboard.press("ArrowRight")
                 advanced=await position(page,course_map)
