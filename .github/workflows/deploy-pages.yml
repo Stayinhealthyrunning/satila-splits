@@ -3,7 +3,7 @@ name: Deploy standalone Sätila Splits review site
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, codex/satila-ui-ux-consolidation-2026-10-05]
     paths:
       - 'docs/**'
       - '.github/workflows/deploy-pages.yml'
