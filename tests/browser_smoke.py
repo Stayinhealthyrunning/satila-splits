@@ -47,6 +47,7 @@ async def main():
  css=(ROOT/"assets/style.css").read_text(encoding="utf-8")
  hero=base64.b64encode((ROOT/"assets/hero.webp").read_bytes()).decode("ascii")
  css=css.replace("url('hero.webp')","url('data:image/webp;base64,"+hero+"')")
+ profile_js=(ROOT/"assets/profile-analysis.js").read_text(encoding="utf-8")
  js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
  async with async_playwright() as p:
   opts={"headless":True}
@@ -69,6 +70,7 @@ async def main():
      return {ok:v!==undefined,status:v===undefined?404:200,json:async()=>v};
     };
    }""",data)
+   await page.add_script_tag(content=profile_js)
    await page.add_script_tag(content=js)
    try:
     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=20000)
