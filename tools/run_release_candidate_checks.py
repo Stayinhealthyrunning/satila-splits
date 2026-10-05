@@ -23,6 +23,7 @@ SOURCE=[
  ["python","tests/test_2023_trail43_spatial_height_transfer.py"],
  ["python","tools/audit_ui_capabilities.py"],
  ["python","tests/test_publication_privacy.py"],
+ ["python","-m","unittest","discover","-s","tests","-p","test_sex_normalization_contract.py","-v"],
  ["python","-m","unittest","discover","-s","tests","-p","test_statistics_contract.py","-v"],
  ["python","-m","unittest","discover","-s","tests","-p","test_course_comparability_contract.py","-v"],
  ["python","-m","unittest","discover","-s","tests","-p","test_real_data_analysis_contract.py","-v"],

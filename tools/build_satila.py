@@ -20,6 +20,25 @@ def racefamily(r):
  if 19<=km<26:return 'trail22'
  return None
 
+def normalized_sex(athlete, race_class):
+ """Keep source sex only when athlete and explicit class metadata agree.
+
+ EQ Timing occasionally publishes contradictory fields. Such a row must stay
+ visible, but its sex is analytically unknown rather than being counted in the
+ opposite explicit class.
+ """
+ values={'m':'M','f':'F','male':'M','female':'F'}
+ athlete_sex=values.get(str((athlete or {}).get('Kjonn') or '').lower())
+ class_meta=(race_class or {})
+ class_sex=values.get(str(class_meta.get('Kjonn') or '').lower())
+ if not class_sex:
+  # Some EQ Timing exports omit Klasse.Kjonn even when the class label itself
+  # is explicit. Use only unambiguous leading labels; never infer from a name.
+  label=str(class_meta.get('Navn') or '').strip().casefold()
+  if re.match(r'^(kvinna|kvinnor|dam)(\b|\s|$)',label):class_sex='F'
+  elif re.match(r'^(man|män|herr)(\b|\s|$)',label):class_sex='M'
+ return None if athlete_sex and class_sex and athlete_sex != class_sex else athlete_sex or class_sex
+
 def parse(root,out,source_cat):
  events=load(source_cat)['events'];catalog=[];history=[];samples=[];coverage=[];archive_hashes={};(out/'satila.sqlite').unlink(missing_ok=True);db=sqlite3.connect(str(out/'satila.sqlite'));db.executescript('''
  CREATE TABLE IF NOT EXISTS editions(race_key TEXT PRIMARY KEY,year INT,leg_uid INT,event_id INT,family TEXT,name TEXT,source_distance REAL,source TEXT);
@@ -75,7 +94,7 @@ def parse(root,out,source_cat):
     name=(ath.get('NavnFormatert') or (' '.join(filter(None,[ath.get('Fornavn'),ath.get('Etternavn')])))).strip()
     if not name:name='Ej publicerat namn'
     cl=c.get('Klasse') or {};club=c.get('KlubbTeamFormatert') or c.get('Klubbnavn') or ath.get('Klubbnavn') or ''
-    sex={'m':'M','f':'F','male':'M','female':'F'}.get(str(ath.get('Kjonn') or cl.get('Kjonn') or '').lower())
+    sex=normalized_sex(ath,cl)
     age=c.get('Alder') if isinstance(c.get('Alder'),int) and 5<=c.get('Alder')<=100 else None
     resultid=f'eq-{year}-{leg}-{uid}';tim=sec(finish.get('AkkumulertTid')) if status=='FINISHED' else None
     pl=(finish.get('Plassering') or {}).get('Total') if status=='FINISHED' else None
