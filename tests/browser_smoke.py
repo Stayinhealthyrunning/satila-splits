@@ -120,6 +120,26 @@ async def main():
    assert await page.locator('#segment-heatmap .heat-cell small').count()>0
    assert await page.locator('#history-table th').count()==15
    assert await page.locator('#club-chart .club-choice').count()>0
+   assert await page.locator('#status-chart article').count()==4
+   status_labels=[x.strip() for x in await page.locator('#status-chart article span').all_text_contents()]
+   assert status_labels==['Anmälda','Startande','DNF','Fullföljt'],status_labels
+   assert await page.locator('#segment-chart [data-segment-series-mode]').count()==3
+   assert await page.locator('#segment-chart .distribution-median-line').count()>0
+   # Club/ort selection is capped at four; a fifth option must be unavailable.
+   club_checks=page.locator('#club-chart [data-club-choice]')
+   assert await club_checks.count()>=5
+   unchecked=page.locator('#club-chart [data-club-choice]:not(:checked):not(:disabled)')
+   if await unchecked.count():
+    fourth=unchecked.first
+    await fourth.click()
+    assert await page.locator('#club-chart [data-club-choice]:checked').count()==4
+    assert await page.locator('#club-chart [data-club-choice]:not(:checked):disabled').count()>0
+    await page.locator('#club-chart [data-club-choice]:checked').last.click()
+   assert await page.locator('#course-elevation [data-elev-segment]').count()>0
+   standout_groups=page.locator('#standouts .podium-group')
+   assert await standout_groups.count()==2
+   for idx in range(await standout_groups.count()):
+    assert await standout_groups.nth(idx).locator('.podium-row').count()<=5
    await page.wait_for_selector('#course-provenance table')
    assert 'SHA-256' in await page.locator('#course-provenance').inner_text()
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
