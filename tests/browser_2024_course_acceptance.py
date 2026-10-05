@@ -26,6 +26,7 @@ async def main():
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
     markup=re.sub(r"<script[^>]*>\s*</script>","",markup)
+    profile_js=(ROOT/"assets/profile-analysis.js").read_text(encoding="utf-8")
     js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
     async with async_playwright() as p:
         opts={"headless":True}
@@ -47,6 +48,7 @@ async def main():
                 return {ok:value!==undefined,status:value===undefined?404:200,json:async()=>value};
               };
             }""",payload)
+            await page.add_script_tag(content=profile_js)
             await page.add_script_tag(content=js)
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             await page.locator("#year-select").select_option("2024")

@@ -47,6 +47,7 @@ async def main():
  css=(ROOT/"assets/style.css").read_text(encoding="utf-8")
  hero=base64.b64encode((ROOT/"assets/hero.webp").read_bytes()).decode("ascii")
  css=css.replace("url('hero.webp')","url('data:image/webp;base64,"+hero+"')")
+ profile_js=(ROOT/"assets/profile-analysis.js").read_text(encoding="utf-8")
  js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
  async with async_playwright() as p:
   opts={"headless":True}
@@ -69,6 +70,7 @@ async def main():
      return {ok:v!==undefined,status:v===undefined?404:200,json:async()=>v};
     };
    }""",data)
+   await page.add_script_tag(content=profile_js)
    await page.add_script_tag(content=js)
    try:
     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=20000)
@@ -80,7 +82,7 @@ async def main():
    assert await page.locator("#segment-table tbody tr").count()>0
    assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
    assert await page.locator('#results-table th').count()==11
-   assert await page.locator('#segment-table th').count()==10
+   assert await page.locator('#segment-table th').count()==6
    for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
    try:
@@ -119,7 +121,7 @@ async def main():
    assert await page.locator('#segment-pacing circle[data-pacing-segment]').count()>0
    assert await page.locator('#percentile-chart svg').count()==1
    assert await page.locator('#segment-sex-extra svg').count()==1
-   assert await page.locator('#segment-groups svg').count()==1
+   assert await page.locator('#segment-groups').count()==0
    assert await page.locator('[data-class-series]:checked').count()<=5
    assert await page.locator('#segment-heatmap').count()==0
    assert await page.locator('#history-table th').count()==15
@@ -184,6 +186,13 @@ async def main():
    assert await page.locator(".suggestion").count()>0
    await page.locator(".suggestion").first.click()
    assert await page.locator("#profile-dialog").evaluate("e=>e.open")
+   assert await page.locator("#profile-content .profile-quick-nav button").count()==5
+   assert await page.locator("#profile-content .profile2-facts article").count()==7
+   assert await page.locator("#personal-summary").count()==1
+   assert await page.locator("#profile-replay .profile-replay-grid").count()==1
+   assert await page.locator("#profile-journey .profile-journey-card").count()>=3
+   assert await page.locator("#profile-relative svg").count()==1
+   assert await page.locator("#profile-splits table").count()==1
    assert await page.locator(".insight").count()>0
    assert any('Sedan föregående verifierade' in value for value in await page.locator('#profile-content th').all_text_contents())
    assert await page.locator('#profile-content .insight small').count()>0
