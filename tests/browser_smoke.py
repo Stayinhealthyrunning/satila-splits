@@ -156,9 +156,11 @@ async def main():
    brush=page.locator('#placement-chart [data-placement-brush]')
    brush_box=await brush.bounding_box()
    assert brush_box
-   await page.mouse.move(brush_box['x']+brush_box['width']*.18,brush_box['y']+brush_box['height']*.18)
+   # Start away from the result diagonal so the drag begins on plot background,
+   # not on an interactive runner point.
+   await page.mouse.move(brush_box['x']+brush_box['width']*.08,brush_box['y']+brush_box['height']*.82)
    await page.mouse.down()
-   await page.mouse.move(brush_box['x']+brush_box['width']*.78,brush_box['y']+brush_box['height']*.76,steps=5)
+   await page.mouse.move(brush_box['x']+brush_box['width']*.82,brush_box['y']+brush_box['height']*.08,steps=5)
    await page.mouse.up()
    await page.wait_for_function("document.querySelector('#placement-chart .placement-zoom-controls [role=status]').textContent.includes('Eget draget utsnitt')")
    await page.locator('#placement-zoom-reset').click()
