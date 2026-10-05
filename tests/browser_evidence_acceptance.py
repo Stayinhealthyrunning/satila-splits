@@ -138,14 +138,8 @@ async def main():
             assert await scatter.locator("circle[data-open]").count()==count_full
             assert "Hela fältet" in await scatter.locator('[role="status"]').inner_text()
             await page.wait_for_function("document.querySelector('#checkpoint-spread')?.textContent.includes('Varje kontroll använder sitt eget observerade n')")
-            # D18 uses one explicit, capped class selector rather than a second
-            # opaque comparison or heatmap.
-            await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
-            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            assert 1<=len(checked)<=5,checked
-            await page.locator('#segment-groups [data-class-series]').first.evaluate("(el)=>el.click()")
-            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            assert len(checked)>=1,checked
+            # The duplicate class-pacing card was deliberately removed in visual review part 2.
+            assert await page.locator('#segment-groups').count()==0
             # T01: all varying source fields are selectable, and the native
             # control responds to keyboard interaction on desktop and mobile.
             sort=page.locator('#results-sort')
