@@ -81,7 +81,7 @@ async def main():
    assert 'Fullföljandegrad:' in await page.locator('.kpi-note').inner_text()
    assert await page.locator('#results-table th').count()==11
    assert await page.locator('#segment-table th').count()==10
-   for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#segment-heatmap","#history-fingerprint","#coverage-table"):
+   for ex in ("#extra-overview","#extra-dynamics","#extra-segments","#extra-course","#extra-history","#history-fingerprint","#coverage-table"):
     assert await page.locator(ex).count()==1,(width,ex)
    try:
     await page.wait_for_selector('#coverage-table table',timeout=5000)
@@ -107,6 +107,10 @@ async def main():
    assert await page.locator('#finish-series [data-finish-mode="F"]').get_attribute('aria-pressed')=='true'
    await page.locator('#finish-series [data-finish-mode="all"]').click()
    assert await page.locator('#finish-series [data-finish-mode="all"]').get_attribute('aria-pressed')=='true'
+   assert await page.locator('#finish-chart rect[fill="#d65a91"]').count()>0
+   assert await page.locator('#finish-chart rect[fill="#3479c5"]').count()>0
+   sex_colors=await page.evaluate("()=>[getComputedStyle(document.querySelector('.sex-f')).backgroundColor,getComputedStyle(document.querySelector('.sex-m')).backgroundColor]")
+   assert sex_colors==['rgb(214, 90, 145)','rgb(52, 121, 197)'],sex_colors
    assert await page.locator('#group-table th').count()==5
    assert await page.locator('#group-table #group-next').count()==1
    await page.locator('#group-table #group-next').click()
@@ -117,9 +121,62 @@ async def main():
    assert await page.locator('#segment-sex-extra svg').count()==1
    assert await page.locator('#segment-groups svg').count()==1
    assert await page.locator('[data-class-series]:checked').count()<=5
-   assert await page.locator('#segment-heatmap .heat-cell small').count()>0
+   assert await page.locator('#segment-heatmap').count()==0
    assert await page.locator('#history-table th').count()==15
    assert await page.locator('#club-chart .club-choice').count()>0
+   assert await page.locator('#status-chart article').count()==4
+   status_labels=[x.strip() for x in await page.locator('#status-chart article span').all_text_contents()]
+   assert status_labels==['Anmälda','Startande','DNF','Fullföljt'],status_labels
+   assert await page.locator('#segment-chart [data-segment-series-mode]').count()==3
+   assert await page.locator('#segment-chart .distribution-median-line').count()>0
+   # Club/ort selection is capped at four; a fifth option must be unavailable.
+   club_checks=page.locator('#club-chart [data-club-choice]')
+   assert await club_checks.count()>=5
+   unchecked=page.locator('#club-chart [data-club-choice]:not(:checked):not(:disabled)')
+   if await unchecked.count():
+    fourth=unchecked.first
+    await fourth.click()
+    assert await page.locator('#club-chart [data-club-choice]:checked').count()==4
+    assert await page.locator('#club-chart [data-club-choice]:not(:checked):disabled').count()>0
+    await page.locator('#club-chart [data-club-choice]:checked').last.click()
+   assert await page.locator('#course-elevation [data-elev-segment]').count()>0
+   standout_tabs=page.locator('#standouts [data-standout-tab]')
+   assert await standout_tabs.count()==5
+   for tab_idx in range(5):
+    standout_tabs=page.locator('#standouts [data-standout-tab]')
+    await standout_tabs.nth(tab_idx).click()
+    standout_groups=page.locator('#standouts .podium-group')
+    assert await standout_groups.count()==2
+    for group_idx in range(2):
+     assert await standout_groups.nth(group_idx).locator('.podium-row').count()==5
+   strength_groups=page.locator('#last-segment-strength .strength-pair section')
+   assert await strength_groups.count()==2
+   for idx in range(await strength_groups.count()):
+    assert await strength_groups.nth(idx).locator('.mini-result').count()==5
+   assert await page.locator('#segment-q1090').count()==0
+   assert await page.locator('#segment-pacing .distribution-median-line').count()>0
+   assert await page.locator('#segment-pacing .chart-reference-line').count()==1
+   assert await page.locator('#checkpoint-spread .distribution-median-line').count()>0
+   # Drag-select a real plot window, then reset it.
+   brush=page.locator('#placement-chart [data-placement-brush]')
+   brush_box=await brush.bounding_box()
+   assert brush_box
+   # Start away from the result diagonal so the drag begins on plot background,
+   # not on an interactive runner point.
+   await page.mouse.move(brush_box['x']+brush_box['width']*.08,brush_box['y']+brush_box['height']*.82)
+   await page.mouse.down()
+   await page.mouse.move(brush_box['x']+brush_box['width']*.82,brush_box['y']+brush_box['height']*.08,steps=5)
+   await page.mouse.up()
+   await page.wait_for_function("document.querySelector('#placement-chart .placement-zoom-controls [role=status]').textContent.includes('Eget draget utsnitt')")
+   await page.locator('#placement-zoom-reset').click()
+   assert 'Hela fältet' in await page.locator('#placement-chart .placement-zoom-controls [role=status]').inner_text()
+   # Clicking the elevation profile selects the timing segment under the cursor.
+   elev_hit=page.locator('#course-elevation [data-elev-hit]')
+   elev_box=await elev_hit.bounding_box()
+   assert elev_box
+   await page.mouse.click(elev_box['x']+elev_box['width']*.72,elev_box['y']+elev_box['height']*.55)
+   assert await page.locator('#course-elevation [data-elev-segment].selected').count()==1
+   assert await page.locator('#segment-table tbody tr.selected').count()==1
    await page.wait_for_selector('#course-provenance table')
    assert 'SHA-256' in await page.locator('#course-provenance').inner_text()
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
@@ -146,15 +203,19 @@ async def main():
    assert await page.locator('#profile-replay-range').input_value()==replay_position
    await page.locator('#profile-replay-reset').click()
    assert float(await page.locator('#profile-replay-range').input_value())==0
-   await page.locator('#profile-add-duel').click()
-   await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
+   # Kartduell is intentionally a standalone flow: select runners directly,
+   # without routing selection through the individual profile dialog.
+   await page.locator('#map-duel-search').fill(runner['name'])
+   await page.wait_for_selector('#map-duel-suggestions [data-map-duel-id="'+runner['id']+'"]')
+   await page.locator('#map-duel-suggestions [data-map-duel-id="'+runner['id']+'"]').click()
    second=next(r for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r['id']!=runner['id'] and r.get('name'))
-   await page.locator('#results-search').fill(second['name'])
-   await page.locator('#results-table [data-open="'+second['id']+'"]').first.click()
-   await page.locator('#profile-add-duel').click()
-   await page.locator('#profile-add-compare').click()
-   await page.locator('[data-close="profile-dialog"]').click()
+   await page.locator('#map-duel-search').fill(second['name'])
+   await page.wait_for_selector('#map-duel-suggestions [data-map-duel-id="'+second['id']+'"]')
+   await page.locator('#map-duel-suggestions [data-map-duel-id="'+second['id']+'"]').click()
+   assert await page.locator('#map-duel-chips .chip').count()==2
+   assert await page.locator('#open-compare').is_enabled()
+   assert await page.locator('#open-map-duel').is_enabled()
    await page.locator('#open-compare').click()
    assert await page.locator('#compare-dialog').evaluate('e=>e.open')
    assert any('A segment' in value for value in await page.locator('#compare-dialog th').all_text_contents())
@@ -229,7 +290,6 @@ async def main():
    assert not await page.evaluate("window.__missing||[]"),(width,"missing data")
    await page.locator('#results-search').fill('')
    await page.locator('#runner-search').fill('')
-   await page.locator('#clear-compare').click()
    await page.locator('#clear-map-duel').click()
    await page.evaluate("document.querySelectorAll('.table-scroll,.chart-host').forEach(el=>el.scrollLeft=0)")
    assert await page.evaluate("Array.from(document.querySelectorAll('.table-scroll,.chart-host')).every(el=>el.scrollLeft===0)")
