@@ -35,8 +35,8 @@ def normalized_sex(athlete, race_class):
   # Some EQ Timing exports omit Klasse.Kjonn even when the class label itself
   # is explicit. Use only unambiguous leading labels; never infer from a name.
   label=str(class_meta.get('Navn') or '').strip().casefold()
-  if re.match(r'^(kvinna|kvinnor|dam)(\\b|\\s|$)',label):class_sex='F'
-  elif re.match(r'^(man|män|herr)(\\b|\\s|$)',label):class_sex='M'
+  if re.match(r'^(kvinna|kvinnor|dam)(\b|\s|$)',label):class_sex='F'
+  elif re.match(r'^(man|män|herr)(\b|\s|$)',label):class_sex='M'
  return None if athlete_sex and class_sex and athlete_sex != class_sex else athlete_sex or class_sex
 
 def parse(root,out,source_cat):
