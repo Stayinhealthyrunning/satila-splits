@@ -146,15 +146,19 @@ async def main():
    assert await page.locator('#profile-replay-range').input_value()==replay_position
    await page.locator('#profile-replay-reset').click()
    assert float(await page.locator('#profile-replay-range').input_value())==0
-   await page.locator('#profile-add-duel').click()
-   await page.locator('#profile-add-compare').click()
    await page.locator('[data-close="profile-dialog"]').click()
+   # Kartduell is intentionally a standalone flow: select runners directly,
+   # without routing selection through the individual profile dialog.
+   await page.locator('#map-duel-search').fill(runner['name'])
+   await page.wait_for_selector('#map-duel-suggestions [data-map-duel-id="'+runner['id']+'"]')
+   await page.locator('#map-duel-suggestions [data-map-duel-id="'+runner['id']+'"]').click()
    second=next(r for r in data['data/races/2025-trail43.json']['results'] if r['status']=='FINISHED' and r['id']!=runner['id'] and r.get('name'))
-   await page.locator('#results-search').fill(second['name'])
-   await page.locator('#results-table [data-open="'+second['id']+'"]').first.click()
-   await page.locator('#profile-add-duel').click()
-   await page.locator('#profile-add-compare').click()
-   await page.locator('[data-close="profile-dialog"]').click()
+   await page.locator('#map-duel-search').fill(second['name'])
+   await page.wait_for_selector('#map-duel-suggestions [data-map-duel-id="'+second['id']+'"]')
+   await page.locator('#map-duel-suggestions [data-map-duel-id="'+second['id']+'"]').click()
+   assert await page.locator('#map-duel-chips .chip').count()==2
+   assert await page.locator('#open-compare').is_enabled()
+   assert await page.locator('#open-map-duel').is_enabled()
    await page.locator('#open-compare').click()
    assert await page.locator('#compare-dialog').evaluate('e=>e.open')
    assert any('A segment' in value for value in await page.locator('#compare-dialog th').all_text_contents())
