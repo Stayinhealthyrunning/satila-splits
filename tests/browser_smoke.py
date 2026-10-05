@@ -139,7 +139,32 @@ async def main():
    standout_groups=page.locator('#standouts .podium-group')
    assert await standout_groups.count()==2
    for idx in range(await standout_groups.count()):
-    assert await standout_groups.nth(idx).locator('.podium-row').count()<=5
+    assert await standout_groups.nth(idx).locator('.podium-row').count()==5
+   strength_groups=page.locator('#last-segment-strength .strength-pair section')
+   assert await strength_groups.count()==2
+   for idx in range(await strength_groups.count()):
+    assert await strength_groups.nth(idx).locator('.mini-result').count()==5
+   assert await page.locator('#segment-q1090 .distribution-median-line').count()>0
+   assert await page.locator('#segment-pacing .distribution-median-line').count()>0
+   assert await page.locator('#checkpoint-spread .distribution-median-line').count()>0
+   # Drag-select a real plot window, then reset it.
+   brush=page.locator('#placement-chart [data-placement-brush]')
+   brush_box=await brush.bounding_box()
+   assert brush_box
+   await page.mouse.move(brush_box['x']+brush_box['width']*.18,brush_box['y']+brush_box['height']*.18)
+   await page.mouse.down()
+   await page.mouse.move(brush_box['x']+brush_box['width']*.78,brush_box['y']+brush_box['height']*.76,steps=5)
+   await page.mouse.up()
+   await page.wait_for_function("document.querySelector('#placement-chart .placement-zoom-controls [role=status]').textContent.includes('Eget draget utsnitt')")
+   await page.locator('#placement-zoom-reset').click()
+   assert 'Hela fältet' in await page.locator('#placement-chart .placement-zoom-controls [role=status]').inner_text()
+   # Clicking the elevation profile selects the timing segment under the cursor.
+   elev_hit=page.locator('#course-elevation [data-elev-hit]')
+   elev_box=await elev_hit.bounding_box()
+   assert elev_box
+   await page.mouse.click(elev_box['x']+elev_box['width']*.72,elev_box['y']+elev_box['height']*.55)
+   assert await page.locator('#course-elevation [data-elev-segment].selected').count()==1
+   assert await page.locator('#segment-table tbody tr.selected').count()==1
    await page.wait_for_selector('#course-provenance table')
    assert 'SHA-256' in await page.locator('#course-provenance').inner_text()
    runner=next(r for r in data["data/races/2025-trail43.json"]["results"] if r.get("name") and r["status"]=="FINISHED")
