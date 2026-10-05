@@ -65,12 +65,10 @@ async def main():
             # source rule still applies in the timing table: metadata-only
             # Tostared must not create a false observed segment.
             assert await page.locator('#segment-retention').count()==0
-            # All published DNF records currently lack a linked public TIME passage.
-            # A numeric zero in the segment-exit column would incorrectly imply
-            # that actual last checkpoints are known and none exited here.
-            dnf_cells=await seg.locator("td:nth-child(9)").all_text_contents()
-            assert len(dnf_cells)==6 and all(value.strip()=="Okänt" for value in dnf_cells),dnf_cells
-            assert "inte noll avbrott" in await page.locator("#segments").inner_text()
+            # The compact segment table intentionally keeps only the six requested analytical columns.
+            headers=[x.strip() for x in await page.locator("#segment-table th").all_text_contents()]
+            assert headers==["Delsträcka","km*","n","Median","Q25–Q75","Tempo"],headers
+            assert "Parvis täckning" not in await page.locator("#segments").inner_text()
             # D22 Course Intelligence must follow the SAME selected real segment
             # as the timing table, without inventing a DNF exit or segment ascent.
             intel=page.locator("#course-intelligence")
@@ -111,13 +109,14 @@ async def main():
             assert 'ingen verifierad kontrollprojektion' in await page.locator('#course-map .segment-route-overlay').get_attribute('aria-label')
             await page.locator('#segment-sex-extra [data-extra-segment="4"]').first.click()
             await page.wait_for_function("document.querySelector('#podium-segment-start')?.value==='4'")
-            await page.locator('#segment-groups [data-extra-segment="5"]').first.focus()
+            await page.locator('#segment-sex-extra [data-extra-segment="5"]').first.focus()
             await page.keyboard.press(' ')
             await page.wait_for_function("document.querySelector('#podium-segment-start')?.value==='5'")
             assert await page.locator('#segment-heatmap').count()==0
             # D11: real last-segment strength is separate from last-third placing.
-            await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Styrka på sista verifierade delsträckan')")
-            assert "fältmedian" in await page.locator("#finish-progression").inner_text()
+            await page.wait_for_function("document.querySelector('#finish-progression')?.textContent.includes('Snabbaste avslutningen')")
+            assert "Spurten mot mål" in await page.locator("#extra-dynamics").inner_text()
+            assert "100 = median" in await page.locator("#last-segment-strength").inner_text()
             # D07/D21: public class in scatter tooltip and honest changing checkpoint n.
             scatter_titles=await page.locator('#placement-chart circle title').all_text_contents()
             assert scatter_titles and all((' · Man · ' in t or ' · Kvinna · ' in t) for t in scatter_titles),scatter_titles[:3]
@@ -139,14 +138,8 @@ async def main():
             assert await scatter.locator("circle[data-open]").count()==count_full
             assert "Hela fältet" in await scatter.locator('[role="status"]').inner_text()
             await page.wait_for_function("document.querySelector('#checkpoint-spread')?.textContent.includes('Varje kontroll använder sitt eget observerade n')")
-            # D18 uses one explicit, capped class selector rather than a second
-            # opaque comparison or heatmap.
-            await page.wait_for_function("document.querySelectorAll('#segment-groups [data-class-series]').length >= 2")
-            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            assert 1<=len(checked)<=5,checked
-            await page.locator('#segment-groups [data-class-series]').first.evaluate("(el)=>el.click()")
-            checked=await page.locator('#segment-groups [data-class-series]:checked').evaluate_all("(els)=>els.map(e=>e.dataset.classSeries)")
-            assert len(checked)>=1,checked
+            # The duplicate class-pacing card was deliberately removed in visual review part 2.
+            assert await page.locator('#segment-groups').count()==0
             # T01: all varying source fields are selectable, and the native
             # control responds to keyboard interaction on desktop and mobile.
             sort=page.locator('#results-sort')
