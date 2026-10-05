@@ -273,3 +273,12 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
   .profile-journey-ribbon{display:grid;grid-auto-columns:155px;grid-auto-flow:column;grid-template-columns:none;max-width:100%;padding-bottom:5px;overflow-x:auto}
   .profile-split-section{padding:13px}
 }
+
+/* Keep every Gotaleden-style profile surface inside the dialog; charts/tables scroll in their own hosts. */
+.profile-modal,#profile-content,#profile-content *{box-sizing:border-box}
+.profile-modal,#profile-content{max-width:100%;overflow-x:hidden}
+#profile-content>*{min-width:0;max-width:100%}
+#profile-content .table-scroll,#profile-content .profile-chart-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto}
+#profile-content table{max-width:none}
+.profile-replay-grid,.profile-replay-grid>*{min-width:0;max-width:100%}
+.profile-replay-map-panel #profile-replay-stage{width:100%;max-width:100%;min-width:0}
