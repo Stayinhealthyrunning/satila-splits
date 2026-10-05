@@ -25,6 +25,7 @@ async def main():
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
     markup=re.sub(r"<script[^>]*>\s*</script>","",markup)
+    profile_js=(ROOT/"assets/profile-analysis.js").read_text(encoding="utf-8")
     js=(ROOT/"assets/app.js").read_text(encoding="utf-8")
 
     async with async_playwright() as pw:
@@ -42,6 +43,7 @@ async def main():
                 return {ok:x!==undefined,status:x===undefined?404:200,json:async()=>x};
               };
             }""",fixtures)
+            await page.add_script_tag(content=profile_js)
             await page.add_script_tag(content=js)
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             await page.locator('[data-family="trail43"]').click()
