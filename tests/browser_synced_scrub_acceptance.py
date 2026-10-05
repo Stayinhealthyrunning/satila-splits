@@ -63,7 +63,7 @@ async def main():
                   };
                 }""",data)
                 await page.add_script_tag(content=profile_js)
-            await page.add_script_tag(content=js)
+                await page.add_script_tag(content=js)
                 try:
                     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
                 except Exception:
