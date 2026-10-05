@@ -808,7 +808,7 @@ function renderClassDetails(){
 function ensureMapDuelControls(){
   if(!$('#map-duel-builder'))return;
   $('#open-map-duel').addEventListener('click',openMapDuel);
-  $('#clear-compare').addEventListener('click',()=>{S.mapDuel=[];S.compare=[];$('#map-duel-search').value='';$('#map-duel-suggestions').innerHTML='';$('#map-duel-feedback').textContent='Välj minst två deltagare.';renderMapDuelChips()});
+  $('#clear-map-duel').addEventListener('click',()=>{S.mapDuel=[];S.compare=[];$('#map-duel-search').value='';$('#map-duel-suggestions').innerHTML='';$('#map-duel-feedback').textContent='Välj minst två deltagare.';renderMapDuelChips()});
 }
 function addMapDuel(id){
   if(!findRecord(id))return;
