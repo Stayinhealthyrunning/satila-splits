@@ -253,8 +253,85 @@ function renderDynamics(){
  $('#placement-zoom-in').addEventListener('click',()=>{S.placementWindow=null;S.placementZoom=Math.min(2,zoom+1);renderDynamics();$('#placement-zoom-in')?.focus()});$('#placement-zoom-reset').addEventListener('click',()=>{S.placementWindow=null;S.placementZoom=0;renderDynamics();$('#placement-zoom-in')?.focus()});
  renderStandouts();bindResultLinks($('#dynamics'))
 }
-function standoutsFor(rows){let paceKm=wholeCoursePaceKm(S.race),profiles=rows.filter(finish).map(r=>({r,parts:pairs(r)})).filter(p=>p.parts.length>=2),all=profiles.flatMap(x=>x.parts.map(s=>({...s,r:x.r,rel:num(paceKm)?s.seconds/s.km/(x.r.finish_seconds/paceKm):null})));if(!all.length)return[];let physical=all.filter(x=>paceDistanceSupported(x)&&num(x.rel)),finishList=profiles.map(x=>{let p=x.parts[x.parts.length-1];return p&&num(p.placeFrom)&&num(p.placeTo)?{r:x.r,p,change:p.placeFrom-p.placeTo}:null}).filter(Boolean),gains=all.filter(x=>num(x.placeFrom)&&num(x.placeTo)).map(x=>({...x,change:x.placeFrom-x.placeTo})),even=profiles.map(x=>{let z=x.parts.filter(p=>paceDistanceSupported(p)).map(p=>p.seconds/p.km);if(z.length<2)return null;let avg=z.reduce((a,b)=>a+b,0)/z.length;return avg>0?{r:x.r,cv:Math.sqrt(z.reduce((a,b)=>a+(b-avg)**2,0)/z.length)/avg}:null}).filter(x=>x&&num(x.cv)),last=profiles.map(x=>{let p=x.parts.at(-1);return p&&paceDistanceSupported(p)?{r:x.r,sec:p.seconds,km:p.km,name:p.to.name}:null}).filter(Boolean);return [{id:'relative',title:'Relativt eget snitt',list:physical.sort((a,b)=>a.rel-b.rel).map(x=>({r:x.r,value:(100/Math.max(.0001,x.rel)).toFixed(0)+' % · '+x.to.name,score:x.rel}))},{id:'finish',title:'Starkaste avslutningen',list:finishList.sort((a,b)=>b.change-a.change).map(x=>({r:x.r,value:(x.change>=0?'+':'')+x.change+' platser',score:-x.change}))},{id:'gain',title:'Största placeringslyftet',list:gains.sort((a,b)=>b.change-a.change).map(x=>({r:x.r,value:'+'+x.change+' · '+x.to.name,score:-x.change}))},{id:'even',title:'Jämnast pacing',list:even.sort((a,b)=>a.cv-b.cv).map(x=>({r:x.r,value:(100*x.cv).toFixed(1)+' % variation',score:x.cv}))},{id:'last',title:'Snabbast sista segment',list:last.sort((a,b)=>a.sec/a.km-b.sec/b.km).map(x=>({r:x.r,value:pace(x.sec,x.km,S.unit),score:x.sec/x.km}))}]}
-function renderStandouts(){let categories=standoutsFor(S.filtered);if(!categories.length){$('#standouts').innerHTML=empty('För denna upplaga krävs fler verkliga segmentpar för att hitta ovanliga lopp.');return}if(!categories.some(c=>c.id===S.standoutTab))S.standoutTab=categories[0].id;const active=categories.find(c=>c.id===S.standoutTab),unique=active.list.filter((x,i,a)=>a.findIndex(z=>z.r.id===x.r.id)===i);$('#standouts').innerHTML=`<div class="standout-tabs" role="tablist" aria-label="Välj topplista">${categories.map(c=>`<button type="button" role="tab" data-standout-tab="${c.id}" aria-selected="${c.id===active.id}">${html(c.title)}</button>`).join('')}</div><div class="standout-active" role="tabpanel"><h4>${html(active.title)}</h4><div class="podium-pair">${podiumPair(unique,5)}</div></div>`;$$('[data-standout-tab]',$('#standouts')).forEach(button=>button.addEventListener('click',()=>{S.standoutTab=button.dataset.standoutTab;renderStandouts();bindResultLinks($('#standouts'))}));}
+
+/* Every standout uses source-supported adjacent TIME observations. Physical
+   pacing categories never include a segment whose timing distance is gated. */
+function standoutFinishStrength(profiles){
+ const cps=boundaries(),goal=cps.at(-1);
+ if(cps.length<4||goal?.name!=='Mål'||!num(goal.km)||goal.km<=0)return[];
+ const breakpoint=cps.slice(1,-1).filter(p=>p.km>=goal.km*.55&&p.km<=goal.km*.80)
+  .sort((a,b)=>Math.abs(a.km/goal.km-2/3)-Math.abs(b.km/goal.km-2/3))[0];
+ if(!breakpoint)return[];
+ return profiles.map(({r,parts})=>{
+  // Require a continuous observed Start→Mål series and usable physical pacing
+  // on every leg, rather than treating missing passings as if they were zero.
+  if(parts.length!==cps.length-1||parts.some((part,i)=>part.index!==i||!paceDistanceSupported(part)))return null;
+  const midway=observed(r,breakpoint),finishObs=observed(r,goal);
+  const t0=midway?.elapsed_seconds,t1=finishObs?.elapsed_seconds;
+  if(!num(t0)||!num(t1)||t0<=0||t1<=t0)return null;
+  const before=breakpoint.km/t0,after=(goal.km-breakpoint.km)/(t1-t0);
+  const ratio=after/before;
+  return num(ratio)&&ratio>0?{r,ratio,from:breakpoint.name,to:goal.name}:null;
+ }).filter(Boolean);
+}
+const STANDOUT_EXPLANATIONS={
+ relative:'Löparens snabbaste verifierade delsträcka jämförs med den egna genomsnittshastigheten över hela loppet. 140 % betyder att hastigheten på just denna delsträcka var 40 % högre än löparens loppsnitt, inte att hela loppet gick 40 % snabbare. Terräng och lutning påverkar.',
+ finish:'Fartbevarandet från kontrollen närmast två tredjedelar av banan fram till mål jämförs med farten före kontrollen. Resultatet jämförs med medianen för fullföljare av samma kön i urvalet: 112 % betyder 12 % starkare fartbevarande än gruppmedianen. Det betyder inte nödvändigtvis att löparen ökade farten – även den som saktar ned mindre än andra kan ligga över 100 %. Minst fem jämförbara löpare och sammanhängande verkliga TIME-passager krävs.',
+ gain:'Största verkliga förbättring i totalplacering mellan två intilliggande kontroller. +23 platser betyder att löparen passerade 23 placeringar på den delsträckan. Bara positiva förbättringar rangordnas; en saknad placering antas aldrig vara noll.',
+ even:'Lägst variation i tempo (sekunder per kilometer) mellan minst två verifierade delsträckor. 5 % variation är en variationskoefficient på 5 % (standardavvikelse delad med genomsnittstempo). Låg variation innebär jämnare tempo, men kupering och olika långa delsträckor påverkar jämförelsen.',
+ last:'Snabbast registrerade tempo på den sista observerade delsträckan ända fram till mål, uttryckt i min/km eller km/h enligt ditt enhetsval. Endast verkliga TIME-par och delsträckor med tillförlitligt distansunderlag används. Detta är absolut fart, inte ett mått på vunna placeringar.'
+};
+function standoutsFor(rows){
+ const paceKm=wholeCoursePaceKm(S.race);
+ const profiles=rows.filter(finish).map(r=>({r,parts:pairs(r)})).filter(x=>x.parts.length>=2);
+ const all=profiles.flatMap(x=>x.parts.map(s=>({...s,r:x.r,rel:num(paceKm)&&paceKm>0?s.seconds/s.km/(x.r.finish_seconds/paceKm):null})));
+ if(!all.length)return[];
+ const physical=all.filter(x=>paceDistanceSupported(x)&&num(x.rel)&&x.rel>0);
+ const gain=all.filter(x=>num(x.placeFrom)&&num(x.placeTo)).map(x=>({...x,change:x.placeFrom-x.placeTo})).filter(x=>x.change>0);
+ const finishEntries=standoutFinishStrength(profiles);
+ const finishList=finishEntries.flatMap(x=>{
+  const sex=analyticalSex(x.r),cohort=finishEntries.filter(y=>analyticalSex(y.r)===sex);
+  if(!sex||cohort.length<5)return[];
+  const groupMedian=median(cohort.map(y=>y.ratio));
+  if(!num(groupMedian)||groupMedian<=0)return[];
+  const index=100*x.ratio/groupMedian;
+  return [{...x,index}];
+ });
+ const even=profiles.map(x=>{
+  const z=x.parts.filter(p=>paceDistanceSupported(p)).map(p=>p.seconds/p.km);
+  if(z.length<2)return null;
+  const avg=z.reduce((a,b)=>a+b,0)/z.length;
+  return avg>0?{r:x.r,cv:Math.sqrt(z.reduce((a,b)=>a+(b-avg)**2,0)/z.length)/avg}:null;
+ }).filter(x=>x&&num(x.cv));
+ const goal=boundaries().at(-1);
+ const last=profiles.map(x=>{
+  const p=x.parts.at(-1);
+  return p&&p.to.uid===goal?.uid&&paceDistanceSupported(p)?{r:x.r,sec:p.seconds,km:p.km,name:p.to.name}:null;
+ }).filter(Boolean);
+ return [
+  {id:'relative',title:'Relativt eget snitt',list:physical.sort((a,b)=>a.rel-b.rel).map(x=>({r:x.r,value:(100/x.rel).toFixed(0)+' % · '+x.to.name,score:x.rel}))},
+  {id:'finish',title:'Starkaste avslutningen',list:finishList.sort((a,b)=>b.index-a.index).map(x=>({r:x.r,value:x.index.toFixed(0)+' % · '+x.from+' → '+x.to,score:-x.index}))},
+  {id:'gain',title:'Största placeringslyftet',list:gain.sort((a,b)=>b.change-a.change).map(x=>({r:x.r,value:'+'+x.change+' · '+x.to.name,score:-x.change}))},
+  {id:'even',title:'Jämnast pacing',list:even.sort((a,b)=>a.cv-b.cv).map(x=>({r:x.r,value:(100*x.cv).toFixed(1)+' % variation',score:x.cv}))},
+  {id:'last',title:'Snabbast sista segment',list:last.sort((a,b)=>a.sec/a.km-b.sec/b.km).map(x=>({r:x.r,value:pace(x.sec,x.km,S.unit),score:x.sec/x.km}))}
+ ];
+}
+function renderStandouts(){
+ const categories=standoutsFor(S.filtered),host=$('#standouts');
+ if(!categories.length){host.innerHTML=empty('För denna upplaga krävs fler verkliga segmentpar för att hitta ovanliga lopp.');return}
+ if(!categories.some(c=>c.id===S.standoutTab))S.standoutTab=categories[0].id;
+ const active=categories.find(c=>c.id===S.standoutTab);
+ const unique=active.list.filter((x,i,a)=>a.findIndex(z=>z.r.id===x.r.id)===i);
+ host.innerHTML=
+  '<div class="standout-tabs" role="tablist" aria-label="Välj topplista">'+
+    categories.map(c=>'<button type="button" role="tab" data-standout-tab="'+c.id+'" aria-controls="standout-active-panel" aria-selected="'+(c.id===active.id)+'">'+html(c.title)+'</button>').join('')+
+  '</div>'+
+  '<div class="standout-explanation" role="note" aria-live="polite"><strong>Så ska resultatet tolkas</strong><p>'+html(STANDOUT_EXPLANATIONS[active.id])+'</p></div>'+
+  '<div class="standout-active" id="standout-active-panel" role="tabpanel"><h4>'+html(active.title)+'</h4><div class="podium-pair">'+podiumPair(unique,5)+'</div></div>';
+ $$('[data-standout-tab]',host).forEach(button=>button.addEventListener('click',()=>{
+  S.standoutTab=button.dataset.standoutTab;renderStandouts();bindResultLinks(host)
+ }));
+}
 function renderSegmentSelectors(){const cp=boundaries(),start=$('#podium-segment-start'),end=$('#podium-segment-end');if(!start||!end)return;if(cp.length<2){start.innerHTML='';end.innerHTML='';return}S.podiumStart=Math.max(0,Math.min(S.podiumStart,cp.length-2));S.podiumEnd=Math.max(S.podiumStart+1,Math.min(S.podiumEnd,cp.length-1));start.innerHTML=cp.slice(0,-1).map((point,i)=>`<option value="${i}" ${i===S.podiumStart?'selected':''}>${html(point.name)}</option>`).join('');end.innerHTML=cp.map((point,i)=>i>S.podiumStart?`<option value="${i}" ${i===S.podiumEnd?'selected':''}>${html(point.name)}</option>`:'').join('')}
 function renderSegments(){let segs=segmentStats(S.filtered);if(!segs.length){$('#segment-chart').innerHTML=empty();$('#segment-table tbody').innerHTML='';$('#podium-segment-start').innerHTML='';$('#podium-segment-end').innerHTML='';$('#segment-podium').innerHTML=empty();return}S.selectedSegment=Math.min(S.selectedSegment,segs.length-1);S.podiumStart=Math.min(S.podiumStart,segs.length-1);S.podiumEnd=Math.max(S.podiumStart+1,Math.min(S.podiumEnd,segs.length));renderSegmentSelectors();renderSegmentGraph(segs);renderSegmentTable();renderSegmentPodium()}
 function selectAdjacentSegment(index){S.selectedSegment=index;S.podiumStart=index;S.podiumEnd=index+1;renderSegmentSelectors()}
