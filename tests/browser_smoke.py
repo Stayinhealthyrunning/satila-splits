@@ -354,6 +354,19 @@ async def main():
    await page.locator('#goal-placement-time').fill('10:00:00')
    await page.locator('#goal-placement-run').click()
    assert 'placering' in (await page.locator('#goal-placement').inner_text()).lower()
+   # Personal race plan defaults to the selected edition's FINISHED median,
+   # not a fixed pace heuristic (43 km previously produced a misleading 7:10).
+   finish_times=sorted(r['finish_seconds'] for r in data['data/races/2025-trail43.json']['results']
+                       if r['status']=='FINISHED' and isinstance(r.get('finish_seconds'),(int,float)) and r['finish_seconds']>0)
+   mid=len(finish_times)//2
+   edition_median=finish_times[mid] if len(finish_times)%2 else (finish_times[mid-1]+finish_times[mid])/2
+   rounded=int(edition_median+.5)
+   expected_median=f"{rounded//3600}:{(rounded%3600)//60:02d}:{rounded%60:02d}"
+   assert expected_median=='4:59:46',(width,expected_median)
+   assert await page.locator('#target-time').input_value()==expected_median,(width,await page.locator('#target-time').input_value())
+   assert await page.locator('#target-time').get_attribute('data-default-source')=='edition-median'
+   assert await page.locator('#target-time').get_attribute('data-default-n')==str(len(finish_times))
+   assert 'Grundvärde: upplagans mediantid' in await page.locator('#plan-summary').inner_text()
    await page.locator('#target-time').fill('10:00:00')
    await page.locator('#calculate-plan').click()
    assert await page.locator('#plan-table tbody tr').count()>0
