@@ -180,13 +180,29 @@ async def main():
    assert await page.locator('#course-elevation [data-elev-segment]').count()>0
    standout_tabs=page.locator('#standouts [data-standout-tab]')
    assert await standout_tabs.count()==5
+   required_explanations=[
+    '140 %', 'fartbevarande', '+23 platser', 'variationskoefficient', 'sista observerade delsträckan'
+   ]
    for tab_idx in range(5):
     standout_tabs=page.locator('#standouts [data-standout-tab]')
     await standout_tabs.nth(tab_idx).click()
+    explanation=await page.locator('#standouts .standout-explanation').inner_text()
+    assert required_explanations[tab_idx] in explanation,(width,tab_idx,explanation)
+    assert await page.locator('#standouts [data-standout-tab][aria-selected="true"]').count()==1
     standout_groups=page.locator('#standouts .podium-group')
     assert await standout_groups.count()==2
     for group_idx in range(2):
      assert await standout_groups.nth(group_idx).locator('.podium-row').count()==5
+    if tab_idx==1:
+     # Strongest finish is pace retention relative to same-sex median,
+     # not spurious +0 placement gains for the women.
+     women_values=await standout_groups.nth(0).locator('.podium-row .finish').all_text_contents()
+     men_values=await standout_groups.nth(1).locator('.podium-row .finish').all_text_contents()
+     assert all(re.search(r'^\d+ % · ',value.strip()) for value in women_values+men_values),(
+      width,women_values,men_values)
+     assert all(int(re.match(r'^(\d+)',value.strip()).group(1))>100 for value in women_values),(
+      width,women_values)
+     assert '112 %' in women_values[0],(width,women_values)
    strength_groups=page.locator('#last-segment-strength .strength-pair section')
    assert await strength_groups.count()==2
    for idx in range(await strength_groups.count()):

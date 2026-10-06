@@ -295,3 +295,14 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 .club-suggestion small{flex:none;color:#627665;font-size:10px;font-weight:500;white-space:nowrap}
 .club-suggestion:hover,.club-suggestion.active,.club-suggestion[aria-selected="true"]{background:#e8f1e7}
 .club-suggestion-empty{padding:11px 12px;margin:0;color:#647265;font-size:11px;line-height:1.4}
+
+/* Five standout categories: explicit, context-specific method notes before each ranking. */
+.standout-explanation{padding:13px 16px;margin:0 0 12px;border:1px solid #cbdccf;border-left:4px solid #497455;border-radius:11px;background:#eef4ed;color:#274535}
+.standout-explanation strong{display:block;margin-bottom:5px;font-size:12px}
+.standout-explanation p{margin:0;max-width:110ch;font-size:12px;line-height:1.65;color:#3b5845}
+.standout-active .podium-row .finish{max-width:185px;text-align:right;white-space:normal;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:680px){
+  .standout-explanation{padding:11px 12px}
+  .standout-explanation p{font-size:11px}
+  .standout-active .podium-row .finish{max-width:100px}
+}
