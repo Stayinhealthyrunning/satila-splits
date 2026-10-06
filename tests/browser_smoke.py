@@ -164,20 +164,20 @@ async def main():
    assert await page.locator('.plan-card h3').inner_text()=='Simulera ditt lopp baserat på faktiska tidigare tider per delsträcka'
    for host in ('#segment-pacing','#segment-sex-extra'):
     assert await page.locator(host+' .chart-start-marker').count()==1
-    assert await page.locator(host+' .chart-start-label').inner_text()=='Start'
+    assert await page.locator(host+' .chart-start-label').text_content()=='Start'
     start=page.locator(host+' .chart-start-marker')
     segment=page.locator(host+' circle[data-pacing-segment]' if host=='#segment-pacing' else host+' circle[data-extra-segment]')
     assert float(await start.get_attribute('cx'))<float(await segment.first.get_attribute('cx')),(host,width)
     assert await start.get_attribute('data-extra-segment') is None
    guide=page.locator('#segment-pacing .chart-reference-line')
    assert await guide.count()==1
-   assert await page.locator('#segment-pacing .chart-reference-y-label').inner_text()=='100 %'
-   assert '100 %' in await page.locator('#segment-pacing .chart-reference-label').inner_text()
+   assert await page.locator('#segment-pacing .chart-reference-y-label').text_content()=='100 %'
+   assert '100 %' in await page.locator('#segment-pacing .chart-reference-label').text_content()
    assert abs(float(await guide.get_attribute('y1'))-float(await page.locator('#segment-pacing .chart-start-marker').get_attribute('cy')))<.01
    dash=await guide.evaluate("(el)=>getComputedStyle(el).strokeDasharray")
    assert dash not in ('none',''),dash
-   assert 'ingen uppmätt segmenttid' in await page.locator('#segment-pacing').inner_text()
-   assert '0:00' in await page.locator('#segment-sex-extra .chart-start-marker title').inner_text()
+   assert 'inte en uppmätt segmenttid' in await page.locator('#segment-pacing').inner_text()
+   assert '0:00' in await page.locator('#segment-sex-extra .chart-start-marker title').text_content()
    # The Start marker remains after changing the cohort and does not alter segment selection.
    await page.locator('#segment-pacing [data-segment-series-mode="F"]').click()
    assert await page.locator('#segment-pacing .chart-start-marker').count()==1
