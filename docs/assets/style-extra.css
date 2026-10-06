@@ -306,3 +306,37 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
   .standout-explanation p{font-size:11px}
   .standout-active .podium-row .finish{max-width:100px}
 }
+
+/* Explicit Start origin and 100% guide for the segment-level plots. */
+#segment-pacing .chart-reference-line{
+  stroke:#224c36;
+  stroke-width:2.15;
+  stroke-dasharray:7 5;
+  opacity:1;
+  vector-effect:non-scaling-stroke;
+}
+#segment-pacing .chart-reference-y-label,
+#segment-pacing .chart-reference-label{
+  fill:#183c29;
+  font-size:11px;
+  font-weight:900;
+}
+#segment-pacing .chart-reference-label{
+  paint-order:stroke;
+  stroke:#faf9f5;
+  stroke-width:3px;
+  stroke-linejoin:round;
+}
+#segment-pacing .chart-start-marker,
+#segment-sex-extra .chart-start-marker{
+  fill:#fffdf7;
+  stroke:#b88b3f;
+  stroke-width:2.5;
+  vector-effect:non-scaling-stroke;
+}
+#segment-pacing .chart-start-label,
+#segment-sex-extra .chart-start-label{
+  fill:#23422c;
+  font-size:11px;
+  font-weight:850;
+}

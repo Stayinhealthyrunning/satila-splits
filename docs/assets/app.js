@@ -339,9 +339,9 @@ function segmentModeRows(rows=S.filtered){return S.segmentSeriesMode==='all'?row
 function distribution(values){return {n:values.length,median:values.length>=5?median(values):null,q25:values.length>=10?quant(values,.25):null,q75:values.length>=10?quant(values,.75):null}}
 function modeDistributionSegments(segs){return segs.map(s=>{const obs=s.obs.filter(o=>S.segmentSeriesMode==='all'||analyticalSex(o.r)===S.segmentSeriesMode),d=distribution(obs.map(o=>o.seconds));return {...s,...d,obs}})}
 function segmentModeControls(){return `<div class="segment-series-toggle" role="radiogroup" aria-label="Grupp för segmentdiagram">${[['all','Alla'],['F','Kvinnor'],['M','Män']].map(([value,label])=>`<button type="button" role="radio" aria-checked="${S.segmentSeriesMode===value}" data-segment-series-mode="${value}">${label}</button>`).join('')}</div>`}
-function bandChart(host,points,{label='Segmentmedianer och kvartilband',valueLabel=time,dataAttribute='data-extra-segment',legacyDataAttribute='',labelClass='',minValue=0,domainPoints=points,note='',referenceValue=null,referenceLabel='' }={}){
+function bandChart(host,points,{label='Segmentmedianer och kvartilband',valueLabel=time,dataAttribute='data-extra-segment',legacyDataAttribute='',labelClass='',minValue=0,domainPoints=points,note='',referenceValue=null,referenceLabel='',showStart=false,startValue=null,startExplanation='' }={}){
   const valid=points.filter(p=>num(p.median));if(!valid.length){host.innerHTML=segmentModeControls()+empty('Minst fem exakta observationer krävs för median i vald grupp.');bindModeControls(host);return}
-  const W=760,H=270,L=62,R=22,T=28,B=58,domain=(domainPoints||points).flatMap(p=>[p.q25,p.median,p.q75]).filter(num),lo=Math.min(minValue,Number.isFinite(referenceValue)?referenceValue:Infinity,...domain),hi=Math.max(lo+1,Number.isFinite(referenceValue)?referenceValue:-Infinity,...domain),step=(W-L-R)/Math.max(1,points.length),x=i=>L+(i+.5)*step,y=v=>H-B-(v-lo)/(hi-lo)*(H-T-B);
+  const W=760,H=270,L=62,R=22,T=28,B=58,domain=(domainPoints||points).flatMap(p=>[p.q25,p.median,p.q75]).filter(num),lo=Math.min(minValue,Number.isFinite(referenceValue)?referenceValue:Infinity,...domain),hi=Math.max(lo+1,Number.isFinite(referenceValue)?referenceValue:-Infinity,...domain),step=(W-L-R)/Math.max(1,points.length+(showStart?1:0)),x=i=>L+(i+(showStart?1.5:.5))*step,startX=L+.5*step,y=v=>H-B-(v-lo)/(hi-lo)*(H-T-B);
   const lineRuns=[],bandRuns=[];let line=[],band=[];const flush=()=>{if(line.length)lineRuns.push(line),line=[];if(band.length)bandRuns.push(band),band=[]};
   points.forEach((p,i)=>{if(!num(p.median)){flush();return}line.push([x(i),y(p.median)]);if(num(p.q25)&&num(p.q75))band.push([x(i),y(p.q25),y(p.q75)]);else{if(band.length)bandRuns.push(band);band=[]}});flush();
   const color=S.segmentSeriesMode==='F'?SEX_COLORS.F:S.segmentSeriesMode==='M'?SEX_COLORS.M:'#3e5d3a';
@@ -349,8 +349,19 @@ function bandChart(host,points,{label='Segmentmedianer och kvartilband',valueLab
   const bands=bandRuns.filter(run=>run.length>1).map(run=>`<path class="distribution-band" style="fill:${bandColor}" d="M${run.map(p=>`${p[0]},${p[2]}`).join('L')}L${run.slice().reverse().map(p=>`${p[0]},${p[1]}`).join('L')}Z"/>`).join('');
   const lines=lineRuns.map(run=>`<path class="distribution-median-line" style="stroke:${color}" d="M${run.map(p=>`${p[0]},${p[1]}`).join('L')}"/>`).join('');
   const marks=points.map((p,i)=>num(p.median)?`<circle ${dataAttribute}="${p.index??i}" ${legacyDataAttribute?`${legacyDataAttribute}="${p.index??i}"`:''} tabindex="0" role="button" aria-pressed="${(p.index??i)===S.selectedSegment}" aria-label="Välj ${html(p.label||p.to?.name||'punkt')}" cx="${x(i)}" cy="${y(p.median)}" r="${(p.index??i)===S.selectedSegment?7:4}" fill="${(p.index??i)===S.selectedSegment?'#d4a858':color}"><title>${html(p.title||p.label||p.to?.name||'Punkt')} · median ${valueLabel(p.median)} · Q25 ${valueLabel(p.q25)} · Q75 ${valueLabel(p.q75)} · n=${p.n}</title></circle><text${labelClass?` class="${labelClass}"`:''} x="${x(i)}" y="${H-18}" text-anchor="middle" transform="rotate(-25 ${x(i)} ${H-18})">${html(String(p.label||p.to?.name||'').slice(0,11))}</text>`:'').join('');
+  // Start is a separate origin/reference marker, never a fabricated segment median.
+  const origin=showStart&&num(startValue)?
+    '<g class="chart-start-origin"><circle class="chart-start-marker" cx="'+startX+'" cy="'+y(startValue)+'" r="5"><title>Start · '+html(startExplanation||valueLabel(startValue))+'</title></circle><text class="chart-start-label" x="'+startX+'" y="'+(H-18)+'" text-anchor="middle" transform="rotate(-25 '+startX+' '+(H-18)+')">Start</text></g>':'';
+  // The highlighted 100% tick takes precedence over any nearby generic tick.
+  const axisTicks=Number.isFinite(referenceValue)?Array.from({length:5},(_,i)=>{
+    const value=lo+(hi-lo)*i/4,yy=y(value);
+    if(Math.abs(yy-y(referenceValue))<14)return '';
+    return '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="currentColor" opacity="'+(i===0?.27:.12)+'"/><text x="'+(L-6)+'" y="'+(yy+3)+'" text-anchor="end">'+valueLabel(value)+'</text>';
+  }).join(''):chartYTicks(L,W-R,T,H-B,lo,hi,valueLabel);
+  const referenceTick=Number.isFinite(referenceValue)?
+    '<text class="chart-reference-y-label" x="'+(L-6)+'" y="'+(y(referenceValue)+3)+'" text-anchor="end">'+html(valueLabel(referenceValue))+'</text>':'';
   const reference=Number.isFinite(referenceValue)?`<line class="chart-reference-line" x1="${L}" x2="${W-R}" y1="${y(referenceValue)}" y2="${y(referenceValue)}"/><text class="chart-reference-label" x="${W-R}" y="${y(referenceValue)-5}" text-anchor="end">${html(referenceLabel||valueLabel(referenceValue))}</text>`:'';
-  host.innerHTML=segmentModeControls()+svg(W,H,chartYTicks(L,W-R,T,H-B,lo,hi,valueLabel)+reference+bands+lines+marks,label)+`<p class="small muted">Median kräver n≥5. Bandet visar Q25–Q75 och kräver n≥10; luckor lämnas öppna. ${note}</p>`;
+  host.innerHTML=segmentModeControls()+svg(W,H,axisTicks+bands+reference+referenceTick+lines+marks+origin,label)+`<p class="small muted">Median kräver n≥5. Bandet visar Q25–Q75 och kräver n≥10; luckor lämnas öppna. ${note}</p>`;
   bindModeControls(host)
 }
 function bindModeControls(host){$$('[data-segment-series-mode]',host).forEach(button=>button.addEventListener('click',()=>{S.segmentSeriesMode=button.dataset.segmentSeriesMode;renderSegments();window.SatilaExtras?.renderSegments?.()}))}
@@ -1088,8 +1099,8 @@ window.SatilaExtras=(()=>{
       <article class="panel extra-wide"><div class="panel-heading"><div><p class="eyebrow">SNABBASTE AVSLUTNINGEN</p><h3>Spurten mot mål</h3></div><button class="info" data-help-extra="laststrength">i</button></div><div id="last-segment-strength"></div></article>
     </div>`);
     if(!$('#extra-segments')) $('#segments').insertAdjacentHTML('beforeend',`<div id="extra-segments" class="extra-grid segment-extras">
-      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PACINGINDEX</p><h3>Fart mot eget loppsnitt</h3></div><button class="info" data-help-extra="pacing">i</button></div><div id="segment-pacing"></div></article>
-      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KVINNOR / MÄN</p><h3>Vald delsträcka</h3></div><button class="info" data-help-extra="sexpace">i</button></div><div id="segment-sex-extra"></div></article>
+      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PACINGINDEX</p><h3>Fart per delsträcka i förhållande till hela loppet</h3></div><button class="info" data-help-extra="pacing">i</button></div><div id="segment-pacing"></div></article>
+      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KVINNOR / MÄN</p><h3>Tidsåtgång per delsträcka</h3></div><button class="info" data-help-extra="sexpace">i</button></div><div id="segment-sex-extra"></div></article>
       <article class="panel extra-wide"><div class="panel-heading"><div><p class="eyebrow">FÄLTETS SPRIDNING</p><h3>Q25–Q75 genom kontrollerna</h3></div><button class="info" data-help-extra="spread">i</button></div><div id="checkpoint-spread"></div></article>
     </div>`);
     if(!$('#extra-course')) $('#course').insertAdjacentHTML('beforeend',`<div id="extra-course" class="extra-grid course-intelligence-row"><div id="course-intelligence" class="course-intelligence-split"></div></div>`);
@@ -1174,7 +1185,7 @@ window.SatilaExtras=(()=>{
     h.innerHTML=lastStrength.length?`<p class="small muted">100 = median för samma observerade segment i aktuellt urval. Över 100 = snabbare. Ingen GPS-fart eller imputerad passage används.</p><div class="strength-pair">${columns}</div>`:empty('Minst fem verkliga segmentpar på respektive löpares sista verifierade delsträcka krävs för relativ styrka.');
     bindResultLinks(h);
   }
-  function renderSegmentSex(){const h=$('#segment-sex-extra');if(!h)return;const s=currentSeg();if(!s){h.innerHTML=empty();return}const all=segmentStats(S.filtered),shown=modeDistributionSegments(all),label=S.segmentSeriesMode==='F'?'Kvinnor':S.segmentSeriesMode==='M'?'Män':'Alla';bandChart(h,shown,{dataAttribute:'data-extra-segment',domainPoints:all,note:`${label}; vald delsträcka ${s.from.name} → ${s.to.name}. Median visas från n≥5, Q25–Q75 från n≥10.`})}
+  function renderSegmentSex(){const h=$('#segment-sex-extra');if(!h)return;const s=currentSeg();if(!s){h.innerHTML=empty();return}const all=segmentStats(S.filtered),shown=modeDistributionSegments(all),label=S.segmentSeriesMode==='F'?'Kvinnor':S.segmentSeriesMode==='M'?'Män':'Alla';bandChart(h,shown,{dataAttribute:'data-extra-segment',domainPoints:all,showStart:true,startValue:0,startExplanation:'0:00 – ingen tid har förflutit vid start',note:`Start visar 0:00 innan första delsträckan, inte en beräknad median. ${label}; vald delsträcka ${s.from.name} → ${s.to.name}. Median visas från n≥5, Q25–Q75 från n≥10.`})}
   function renderCheckpointSpread(){
     const h=$('#checkpoint-spread');if(!h)return;
     const cps=S.race.stations.filter(s=>s.is_analysis_boundary&&num(s.km)).sort((a,b)=>a.sort-b.sort||a.km-b.km).slice(1),rows=segmentModeRows(S.filtered).filter(finish),allRows=S.filtered.filter(finish);
@@ -1301,7 +1312,7 @@ window.SatilaExtras=(()=>{
       return {...s,n:d.n,median:d.median,q25:d.q25,q75:d.q75,label:s.to.name};
     });
     const domain=base.map(s=>{const values=s.obs.filter(o=>paceDistanceSupported(s)&&finish(o.r)&&num(o.seconds)&&o.seconds>0&&num(s.km)&&s.km>0).map(o=>100*(o.r.finish_seconds/nominal)/(o.seconds/s.km)).filter(v=>num(v)&&v>0),d=distribution(values);return {...s,...d,label:s.to.name}});
-    bandChart(host,rows,{domainPoints:domain,legacyDataAttribute:'data-pacing-segment',valueLabel:v=>num(v)?v.toFixed(0)+' %':'—',minValue:Math.min(90,...domain.map(s=>s.q25??s.median).filter(num)),referenceValue:100,referenceLabel:'100 % · eget snitt',note:'Den streckade 100 %-linjen är löparens eget hel-loppssnitt. Över 100 betyder snabbare segment än det snittet.'});
+    bandChart(host,rows,{domainPoints:domain,legacyDataAttribute:'data-pacing-segment',valueLabel:v=>num(v)?v.toFixed(0)+' %':'—',minValue:Math.min(90,...domain.map(s=>s.q25??s.median).filter(num)),referenceValue:100,referenceLabel:'100 % · hela loppet',showStart:true,startValue:100,startExplanation:'referensnivå för hela loppet, inte en uppmätt segmentfart',note:'Startpunkten visar bara referensnivån, inte en uppmätt segmenttid. Den streckade 100 %-linjen markerar löparens eget hel-loppssnitt; över 100 % betyder högre fart på delsträckan än det snittet.'});
   }
   function renderSexSeries(){
     /* Vald delsträcka använder samma radioväljare i renderSegmentSex. */
