@@ -101,6 +101,42 @@ async def main():
    assert "Ingen godkänd" in await page.locator("#course-map").inner_text()
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
+   # Club/ort: source-backed suggestions must allow pointer + keyboard selection
+   # while preserving free-text substring filtering and exact club filtering.
+   club_input=page.locator('#club-filter')
+   expected_club='Borås Löparklubb'
+   exact_count=sum(r.get('club')==expected_club for r in data['data/races/2025-trail43.json']['results'])
+   assert exact_count>0
+   await club_input.fill('bo')
+   options=page.locator('#club-suggestions [data-club-option]')
+   assert await options.count()>0
+   assert await club_input.get_attribute('aria-expanded')=='true'
+   available=await options.evaluate_all("(els)=>els.map(e=>e.dataset.clubOption)")
+   assert expected_club in available,(width,available)
+   await page.locator('#club-suggestions [data-club-option="Borås Löparklubb"]').click()
+   assert await club_input.input_value()==expected_club
+   assert await club_input.get_attribute('aria-expanded')=='false'
+   assert (await page.locator('#filter-count').inner_text()).startswith(str(exact_count)+' av ')
+
+   await club_input.fill('boras')
+   available=await options.evaluate_all("(els)=>els.map(e=>e.dataset.clubOption)")
+   assert expected_club in available,('accent-insensitive lookup',width,available)
+   await club_input.press('ArrowDown')
+   selected=page.locator('#club-suggestions [aria-selected="true"]')
+   assert await selected.count()==1
+   selected_name=await selected.first.get_attribute('data-club-option')
+   assert selected_name
+   await club_input.press('Enter')
+   assert await club_input.input_value()==selected_name
+   assert await club_input.get_attribute('aria-expanded')=='false'
+   await club_input.fill('club-name-that-does-not-exist')
+   assert await page.locator('#club-suggestions .club-suggestion-empty').count()==1
+   assert (await page.locator('#filter-count').inner_text()).startswith('0 av ')
+   await club_input.press('Escape')
+   assert await club_input.get_attribute('aria-expanded')=='false'
+   await page.locator('#reset-filters').click()
+   assert await club_input.input_value()==''
+   assert await club_input.get_attribute('aria-expanded')=='false'
    assert await page.locator('#course-map .osm-tile-layer image').count()>0
    assert await page.locator('#course-map .osm-attribution').count()==1
    await assert_full_osm(page,'#course-map')
