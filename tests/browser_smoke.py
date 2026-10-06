@@ -198,9 +198,9 @@ async def main():
      # not spurious +0 placement gains for the women.
      women_values=await standout_groups.nth(0).locator('.podium-row .finish').all_text_contents()
      men_values=await standout_groups.nth(1).locator('.podium-row .finish').all_text_contents()
-     assert all(re.search(r'^\\d+ % · ',value.strip()) for value in women_values+men_values),(
+     assert all(re.search(r'^\d+ % · ',value.strip()) for value in women_values+men_values),(
       width,women_values,men_values)
-     assert all(int(re.match(r'^(\\d+)',value.strip()).group(1))>100 for value in women_values),(
+     assert all(int(re.match(r'^(\d+)',value.strip()).group(1))>100 for value in women_values),(
       width,women_values)
      assert '112 %' in women_values[0],(width,women_values)
    strength_groups=page.locator('#last-segment-strength .strength-pair section')
