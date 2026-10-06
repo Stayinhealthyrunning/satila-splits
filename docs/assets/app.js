@@ -138,10 +138,10 @@ function renderClubSuggestions(showAll=false){
   ).join(''):'<p class="club-suggestion-empty">Inga klubbar eller orter matchar. Du kan fortfarande filtrera på texten.</p>';
   host.hidden=false;
   input.setAttribute('aria-expanded','true');
-  $('[data-club-option]',host).forEach(button=>button.addEventListener('click',()=>selectClubSuggestion(button.dataset.clubOption)));
+  Array.from(host.querySelectorAll('[data-club-option]')).forEach(button=>button.addEventListener('click',()=>selectClubSuggestion(button.dataset.clubOption)));
 }
 function activateClubSuggestion(index){
-  const options=$('[data-club-option]',$('#club-suggestions'));
+  const options=Array.from($('#club-suggestions').querySelectorAll('[data-club-option]'));
   if(!options.length)return;
   S.clubSuggestionIndex=(index+options.length)%options.length;
   const input=$('#club-filter');
@@ -180,12 +180,12 @@ $('#club-filter').addEventListener('keydown',e=>{
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){
     e.preventDefault();
     if(host.hidden)renderClubSuggestions(true);
-    const count=$('[data-club-option]',host).length;
+    const count=host.querySelectorAll('[data-club-option]').length;
     if(!count)return;
     activateClubSuggestion(S.clubSuggestionIndex<0?(e.key==='ArrowDown'?0:count-1):S.clubSuggestionIndex+(e.key==='ArrowDown'?1:-1));
   }else if(e.key==='Enter'&&!host.hidden&&S.clubSuggestionIndex>=0){
     e.preventDefault();
-    const item=$('[data-club-option]',host)[S.clubSuggestionIndex];
+    const item=host.querySelectorAll('[data-club-option]')[S.clubSuggestionIndex];
     if(item)selectClubSuggestion(item.dataset.clubOption);
   }else if(e.key==='Escape'||e.key==='Tab'){
     hideClubSuggestions();
