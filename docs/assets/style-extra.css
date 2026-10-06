@@ -282,3 +282,16 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 #profile-content table{max-width:none}
 .profile-replay-grid,.profile-replay-grid>*{min-width:0;max-width:100%}
 .profile-replay-map-panel #profile-replay-stage{width:100%;max-width:100%;min-width:0}
+
+/* Source-backed club/ort autocomplete in the overview filters. */
+.filters{position:relative;z-index:6}
+.club-filter-field{display:flex;flex-direction:column;gap:5px;min-width:0;color:#415448;font-size:12px;font-weight:700;letter-spacing:.015em}
+.club-autocomplete{position:relative;min-width:0}
+.club-suggestions{position:absolute;top:calc(100% + 5px);left:0;width:100%;min-width:0;max-height:245px;overflow:auto;border:1px solid #b1c8b4;border-radius:11px;background:#fff;box-shadow:0 12px 28px rgba(4,30,16,.18);z-index:20}
+.club-suggestions[hidden]{display:none}
+.club-suggestion{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;width:100%;border:0;border-bottom:1px solid #e5ebe4;border-radius:0;text-align:left;background:#fff;color:var(--forest);font-size:12px;font-weight:700}
+.club-suggestion:last-child{border-bottom:0}
+.club-suggestion span{min-width:0;overflow-wrap:anywhere}
+.club-suggestion small{flex:none;color:#627665;font-size:10px;font-weight:500;white-space:nowrap}
+.club-suggestion:hover,.club-suggestion.active,.club-suggestion[aria-selected="true"]{background:#e8f1e7}
+.club-suggestion-empty{padding:11px 12px;margin:0;color:#647265;font-size:11px;line-height:1.4}
