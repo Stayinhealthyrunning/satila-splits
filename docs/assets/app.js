@@ -157,9 +157,9 @@ function selectClubSuggestion(name){
   S.club=String(name||'');
   S.clubExact=true;
   $('#club-filter').value=S.club;
-  hideClubSuggestions();
   rerenderFilter();
   $('#club-filter').focus();
+  hideClubSuggestions();
 }
 
 function subset(){let list=records().filter(r=>(S.sex==='all'||analyticalSex(r)===S.sex)&&(S.status==='all'||r.status===S.status)&&(S.className==='all'||r.class_name===S.className)&&(!S.club||(S.clubExact?clubKey(r.club)===clubKey(S.club):clubKey(r.club).includes(clubKey(S.club)))));S.filtered=list;$('#filter-count').textContent=`${format(list.length)} av ${format(records().length)} resultat i detta urval. Individuell sök och jämförelse använder hela upplagan.`;return list}
@@ -182,7 +182,7 @@ $('#club-filter').addEventListener('keydown',e=>{
     if(host.hidden)renderClubSuggestions(true);
     const count=$('[data-club-option]',host).length;
     if(!count)return;
-    activateClubSuggestion(S.clubSuggestionIndex+(e.key==='ArrowDown'?1:-1));
+    activateClubSuggestion(S.clubSuggestionIndex<0?(e.key==='ArrowDown'?0:count-1):S.clubSuggestionIndex+(e.key==='ArrowDown'?1:-1));
   }else if(e.key==='Enter'&&!host.hidden&&S.clubSuggestionIndex>=0){
     e.preventDefault();
     const item=$('[data-club-option]',host)[S.clubSuggestionIndex];
