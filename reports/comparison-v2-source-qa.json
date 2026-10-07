@@ -1,0 +1,351 @@
+{
+  "pass": true,
+  "commands": [
+    {
+      "command": [
+        "python",
+        "tests/test_published_data_integrity.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.156
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_grind_exclusion_contract.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.172
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_segment_capabilities.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.125
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_station_coverage.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.11
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_segment_distance_capability.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.125
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_route_geometry_integrity.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.171
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_ultra85_historical_routes.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.172
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_dem_elevation_enrichment.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.172
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_participant_route_import.py"
+      ],
+      "returncode": 0,
+      "seconds": 1.625
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_restored_43km_gpx.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.219
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_2023_trail43_spatial_height_transfer.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.625
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_ui_capabilities.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.125
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_publication_privacy.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.156
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_sex_normalization_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.172
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_statistics_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.141
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_course_comparability_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.156
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_real_data_analysis_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.266
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_population_denominators.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.171
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_public_summary_reconciliation.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.188
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_source_chain_of_custody.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.156
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_historical_station_alignment.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.141
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_rebuild_parity_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.39
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_replay_source_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.172
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_comparison_v2_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.125
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_golden_aggregate_regression.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.157
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_review_package_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.531
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_integration_diff_contract.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.734
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_component_readiness_manifest.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.156
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_visual_asset_lock.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 0.157
+    },
+    {
+      "command": [
+        "python",
+        "tests/test_accessibility_performance.py"
+      ],
+      "returncode": 0,
+      "seconds": 0.234
+    }
+  ],
+  "mode": "source"
+}
