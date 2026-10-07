@@ -16,14 +16,14 @@ class FakeAudio{
 const storage=new Map();
 const localStorage={getItem:key=>storage.has(key)?storage.get(key):null,setItem:(key,value)=>storage.set(key,String(value))};
 const music={attributes:{},listeners:{},setAttribute(k,v){this.attributes[k]=v},addEventListener(k,v){this.listeners[k]=v},click(){this.listeners.click()}};
-const volume={value:'0.35',listeners:{},addEventListener(k,v){this.listeners[k]=v},input(v){this.value=String(v);this.listeners.input({target:{value:String(v)}})}};
+const volume={value:'0.3',listeners:{},addEventListener(k,v){this.listeners[k]=v},input(v){this.value=String(v);this.listeners.input({target:{value:String(v)}})}};
 const note={hidden:true,textContent:''};
 const host={querySelector(sel){return {'[data-replay-music]':music,'[data-replay-volume]':volume,'[data-replay-audio-note]':note}[sel]||null}};
 const musicManager=vm.runInNewContext(manager+'; replaySoundtrack',{Audio:FakeAudio,localStorage,Number,Math});
 const audio=FakeAudio.instance;
 assert.equal(audio.src,'assets/satila-trail.mp3');
 assert.equal(audio.loop,true,'soundtrack must loop after the race finishes');
-assert.equal(audio.volume,0.35,'match Ultravasan Replay default volume');
+assert.equal(audio.volume,0.30,'Comparison 2.0 neutral default volume');
 musicManager.bind(host);
 assert.equal(music.attributes['aria-pressed'],'true');
 musicManager.start();
@@ -50,5 +50,6 @@ assert(source.includes('if(next>=maxDistance)stop(false);'),'personal finish mus
 assert(source.includes('if(next>=maxClock)stop(false);'),'duel finish must keep soundtrack active');
 assert(source.includes("$('#profile-dialog').addEventListener('close',()=>{stop();replaySoundtrack.close()},{once:true})"),'personal popup close must stop sound');
 assert(source.includes("dialog.addEventListener('close',()=>{stop();replaySoundtrack.close()},{once:true})"),'duel popup close must stop sound');
-assert.equal((source.match(/data-replay-music aria-label=/g)||[]).length,2,'both players have music controls');
-console.log('PASS: audio default, loop, start, mute/unmute, persistent volume, pause, close/reset, and both finished modal lifecycles');
+assert.equal((source.match(/data-replay-music aria-label=/g)||[]).length,3,'Replay, Direct Comparison and Map Duel have music controls');
+assert(source.includes("$('#compare-dialog').addEventListener('close',()=>{stop();replaySoundtrack.close()},{once:true})"),'Direct Comparison close must stop sound');
+console.log('PASS: audio default, loop, start, mute/unmute, persistent volume, pause, close/reset, and all modal lifecycles');
