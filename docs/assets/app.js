@@ -844,9 +844,9 @@ function writeComparisonState(x,y,mode='replace'){
   const target='#'+hash.toString();if(location.hash!==target)history[mode==='push'?'pushState':'replaceState'](null,'',target);
 }
 function restoreComparisonFromUrl(params=comparisonParams()){
-  const ids=[params.get('compareA'),params.get('compareB')].filter(Boolean),clock=Number(params.get('compareTime')),segment=Number(params.get('compareSegment'));
+  const ids=[params.get('compareA'),params.get('compareB')].filter(Boolean),clockRaw=params.get('compareTime'),segmentRaw=params.get('compareSegment'),clock=clockRaw===null?null:Number(clockRaw),segment=segmentRaw===null?null:Number(segmentRaw);
   if(ids.length!==2||ids[0]===ids[1]||!ids.every(findRecord))return false;
-  S.mapDuel=[...ids];S.compare=[...ids];S.duelClock=num(clock)&&clock>=0?clock:0;S.compareSegment=Number.isInteger(segment)&&segment>=0?segment:null;renderMapDuelChips();openCompare({updateUrl:false});return true;
+  S.mapDuel=[...ids];S.compare=[...ids];S.duelClock=num(clock)&&clock>=0?clock:0;S.compareSegment=segmentRaw!==null&&Number.isInteger(segment)&&segment>=0?segment:null;renderMapDuelChips();openCompare({updateUrl:false});return true;
 }
 function openCompare(options={}){const ids=S.mapDuel.length===2?S.mapDuel:S.compare;if(ids.length!==2)return;let [x,y]=ids.map(findRecord);if(!x||!y)return;replaySoundtrack.close();const model=comparisonViewModel(x,y);$('#compare-content').innerHTML=renderCompareContent(model);let d=$('#compare-dialog');if(!d.open)d.showModal();setupCompareInteractions(model);}
 function commonStationRows(x,y){let rows=[];for(const st of S.race.stations.filter(s=>s.is_analysis_boundary)){let a=observed(x,st),b=observed(y,st);rows.push({st,a,b,km:st.km,diff:a&&b?b.elapsed_seconds-a.elapsed_seconds:null});}return rows}
