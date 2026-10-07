@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "contract": {
+    "id": "loppanalys-comparison-2.0",
+    "repository": "Stayinhealthyrunning/ultravasan-analys",
+    "path": "config/comparison-contract-v2.json"
+  },
+  "status": "migration_planned",
+  "current_scope": {
+    "direct_comparison": "same RaceEdition only",
+    "map_duel": "2-5 participants, same RaceEdition"
+  },
+  "participant_entities": [
+    "person"
+  ],
+  "current_capabilities": {
+    "finish_comparison": true,
+    "checkpoint_gap": true,
+    "placement_journey": false,
+    "segment_comparison": true,
+    "edition_field_normalization": false,
+    "shared_course_context": true,
+    "animated_two_result_comparison": true,
+    "elevation_seek": true,
+    "shareable_comparison_state": false,
+    "cross_edition_comparison": false,
+    "sparse_comparison_fallback": "partial",
+    "team_entity": false,
+    "audio": "map_duel_only"
+  },
+  "target_capabilities": {
+    "finish_comparison": true,
+    "checkpoint_gap": true,
+    "placement_journey": true,
+    "segment_comparison": true,
+    "edition_field_normalization": true,
+    "shared_course_context": true,
+    "animated_two_result_comparison": true,
+    "elevation_seek": true,
+    "shareable_comparison_state": true,
+    "cross_edition_comparison": false,
+    "sparse_comparison_fallback": true,
+    "team_entity": false,
+    "audio": true
+  },
+  "event_extensions": [
+    "Physical pace remains hidden where timing-distance metadata is not trustworthy.",
+    "A segment can still be compared by exact segment time when pace is unavailable.",
+    "No fictional split is published in tables or analytical charts.",
+    "Replay interpolation may use event-approved derived motion, but must remain labelled as reconstruction."
+  ],
+  "must_preserve": [
+    "EQ Timing source observations and current status semantics.",
+    "Torrås 2023-2025 correction and existing physical-pace gates.",
+    "Current interactive map/elevation seeking behavior where it is already stronger than the reference.",
+    "Male/female analytical palette remains blue/pink outside A/B comparison-role colors.",
+    "Current route evidence rules and no DNF last-observed-checkpoint fabrication."
+  ],
+  "migration_priorities": [
+    "Normalize A/B signed-gap semantics and copy to the shared contract.",
+    "Replace free-form duel insights with the full Comparison 2.0 KPI strip.",
+    "Add official placement journey when source placement observations support it.",
+    "Add edition-field normalization with an explicit 0% reference; fall back to exact segment-time normalization where pace is gated.",
+    "Align direct-comparison playback controls with the shared 30/60/120/180 second model, 120 second default, 30% audio default and follow-both camera.",
+    "Enable soundtrack and persisted audio preferences in Direct Comparison.",
+    "Add shareable direct-comparison state.",
+    "Keep cross-edition comparison disabled until explicit course/comparability contracts exist."
+  ],
+  "acceptance_gates": [
+    "No change to source result counts or published source observations.",
+    "Direct Comparison requires exactly two selected results.",
+    "Every analytical gap/segment value is traceable to exact source-supported observations.",
+    "Physical pace remains suppressed where current distance-evidence checks fail.",
+    "Browser tests cover same-edition finish/gap/placement/segment/field/map/elevation/playback/share interactions.",
+    "Map Duel remains 2-5 participants and retains event-specific route behavior."
+  ]
+}
