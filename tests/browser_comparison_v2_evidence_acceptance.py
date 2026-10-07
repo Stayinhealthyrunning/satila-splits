@@ -81,7 +81,7 @@ async def main():
             assert any("Torrås → Almered" in text and "segmenttid mot fältmedian" in text for text in field_tooltip)
             await page.locator('[data-close="compare-dialog"]').click()
 
-        # 2016 trail43 has only one meaningful common intermediate anchor:
+        # 2018 trail22 has fewer than two meaningful common intermediate anchors:
         # sparse mode must remain useful without inventing route/checkpoint data.
         if selected_case in ("all", "sparse"):
             await page.locator('[data-family="trail22"]').click()
@@ -101,6 +101,10 @@ async def main():
             assert "Förenklad verklig resa" in sparse
             assert "inga kontroller fylls ut" in sparse
             assert await page.locator("#duel-map").count() == 0
+            # Sharing is a comparison capability, not a route capability.
+            assert await page.locator("#duel-share").count() == 1
+            await page.locator("#duel-share").click()
+            assert "compareA=" in page.url and "compareB=" in page.url,page.url
             segment_rows=await page.locator(".comparison-segment-table tbody tr").count()
             assert segment_rows <= len([s for s in race["stations"] if s.get("is_analysis_boundary")])
             all_boundaries={station["uid"] for station in race["stations"] if station.get("is_analysis_boundary")}
