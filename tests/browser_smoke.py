@@ -311,16 +311,22 @@ async def main():
    assert await page.locator('#duel-map .osm-tile-layer image').count()>0
    assert await page.locator('#duel-map .osm-attribution').count()==1
    await assert_full_osm(page,'#duel-map')
-   # The geographic viewBox now follows the rendered map container rather
-   # than a hard-coded 760x280; fit must restore the measured base width.
-   duel_base=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
-   assert duel_base>0
+   # Comparison 2.0 starts in Follow both, which may intentionally be
+   # zoomed. Manual zoom must narrow that view and "Hela banan" must restore
+   # the measured full-map width rather than the initial follow view.
+   duel_svg=page.locator('#duel-map svg')
+   duel_base=float((await duel_svg.get_attribute('viewBox')).split()[2])
+   duel_full=float(await duel_svg.get_attribute('data-full-map-width'))
+   assert 0<duel_base<=duel_full,(duel_base,duel_full)
+   assert await page.locator('#duel-camera').input_value()=='both'
    await page.locator('#duel-zoom-in').click()
-   zoomed=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
+   zoomed=float((await duel_svg.get_attribute('viewBox')).split()[2])
    assert 0<zoomed<duel_base,(duel_base,zoomed)
+   assert await page.locator('#duel-camera').input_value()=='both'
    await page.locator('#duel-fit').click()
-   restored=float((await page.locator('#duel-map svg').get_attribute('viewBox')).split()[2])
-   assert abs(restored-duel_base)<.01,(duel_base,restored)
+   restored=float((await duel_svg.get_attribute('viewBox')).split()[2])
+   assert abs(restored-duel_full)<.01,(duel_full,restored)
+   assert await page.locator('#duel-camera').input_value()=='full'
    await page.locator('#duel-range').evaluate("(el)=>{el.value=Math.min(60,Number(el.max)||60);el.dispatchEvent(new Event('input',{bubbles:true}))}")
    assert float(await page.locator('#duel-range').input_value())>0
    await page.locator('[data-close="compare-dialog"]').click()
