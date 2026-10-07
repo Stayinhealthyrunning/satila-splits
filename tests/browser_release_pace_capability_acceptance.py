@@ -7,11 +7,17 @@ organizer-advertised 85 km distance. Their year-specific participant geometry
 is kept distinct from both values and enables explicitly sourced display and
 whole-course pace without changing any official TIME observation.
 """
-import asyncio,json,os,re
+import asyncio,json,os,re,statistics
 from pathlib import Path
 from playwright.async_api import async_playwright
 
 ROOT=Path(os.getenv("SATILA_SITE","docs"))
+
+def display_time(seconds):
+    value=round(seconds)
+    hours,remainder=divmod(value,3600)
+    minutes,secs=divmod(remainder,60)
+    return f"{hours}:{minutes:02d}:{secs:02d}"
 
 async def main():
     boot=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
@@ -122,7 +128,10 @@ async def main():
                 await page.wait_for_timeout(150)
                 option_text=await page.locator(f'#year-select option[value="{year}"]').inner_text()
                 assert "85 km" in option_text and "82 km" not in option_text,option_text
-                assert await page.locator("#target-time").input_value()=="14:10:00"
+                race=fixtures[f"data/races/{year}-ultra85.json"]
+                expected=display_time(statistics.median(row["finish_seconds"] for row in race["results"] if row["status"]=="FINISHED" and row.get("finish_seconds",0)>0))
+                assert await page.locator("#target-time").input_value()==expected
+                assert await page.locator("#target-time").get_attribute("data-default-source")=="edition-median"
                 intel=(await page.locator("#course-intelligence").inner_text()).replace("\n"," ")
                 assert "EQ Timing-distans 82,0 km" in intel,intel
                 assert "Arrangörsdistans 85,0 km" in intel,intel

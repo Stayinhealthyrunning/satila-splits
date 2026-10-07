@@ -44,7 +44,10 @@ async def main():
             opts.update(executable_path="/usr/bin/chromium",args=["--no-sandbox"])
         browser=await p.chromium.launch(**opts)
         try:
-            for width,height in ((1440,900),(900,900),(768,900),(390,844)):
+            all_viewports=((1440,900),(900,900),(768,900),(390,844))
+            selected={int(value) for value in os.getenv("SATILA_VIEWPORTS","").split(",") if value.strip()}
+            viewports=[item for item in all_viewports if not selected or item[0] in selected]
+            for width,height in viewports:
                 page=await browser.new_page(viewport={"width":width,"height":height})
                 page.set_default_timeout(6000)
                 errors=[]
@@ -141,6 +144,26 @@ async def main():
                 assert "(2/2)" in await page.locator("#compare-counter").inner_text()
                 await page.locator("#open-compare").click()
                 assert await page.locator("#compare-dialog").evaluate("x=>x.open")
+                # Comparison 2.0 analytical order and capability-driven panels.
+                assert await page.locator(".comparison-kpis article").count()==9
+                section_ids=["comparison-participants","comparison-kpis","comparison-gap","comparison-placement","comparison-segments","comparison-field","comparison-course","comparison-method"]
+                tops=[]
+                for section_id in section_ids:
+                    node=page.locator("#"+section_id)
+                    assert await node.count()==1,(width,section_id)
+                    tops.append((await node.bounding_box())["y"])
+                assert tops==sorted(tops),(width,section_ids,tops)
+                assert "positiv = A före" in await page.locator("#comparison-gap").inner_text()
+                assert await page.locator("#duel-placement-chart svg").count()==1
+                assert await page.locator(".comparison-segment-table tbody tr").count()>=5
+                assert await page.locator("#duel-field-chart svg").count()==1
+                assert await page.locator("#duel-duration option").evaluate_all("els=>els.map(x=>x.value)")==["30","60","120","180"]
+                assert await page.locator("#duel-duration").input_value()=="120"
+                assert await page.locator("#duel-camera").input_value()=="both"
+                assert await page.locator("#compare-dialog [data-replay-volume]").input_value()=="0.3"
+                await page.locator(".comparison-segment-table [data-duel-segment]").first.click()
+                assert await page.locator(".comparison-segment-table tbody tr.selected").count()==1
+                assert "compareA=" in page.url and "compareB=" in page.url and "compareSegment=" in page.url
                 # Both markers MUST use the same elapsed clock, but their own
                 # EQ TIME anchor interpolation: fast and slow finisher cannot
                 # be tied to the same distance as in the old comparison bug.
@@ -160,7 +183,7 @@ async def main():
                 assert "Gemensam tävlingsklocka" in clock_readout
                 assert "är cirka" in clock_readout and "km in i loppet" in clock_readout
                 assert "Positionsskillnad A−B:" in clock_readout
-                assert "Tidslucka A−B:" in clock_readout
+                assert "Lucka B−A:" in clock_readout
                 # At the shared final clock both runners are at the same finish
                 # coordinate. The map must not invent a separation for overlap.
                 await page.locator("#duel-clock").evaluate(
@@ -196,7 +219,7 @@ async def main():
                 near(new,await position(page,duel_elev))
                 near(new,float(await page.locator("#duel-range").input_value()),.051)
                 info=await page.locator("#duel-readout").inner_text()
-                assert "position cirka" in info and "Tidslucka A−B" in info,info
+                assert "position cirka" in info and "Lucka B−A" in info,info
                 # A route from another family or edition must not leak into a
                 # genuinely route-less historical edition.
                 compare_dialog=page.locator("#compare-dialog")

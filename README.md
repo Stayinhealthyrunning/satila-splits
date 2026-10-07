@@ -4,6 +4,8 @@ Källstyrd historisk loppanalys för Sätila Trail Run, med huvudfamiljerna **22
 
 > **Aktuell release-status 2026-10-05:** den senaste visuella genomgången och den Gotaleden-baserade individuella analysen publicerades via [PR #43](https://github.com/Stayinhealthyrunning/satila-splits/pull/43). PR:en hade fem gröna slutkontroller på exakt head-SHA och mergeades som releasecommit `5b6fa3b3c6645641b7dd83e3cf031a50741af376`. Efterföljande housekeeping har endast rensat färdiga engångs-workflows och gamla PR-spår. GitHub Pages-deployen efter releasen är grön ([run 37345369803](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/37345369803)); även deploy-workflowens housekeeping-körning är grön ([run 37345766323](https://github.com/Stayinhealthyrunning/satila-splits/actions/runs/37345766323)). Det finns inga öppna pull requests i detta repo.
 
+> **Pågående review 2026-10-07:** branchen `codex/comparison-2-satila` migrerar Direktjämförelse till Loppanalys Comparison 2.0. Den behåller Kartduell för 2–5 löpare och Sätilas strikta pace-/route-evidensregler. Ändringen ska granskas i en draft-PR och är inte publicerad eller mergead.
+
 ## Verifierad publiceringsdatagrund
 
 | Mått | Omfattning |
