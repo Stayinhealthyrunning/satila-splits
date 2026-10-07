@@ -55,6 +55,8 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 #compare-dialog .duel-elevation>svg{width:100%;height:auto;display:block}
 .comparison-section{margin:24px 0;padding-top:20px;border-top:1px solid var(--border)}
 .comparison-heading,.duel-clock-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.comparison-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px;flex-wrap:wrap}
+.comparison-actions .muted{min-height:1.2em}
 .comparison-heading h3{margin-bottom:0}
 .comparison-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .comparison-kpis article{min-width:0;padding:13px;border:1px solid var(--border);border-radius:12px;background:#eef3eb}
@@ -70,7 +72,7 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 .duel-clock-row{align-items:center;margin:7px 0 12px}
 .duel-clock-row #duel-share-status{margin-left:auto}
 @media(max-width:900px){.comparison-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.comparison-playback{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:600px){#compare-dialog{width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border-radius:0;padding:16px}.comparison-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.comparison-playback{grid-template-columns:1fr 1fr}.comparison-playback .replay-music-volume{grid-column:1/-1}.comparison-sparse{display:grid}.comparison-sparse strong{white-space:normal}.compare-profiles{grid-template-columns:1fr}.compare-profiles .versus{min-height:30px}.comparison-section{margin:18px 0;padding-top:16px}}
+@media(max-width:600px){#compare-dialog{width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border-radius:0;padding:16px}.comparison-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.comparison-playback{grid-template-columns:1fr 1fr}.comparison-playback .replay-music-volume{grid-column:1/-1}.comparison-sparse{display:grid}.comparison-sparse strong{white-space:normal}.compare-profiles{grid-template-columns:1fr}.compare-profiles .versus{min-height:30px}.comparison-actions{justify-content:flex-start}.comparison-section{margin:18px 0;padding-top:16px}}
 #compare-dialog .duel-map-toolbar{position:absolute;z-index:5;right:12px;top:12px;display:flex;gap:5px;padding:5px;border-radius:12px;background:rgba(250,249,245,.95);box-shadow:0 2px 12px #0002}
 #compare-dialog .duel-map-toolbar button{min-width:38px;min-height:38px;border:1px solid #aebcad;border-radius:8px;background:white;color:#173b2a;font-weight:800;cursor:pointer}
 #compare-dialog .duel-map-toolbar button:last-child{padding:0 12px}
