@@ -4,6 +4,8 @@ on:
     paths:
       - "docs/assets/app.js"
       - "tests/browser_synced_scrub_acceptance.py"
+      - "tests/browser_comparison_v2_evidence_acceptance.py"
+      - "tests/test_comparison_v2_contract.py"
       - "tools/enrich_route_elevation.py"
       - "tests/test_dem_elevation_enrichment.py"
       - "tools/run_release_candidate_checks.py"
@@ -23,7 +25,7 @@ jobs:
       - name: Check JavaScript and Python syntax
         run: |
           node --check docs/assets/app.js
-          python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py
+          python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py tests/browser_comparison_v2_evidence_acceptance.py tests/test_comparison_v2_contract.py
       - name: Test deterministic elevation safeguards without external rasters
         run: python tests/test_dem_elevation_enrichment.py -v
       - name: Install offline Chromium
@@ -34,7 +36,10 @@ jobs:
         env:
           SATILA_SITE: docs
           SATILA_INTERACTION_QA: /tmp/satila-comparison-qa
-        run: python tests/browser_synced_scrub_acceptance.py
+        run: |
+          python -m unittest discover -s tests -p test_comparison_v2_contract.py -v
+          python tests/browser_synced_scrub_acceptance.py
+          python tests/browser_comparison_v2_evidence_acceptance.py
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4

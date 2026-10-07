@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "project": "Sätila Splits",
-  "updated": "2026-10-05",
-  "branch": "main",
-  "status": "STANDALONE_RELEASE_LIVE_AND_REPOSITORY_CLEAN",
-  "resume_rule": "Continue from current main. Do not resume from the 2026-10-01 build/integration branches. Check current open PRs and exact-SHA Actions before making changes.",
+  "updated": "2026-10-07",
+  "branch": "codex/comparison-2-satila",
+  "status": "COMPARISON_2_IMPLEMENTED_PENDING_DRAFT_PR_REVIEW",
+  "resume_rule": "Review the Comparison 2.0 draft PR from codex/comparison-2-satila against current main. Do not merge or publish without project-owner approval and green exact-head checks.",
   "current_release": {
     "release_pr": 43,
     "release_commit": "5b6fa3b3c6645641b7dd83e3cf031a50741af376",
@@ -93,6 +93,29 @@
     "torras": "2023–2025 alignment corrected; 2023/2024 Torrås→Almered physical pace remains gated.",
     "privacy": "Public identity suppression mechanism integrated."
   },
+  "comparison_2_0": {
+    "status": "implemented_pending_review",
+    "direct_comparison": "Exactly two same-RaceEdition results with B-minus-A signed gap, nine source-aware KPIs, official placement journey, segment duel, edition-field normalization, synchronized map/elevation/shared clock, playback duration and camera controls, audio and shareable URL state.",
+    "map_duel": "Preserved as a separate 2-5 participant flow.",
+    "capabilities_true": [
+      "finish_comparison",
+      "checkpoint_gap",
+      "placement_journey",
+      "segment_comparison",
+      "edition_field_normalization",
+      "shared_course_context",
+      "animated_two_result_comparison",
+      "elevation_seek",
+      "shareable_comparison_state",
+      "sparse_comparison_fallback",
+      "audio"
+    ],
+    "capabilities_false": [
+      "cross_edition_comparison",
+      "team_entity"
+    ],
+    "event_rules": "Physical pace remains gated independently per segment; exact segment-time normalization is used when pace is blocked. Tostared/Grind, route provenance, sparse timing and DNF semantics are unchanged."
+  },
   "source_contract": {
     "public_root": "docs/",
     "raw_eqtiming_publication": "FORBIDDEN",
@@ -119,5 +142,5 @@
     "python tools/run_release_candidate_checks.py --browser",
     "python tools/run_release_candidate_checks.py --all"
   ],
-  "next_action": "Use the live standalone release for visual review. Start any new work from current main. No open PR needs merging."
+  "next_action": "Review the Comparison 2.0 draft PR and its exact-head Actions. Do not merge or publish automatically."
 }

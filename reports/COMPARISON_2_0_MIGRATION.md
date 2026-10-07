@@ -1,5 +1,11 @@
 # Sätila → Loppanalys Comparison 2.0 migration plan
 
+## Implementation status 2026-10-07
+
+Implemented on `codex/comparison-2-satila` for draft review. Direct Comparison now uses the canonical B-minus-A sign, nine duel KPIs, official placement journey, exact segment duel, edition-field normalization, capability-driven sparse rendering, synchronized two-runner course playback, 30/60/120/180-second duration choices, follow-both default camera, 30% persisted audio and shareable URL state.
+
+`cross_edition_comparison` and `team_entity` remain false. Sätila's physical-pace gate is intentionally stricter than the generic reference: gated segments use exact segment-time normalization with explicit copy and never manufacture min/km.
+
 ## Goal
 
 Bring Sätila's Direct Comparison into semantic and interaction parity with the
