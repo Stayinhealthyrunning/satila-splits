@@ -66,6 +66,12 @@ class ComparisonV2ContractTest(unittest.TestCase):
         self.assertIn("compareSegment", SOURCE)
         self.assertIn("Förenklad verklig resa", SOURCE)
         self.assertIn("intermediate<2", SOURCE)
+        self.assertIn("segmentRaw=params.get('compareSegment')", SOURCE)
+        self.assertIn("segmentRaw!==null&&Number.isInteger(segment)", SOURCE)
+        self.assertNotIn("drawCompareMap(x,y,S.duelD,clock);writeComparisonState", SOURCE)
+
+    def test_placement_axis_agrees_with_place_one_on_top(self):
+        self.assertIn("chartYTicks(L,W-R,T,H-B,maxPlace,1", SOURCE)
 
 
 if __name__ == "__main__":
