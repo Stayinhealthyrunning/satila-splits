@@ -54,6 +54,21 @@ async def main():
             }""",
             data,
         )
+        # Deterministic soundtrack stub keeps this fixture off the network while
+        # verifying that playback controls start, pause and clean up real audio calls.
+        await page.evaluate(
+            """() => {
+              window.__soundEvents=[];
+              window.Audio=class {
+                constructor(src){this.src=src;this.currentTime=0;this.volume=1;this.paused=true;this.loop=false;}
+                addEventListener(){}
+                play(){this.paused=false;window.__soundEvents.push(['play',this.src]);return Promise.resolve();}
+                pause(){this.paused=true;window.__soundEvents.push(['pause',this.src]);}
+                removeAttribute(){}
+                load(){}
+              };
+            }"""
+        )
         await page.add_script_tag(content=(ROOT / "assets" / "multi-year-map.js").read_text(encoding="utf-8"))
         await page.add_script_tag(content=(ROOT / "assets" / "multi-year-comparison.js").read_text(encoding="utf-8"))
         await page.add_script_tag(content=(ROOT / "assets" / "app.js").read_text(encoding="utf-8"))
@@ -97,6 +112,42 @@ async def main():
         assert "Arrangörs-GPX" in legends and "Deltagarbaserad GPX" in legends, legends
         await page.locator("#multi-year-map-root [data-map-range]").evaluate("(node) => {node.value='3600';node.dispatchEvent(new Event('input',{bubbles:true}))}")
         assert await page.locator("#multi-year-map-root [data-map-marker]").count() == 2
+        camera = page.locator("#multi-year-map-root [data-map-camera]")
+        assert await camera.input_value() == "both"
+        assert await page.locator("#multi-year-map-root [data-map-duration]").input_value() == "120"
+        assert await page.locator("#multi-year-map-root [data-map-volume]").input_value() == "0.3"
+        await camera.select_option("full")
+        original = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
+        await camera.select_option("both")
+        following = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
+        assert original != following, "Follow both must adapt zoom from full-course framing"
+        await page.locator("#multi-year-map-root [data-map-zoom='1']").click()
+        zoomed = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
+        assert zoomed != following, "Zoom-in must update the camera"
+        await camera.select_option("leader")
+        assert await camera.input_value() == "leader"
+        await page.locator("#multi-year-map-root [data-map-fit]").click()
+        assert await camera.input_value() == "full"
+        await camera.select_option("both")
+        music = page.locator("#multi-year-map-root [data-map-music]")
+        assert await music.get_attribute("aria-pressed") == "true"
+        await music.click()
+        assert await music.get_attribute("aria-pressed") == "false"
+        await music.click()
+        await page.locator("#multi-year-map-root [data-map-volume]").evaluate(
+            "(node) => {node.value='0.5';node.dispatchEvent(new Event('input',{bubbles:true}))}"
+        )
+        await page.locator("#multi-year-map-root [data-map-play]").click()
+        await page.wait_for_function(
+            "document.querySelector('#multi-year-map-root [data-map-play]').textContent==='Pausa'"
+        )
+        calls = await page.evaluate("window.__soundEvents")
+        assert ["play", "assets/satila-trail.mp3"] in calls, calls
+        await page.locator("#multi-year-map-root [data-map-play]").click()
+        calls = await page.evaluate("window.__soundEvents")
+        assert ["pause", "assets/satila-trail.mp3"] in calls, calls
+        await page.locator("#multi-year-map-root [data-map-reset]").click()
+        assert await page.locator("#multi-year-map-root [data-map-time]").inner_text() == "0:00:00"
 
         await page.set_viewport_size({"width": 390, "height": 844})
         await page.wait_for_timeout(100)

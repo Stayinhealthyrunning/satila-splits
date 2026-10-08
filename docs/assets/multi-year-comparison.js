@@ -108,7 +108,7 @@ function create(){
       }catch{return{year:item.edition.year,name:item.record.name,provenance:'Publicerbar rutt saknas',points:[],anchors:[]};}
     }));
     if(!dialog.open||selected.map(x=>x.token).join('|')!==token)return;
-    mapController=globalThis.LoppMultiYearRouteMap?.mount(body.querySelector('#multi-year-map-root'),items);
+    mapController=globalThis.LoppMultiYearRouteMap?.mount(body.querySelector('#multi-year-map-root'),items,{musicSrc:'assets/satila-trail.mp3',storagePrefix:'satila-music'});
   }
   async function restore(){
     if(restoredFamily===family)return;const params=new URLSearchParams(location.search);if(params.get('myFamily')!==family){restoredFamily=family;return}
