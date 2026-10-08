@@ -36,8 +36,12 @@ class MultiYearComparisonContract(unittest.TestCase):
     def test_ui_has_all_year_search_and_separate_dialog(self):
         self.assertIn('id="multi-year-year"', INDEX)
         self.assertIn(">Alla år<", INDEX)
-        self.assertIn("Jämför dig med dig själv mellan upplagor", INDEX)
+        self.assertIn("Jämför lopp på kartan", INDEX)
+        self.assertIn('id="map-duel-builder"', INDEX)
+        self.assertIn('id="multi-year-comparison" hidden', INDEX)
+        self.assertNotIn('class="section multi-year-section-shell"', INDEX)
         self.assertIn('id="multi-year-dialog"', INDEX)
+        self.assertIn("multi-year-map.js", INDEX)
         self.assertIn("multi-year-comparison.js", INDEX)
 
     def test_separate_layer_does_not_relax_comparison_2_replay_contract(self):
