@@ -82,7 +82,8 @@ async def main():
         await page.wait_for_selector("#multi-year-dialog[open]")
 
         dialog = await page.locator("#multi-year-dialog-body").inner_text()
-        assert dialog.count("Petra Klevmar") == 2, dialog
+        names = await page.locator("#multi-year-dialog-body .multi-year-person h3").all_text_contents()
+        assert names == ["Petra Klevmar", "Petra Klevmar"], names
         assert "Fältindex" in dialog, dialog
         assert "Passage- och segmentduell är avstängd" in dialog, dialog
         assert "rangordnas inte mot varandra" in dialog, dialog
