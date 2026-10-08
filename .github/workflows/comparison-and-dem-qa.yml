@@ -4,6 +4,7 @@ on:
     paths:
       - "docs/assets/app.js"
       - "docs/assets/multi-year-comparison.js"
+      - "docs/assets/multi-year-map.js"
       - "docs/index.html"
       - "docs/assets/style-extra.css"
       - "tests/test_multi_year_comparison_contract.py"
@@ -31,6 +32,7 @@ jobs:
         run: |
           node --check docs/assets/app.js
           node --check docs/assets/multi-year-comparison.js
+          node --check docs/assets/multi-year-map.js
           python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py tests/browser_comparison_v2_evidence_acceptance.py tests/test_comparison_v2_contract.py tests/test_multi_year_comparison_contract.py tests/browser_multi_year_comparison.py
       - name: Test deterministic elevation safeguards without external rasters
         run: python tests/test_dem_elevation_enrichment.py -v
