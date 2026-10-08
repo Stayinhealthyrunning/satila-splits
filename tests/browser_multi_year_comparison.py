@@ -139,6 +139,11 @@ async def main():
         assert await camera.input_value() == "both"
         assert await page.locator("#multi-year-map-root [data-map-duration]").input_value() == "120"
         assert await page.locator("#multi-year-map-root [data-map-volume]").input_value() == "0.3"
+        await page.evaluate("""() => {
+          window.__stableReplayScene=document.querySelector('#multi-year-route-svg [data-map-scene]');
+          window.__stableReplayTiles=document.querySelector('#multi-year-route-svg [data-map-tiles]');
+          window.__stableReplayMarkers=document.querySelector('#multi-year-route-svg [data-map-markers]');
+        }""")
         await camera.select_option("full")
         original = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
         await camera.select_option("both")
