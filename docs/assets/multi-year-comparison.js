@@ -117,13 +117,13 @@ function create(){
     selected=rows;restoredFamily=family;renderSelected();await openComparison();
   }
   root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
-  function updatePicker(){
+  function updatePicker(focus=false){
     const latest=editions()[0]?.year,current=String(year.value)===String(latest)&&currentYear===Number(latest);
     root.hidden=current;
     const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
-    if(!current)search.focus();else $('#map-duel-search')?.focus();
+    if(focus){if(!current)search.focus();else $('#map-duel-search')?.focus();}
   }
-  year.addEventListener('change',()=>{search.value='';hide();updatePicker()});search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
+  year.addEventListener('change',()=>{search.value='';hide();updatePicker(true)});search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
   button.addEventListener('click',openComparison);$('#close-multi-year-dialog')?.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{mapController?.destroy?.();mapController=null});$('#multi-year-share')?.addEventListener('click',async event=>{try{await navigator.clipboard.writeText(shareUrl());event.currentTarget.textContent='✓ Länk kopierad';setTimeout(()=>event.currentTarget.textContent='↗ Dela jämförelse',1600)}catch{prompt('Kopiera länken:',shareUrl())}});
   document.addEventListener('pointerdown',event=>{if(!event.target.closest('#multi-year-comparison'))hide()});
   renderSelected();
