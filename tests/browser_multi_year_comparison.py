@@ -116,10 +116,11 @@ async def main():
         assert await camera.input_value() == "both"
         assert await page.locator("#multi-year-map-root [data-map-duration]").input_value() == "120"
         assert await page.locator("#multi-year-map-root [data-map-volume]").input_value() == "0.3"
+        await camera.select_option("full")
         original = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
         await camera.select_option("both")
         following = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
-        assert original != following, "Follow both must zoom from initial course overview"
+        assert original != following, "Follow both must adapt zoom from full-course framing"
         await page.locator("#multi-year-map-root [data-map-zoom='1']").click()
         zoomed = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
         assert zoomed != following, "Zoom-in must update the camera"
