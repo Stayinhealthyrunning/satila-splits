@@ -61,14 +61,17 @@ async def main():
 
         assert await page.locator("#multi-year-year").input_value() == "2025"
         assert not await page.locator("#multi-year-comparison").is_visible()
+        # Start in the legacy same-edition Kartduell and transfer this exact
+        # result into the historical list when the year scope changes.
+        await page.locator("#map-duel-search").fill("Petra Klevmar")
+        await page.wait_for_function("document.querySelectorAll('#map-duel-suggestions [data-map-duel-id]').length >= 1")
+        await page.locator("#map-duel-suggestions [data-map-duel-id]").first.click()
+        assert "Petra Klevmar" in await page.locator("#map-duel-chips").inner_text()
         await page.locator("#multi-year-year").select_option("all")
         assert await page.locator("#multi-year-comparison").is_visible()
         assert not await page.locator("#duel-current-picker").is_visible()
-
-        await page.locator("#multi-year-search").fill("Petra Klevmar")
-        await page.wait_for_function("document.querySelectorAll('#multi-year-suggestions [data-multi-year-add]').length >= 4")
-        option_2025 = page.locator("#multi-year-suggestions [data-multi-year-add]").filter(has_text="2025").first
-        await option_2025.click()
+        assert "2025" in await page.locator("#multi-year-selected").inner_text()
+        assert "Petra Klevmar" in await page.locator("#multi-year-selected").inner_text()
 
         await page.locator("#multi-year-search").fill("Petra Klevmar")
         await page.wait_for_function("document.querySelectorAll('#multi-year-suggestions [data-multi-year-add]').length >= 3")
