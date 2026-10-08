@@ -52,7 +52,7 @@ function render(model){
 function create(){
   const root=$('#multi-year-comparison'),year=$('#multi-year-year'),search=$('#multi-year-search'),suggestions=$('#multi-year-suggestions'),chips=$('#multi-year-selected'),button=$('#open-multi-year-comparison'),feedback=$('#multi-year-feedback'),dialog=$('#multi-year-dialog'),body=$('#multi-year-dialog-body');
   if(!root||!year||!search||!suggestions||!chips||!button||!dialog||!body)return null;
-  let boot=null,family=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null,mapController=null;
+  let boot=null,family=null,currentYear=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null,mapController=null;
   const editions=()=>boot?.editions?.filter(ed=>ed.family===family).slice().sort((a,b)=>b.year-a.year)||[];
   async function loadEdition(ed){
     if(!cache.has(ed.race_key))cache.set(ed.race_key,fetch('data/races/'+encodeURIComponent(ed.race_key)+'.json').then(r=>{if(!r.ok)throw Error('Upplagan kunde inte läsas');return r.json()}).then(race=>({edition:ed,race})).catch(error=>{cache.delete(ed.race_key);throw error;}));
@@ -117,7 +117,7 @@ function create(){
   }
   root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)){selected=selected.length<2?[...selected,item]:[selected[1],item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
   function updatePicker(){
-    const latest=editions()[0]?.year,current=String(year.value)===String(latest);
+    const latest=editions()[0]?.year,current=String(year.value)===String(latest)&&currentYear===Number(latest);
     root.hidden=current;
     const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
     if(!current)search.focus();else $('#map-duel-search')?.focus();
@@ -128,7 +128,7 @@ function create(){
   renderSelected();
   return{
     init(payload){boot=payload.boot;},
-    setContext(nextFamily){const changed=family!==nextFamily;family=nextFamily;if(changed){selected=[];restoredFamily=null}const latest=editions()[0]?.year,previous=changed?String(latest):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null}const latest=editions()[0]?.year,previous=changed?String(latest):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
