@@ -107,6 +107,14 @@ async def main():
         await page.wait_for_function("document.querySelectorAll('#multi-year-suggestions [data-multi-year-add]').length === 1")
         narrowed = await page.locator("#multi-year-suggestions").inner_text()
         assert "2023" in narrowed and "2022" not in narrowed and "2024" not in narrowed, narrowed
+        await page.locator("#multi-year-year").select_option("2025")
+        assert await page.locator("#multi-year-comparison").is_visible()
+        assert not await page.locator("#duel-current-picker").is_visible()
+        names = await page.locator("#multi-year-selected").inner_text()
+        assert "2025" in names and "2024" in names and "Petra Klevmar" in names, names
+        await page.locator("#multi-year-year").select_option("2024")
+        names = await page.locator("#multi-year-selected").inner_text()
+        assert "2025" in names and "2024" in names, names
 
         assert not errors, errors
         await browser.close()
