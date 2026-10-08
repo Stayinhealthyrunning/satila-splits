@@ -60,9 +60,9 @@ function create(){
   }
   function hide(){suggestions.hidden=true;suggestions.innerHTML='';search.setAttribute('aria-expanded','false');suggestionMap.clear()}
   function renderSelected(){
-    chips.innerHTML=selected.length?selected.map((item,i)=>`<button type="button" data-multi-year-remove="${esc(item.token)}"><i>${i+1}</i><span>${esc(item.record.name)} · ${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}</span><b>×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
+    chips.innerHTML=selected.length?selected.map(item=>`<button type="button" data-multi-year-remove="${esc(item.token)}" aria-label="Ta bort ${esc(item.record.name)} · ${item.edition.year}"><span>${esc(item.record.name)} · ${item.edition.year}</span><b aria-hidden="true">×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
     button.disabled=selected.length<2;button.textContent=selected.length>=2?'Jämför '+selected.length+' resultat på kartan':'Välj minst två resultat för kartjämförelse';
-    feedback.textContent=selected.length>=2?selected.map(x=>x.edition.year).join(' · ')+' · årsbanorna visas separat där dokumenterad GPX finns.':'';
+    feedback.textContent=selected.length>=2?'De valda årens banor visas separat där dokumenterad GPX finns.':'';
   }
   async function runSearch(){
     const version=++searchVersion,q=search.value.trim();if(!q){hide();return}
