@@ -52,7 +52,7 @@ function render(model){
 function create(){
   const root=$('#multi-year-comparison'),year=$('#multi-year-year'),search=$('#multi-year-search'),suggestions=$('#multi-year-suggestions'),chips=$('#multi-year-selected'),button=$('#open-multi-year-comparison'),feedback=$('#multi-year-feedback'),dialog=$('#multi-year-dialog'),body=$('#multi-year-dialog-body');
   if(!root||!year||!search||!suggestions||!chips||!button||!dialog||!body)return null;
-  let boot=null,family=null,currentYear=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null,mapController=null;
+  let boot=null,family=null,currentYear=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null,mapController=null,crossYearSelectionActive=false,getCurrentSelection=null;
   const editions=()=>boot?.editions?.filter(ed=>ed.family===family).slice().sort((a,b)=>b.year-a.year)||[];
   async function loadEdition(ed){
     if(!cache.has(ed.race_key))cache.set(ed.race_key,fetch('data/races/'+encodeURIComponent(ed.race_key)+'.json').then(r=>{if(!r.ok)throw Error('Upplagan kunde inte läsas');return r.json()}).then(race=>({edition:ed,race})).catch(error=>{cache.delete(ed.race_key);throw error;}));
@@ -117,25 +117,45 @@ function create(){
     selected=rows;restoredFamily=family;renderSelected();await openComparison();
   }
   root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
+  function captureCurrentSelection(){
+    if(!root.hidden||typeof getCurrentSelection!=='function')return;
+    const context=getCurrentSelection(),edition=context?.edition,race=context?.race,ids=context?.ids||[];
+    if(!edition||!race||edition.family!==family||!Array.isArray(ids))return;
+    for(const id of ids){
+      if(selected.length>=5)break;
+      const record=(race.results||[]).find(item=>String(item.id)===String(id));
+      if(!record)continue;
+      const token=tokenFor(edition.race_key,record.id);
+      if(!selected.some(item=>item.token===token))
+        selected.push({edition,race,record,token});
+    }
+    if(selected.length){crossYearSelectionActive=true;renderSelected();}
+  }
   function updatePicker(focus=false){
-    const current=String(year.value)===String(currentYear);
+    const current=String(year.value)===String(currentYear)&&!crossYearSelectionActive;
     root.hidden=current;
     const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
     if(focus){if(!current)search.focus();else $('#map-duel-search')?.focus();}
   }
-  year.addEventListener('change',()=>{search.value='';hide();updatePicker(true)});search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
+  year.addEventListener('change',()=>{
+    captureCurrentSelection();
+    crossYearSelectionActive=true;
+    search.value='';hide();updatePicker(true);
+  });search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
   button.addEventListener('click',openComparison);$('#close-multi-year-dialog')?.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{mapController?.destroy?.();mapController=null});$('#multi-year-share')?.addEventListener('click',async event=>{try{await navigator.clipboard.writeText(shareUrl());event.currentTarget.textContent='✓ Länk kopierad';setTimeout(()=>event.currentTarget.textContent='↗ Dela jämförelse',1600)}catch{prompt('Kopiera länken:',shareUrl())}});
   document.addEventListener('pointerdown',event=>{if(!event.target.closest('#multi-year-comparison'))hide()});
   renderSelected();
   return{
-    init(payload){boot=payload.boot;},
-    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
+    init(payload){boot=payload.boot;getCurrentSelection=payload.getCurrentSelection||null;},
+    captureCurrentSelection,
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
 window.SatilaMultiYearComparison={
   init(payload){controller?.init(payload)},
   setContext(family,year){controller?.setContext(family,year)},
+  captureCurrentSelection(){controller?.captureCurrentSelection?.()},
   _test:{promotedGroup,wholeCourseComparable,fieldMetrics,model}
 };
 })();
