@@ -129,6 +129,10 @@ async def main():
         await page.locator("#multi-year-year").select_option("2025")
         names = await page.locator("#multi-year-selected").inner_text()
         assert all(str(year) in names for year in (2023, 2024, 2025)), names
+        labels = await page.locator("#multi-year-selected button span").all_text_contents()
+        assert labels == ["Petra Klevmar · 2025", "Petra Klevmar · 2024", "Petra Klevmar · 2023"], labels
+        assert await page.locator("#multi-year-selected button i").count() == 0
+        assert all("#" not in label for label in labels)
         await page.locator("#open-multi-year-comparison").click()
         await page.wait_for_function("document.querySelectorAll('#multi-year-route-svg path[stroke-width=\"3.8\"]').length === 3")
         legends = " ".join(await page.locator("#multi-year-map-root .multi-year-route-option").all_inner_texts())
