@@ -19,6 +19,8 @@ def fixtures():
     for edition in boot["editions"]:
         path = ROOT / "data" / "races" / f"{edition['race_key']}.json"
         data[f"data/races/{path.name}"] = json.loads(path.read_text(encoding="utf-8"))
+    for path in (ROOT / "data" / "routes").glob("*.json"):
+        data[f"data/routes/{path.name}"] = json.loads(path.read_text(encoding="utf-8"))
     return data
 
 
@@ -52,11 +54,16 @@ async def main():
             }""",
             data,
         )
+        await page.add_script_tag(content=(ROOT / "assets" / "multi-year-map.js").read_text(encoding="utf-8"))
         await page.add_script_tag(content=(ROOT / "assets" / "multi-year-comparison.js").read_text(encoding="utf-8"))
         await page.add_script_tag(content=(ROOT / "assets" / "app.js").read_text(encoding="utf-8"))
         await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
 
-        assert await page.locator("#multi-year-year").input_value() == "all"
+        assert await page.locator("#multi-year-year").input_value() == "2025"
+        assert not await page.locator("#multi-year-comparison").is_visible()
+        await page.locator("#multi-year-year").select_option("all")
+        assert await page.locator("#multi-year-comparison").is_visible()
+        assert not await page.locator("#duel-current-picker").is_visible()
 
         await page.locator("#multi-year-search").fill("Petra Klevmar")
         await page.wait_for_function("document.querySelectorAll('#multi-year-suggestions [data-multi-year-add]').length >= 4")
@@ -80,6 +87,12 @@ async def main():
         assert "Passage- och segmentduell är avstängd" in dialog, dialog
         assert "rangordnas inte mot varandra" in dialog, dialog
         assert "A snabbare med" not in dialog and "B snabbare med" not in dialog, dialog
+        await page.wait_for_function("document.querySelectorAll('#multi-year-route-svg path[stroke-width=\"3.8\"]').length === 2")
+        legends = " ".join(await page.locator("#multi-year-map-root .multi-year-route-option").all_inner_texts())
+        assert "2025" in legends and "2024" in legends, legends
+        assert "Arrangörs-GPX" in legends and "Deltagarbaserad GPX" in legends, legends
+        await page.locator("#multi-year-map-root [data-map-range]").fill("3600")
+        assert await page.locator("#multi-year-map-root [data-map-marker]").count() == 2
 
         await page.set_viewport_size({"width": 390, "height": 844})
         await page.wait_for_timeout(100)
