@@ -60,9 +60,9 @@ function create(){
   }
   function hide(){suggestions.hidden=true;suggestions.innerHTML='';search.setAttribute('aria-expanded','false');suggestionMap.clear()}
   function renderSelected(){
-    chips.innerHTML=selected.length?selected.map((item,i)=>`<button type="button" data-multi-year-remove="${esc(item.token)}"><i>${i+1}</i><span>${esc(item.record.name)} · ${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}</span><b>×</b></button>`).join(''):'<span class="muted small">Välj exakt två resultat. Samma namn kan väljas från olika år utan att systemet antar att identiteten är verifierad.</span>';
-    button.disabled=selected.length!==2;button.textContent=selected.length===2?'Jämför på kartan och mellan år':'Välj två resultat för kartjämförelse';
-    feedback.textContent=selected.length===2?(selected[0].edition.year===selected[1].edition.year?'Två resultat från samma år valda.':'Olika år valda · årsbanorna visas var för sig där verifierad geometri finns.'):'';
+    chips.innerHTML=selected.length?selected.map((item,i)=>`<button type="button" data-multi-year-remove="${esc(item.token)}"><i>${i+1}</i><span>${esc(item.record.name)} · ${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}</span><b>×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
+    button.disabled=selected.length<2;button.textContent=selected.length>=2?'Jämför '+selected.length+' resultat på kartan':'Välj minst två resultat för kartjämförelse';
+    feedback.textContent=selected.length>=2?selected.map(x=>x.edition.year).join(' · ')+' · årsbanorna visas separat där dokumenterad GPX finns.':'';
   }
   async function runSearch(){
     const version=++searchVersion,q=search.value.trim();if(!q){hide();return}
@@ -75,8 +75,8 @@ function create(){
     suggestions.innerHTML=suggestionMap.size?[...suggestionMap.values()].map(item=>`<button type="button" class="suggestion" data-multi-year-add="${esc(item.token)}"><span><strong>${esc(item.record.name)}</strong><small>${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}${item.record.club?' · '+esc(item.record.club):''}</small></span><b>${formatTime(item.record.finish_seconds)}</b></button>`).join(''):'<p class="muted small">Ingen löpare hittades i valda år.</p>';
   }
   function shareUrl(){
-    const url=new URL(location.href);for(const key of ['myFamily','myA','myB'])url.searchParams.delete(key);
-    if(selected.length===2){url.searchParams.set('myFamily',family);url.searchParams.set('myA',selected[0].token);url.searchParams.set('myB',selected[1].token)}return url.href;
+    const url=new URL(location.href);for(const key of ['myFamily','myA','myB','myResult'])url.searchParams.delete(key);
+    if(selected.length>=2){url.searchParams.set('myFamily',family);for(const item of selected)url.searchParams.append('myResult',item.token)}return url.href;
   }
   function observedAnchors(item,route){
     const length=Number(route.geometry_length_km)||Number(route.points?.at(-1)?.[0])||0;
@@ -90,9 +90,10 @@ function create(){
     return anchors;
   }
   async function openComparison(){
-    if(selected.length!==2)return;
+    if(selected.length<2||selected.length>5)return;
     mapController?.destroy?.();mapController=null;
-    body.innerHTML='<section id="multi-year-map-root" class="multi-year-map-card"><p class="muted small">Laddar årsbanor…</p></section>'+render(model(selected[0],selected[1]));
+    const detail=selected.length===2?render(model(selected[0],selected[1])):'<section class="multi-year-section"><h3>Valda år och prestation mot respektive fält</h3><div class="table-scroll"><table><thead><tr><th>År</th><th>Deltagare</th><th>Status</th><th>Sluttid</th><th>Plats</th><th>Fältindex</th></tr></thead><tbody>'+selected.map(x=>'<tr><td>'+esc(x.edition.year)+'</td><th>'+esc(x.record.name)+'</th><td>'+esc(x.record.status)+'</td><td>'+formatTime(x.record.finish_seconds)+'</td><td>'+esc(x.record.place??'—')+'</td><td>'+index(fieldMetrics(x.race,x.record).index)+'</td></tr>').join('')+'</tbody></table></div><p class="muted small">Olika banor ger ingen gemensam totalplacering och ingen direkt tidsgapstävling. Varje års fältindex är separat.</p></section>';
+    body.innerHTML='<section id="multi-year-map-root" class="multi-year-map-card"><p class="muted small">Laddar årsbanor…</p></section>'+detail;
     if(!dialog.open)dialog.showModal();
     const token=selected.map(x=>x.token).join('|');
     const items=await Promise.all(selected.map(async item=>{
@@ -111,11 +112,11 @@ function create(){
   }
   async function restore(){
     if(restoredFamily===family)return;const params=new URLSearchParams(location.search);if(params.get('myFamily')!==family){restoredFamily=family;return}
-    const tokens=[params.get('myA'),params.get('myB')].filter(Boolean);if(tokens.length!==2){restoredFamily=family;return}const rows=[];
+    const tokens=params.getAll('myResult').length?params.getAll('myResult'):[params.get('myA'),params.get('myB')].filter(Boolean);if(tokens.length<2||tokens.length>5){restoredFamily=family;return}const rows=[];
     for(const token of tokens){const parsed=parseToken(token),ed=editions().find(x=>x.race_key===parsed?.raceKey);if(!ed)return;const loaded=await loadEdition(ed),record=(loaded.race.results||[]).find(x=>String(x.id)===parsed.id);if(!record)return;rows.push({...loaded,record,token})}
     selected=rows;restoredFamily=family;renderSelected();await openComparison();
   }
-  root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)){selected=selected.length<2?[...selected,item]:[selected[1],item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
+  root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
   function updatePicker(){
     const latest=editions()[0]?.year,current=String(year.value)===String(latest)&&currentYear===Number(latest);
     root.hidden=current;
