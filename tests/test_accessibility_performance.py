@@ -37,7 +37,7 @@ def test_page_structure():
     assert len(set(page.ids))==len(page.ids),"Duplicate HTML id"
     assert not page.controls,f"Unlabelled controls: {page.controls}"
     assert set(page.targets).issubset(set(page.ids)),f"Broken anchors: {set(page.targets)-set(page.ids)}"
-    assert len(page.dialogs)==4,"Expected profile, compare, map duel, method dialogs"
+    assert len(page.dialogs)==5,"Expected profile, comparison, multi-year, map duel and method dialogs"
     for dialog in page.dialogs:
         label=dialog.get("aria-labelledby")
         assert dialog.get("aria-label") or label in page.ids,f"Unlabelled dialog: {dialog.get('id')}"
@@ -55,7 +55,7 @@ def test_budget():
         assert gz_size(p)<=75*1024,f"Race >75KiB gzip: {p}"
         obj=json.loads(p.read_text(encoding="utf-8"))
         assert len(obj["results"])==len({r["id"] for r in obj["results"]}),p
-    js=gz_size(ROOT/"assets/app.js")
+    js=sum(gz_size(ROOT/"assets"/name) for name in ("app.js","multi-year-comparison.js"))
     css=gz_size(ROOT/"assets/style.css")
     extra=ROOT/"assets/style-extra.css"
     if extra.exists():css+=gz_size(extra)
