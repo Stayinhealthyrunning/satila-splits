@@ -373,7 +373,7 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 #multi-year-dialog-body{display:grid;gap:18px}
 .multi-year-comparison{display:grid;gap:18px}
 .multi-year-people{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.multi-year-person{position:relative;display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.multi-year-person{position:relative;display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;padding:18px;border:1px solid var(--border);border-radius:16px;background:#fff}
 .multi-year-side{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--forest);color:#fff;font-weight:900}
 .multi-year-person h3{margin:2px 0 10px}
 .multi-year-person dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
@@ -381,7 +381,7 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 .multi-year-person dt{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .multi-year-person dd{margin:3px 0 0;font-weight:800}
 .multi-year-person>div>small{display:block;margin-top:10px;color:var(--muted)}
-.multi-year-finish,.multi-year-section,.multi-year-method{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.multi-year-finish,.multi-year-section,.multi-year-method{padding:18px;border:1px solid var(--border);border-radius:16px;background:#fff}
 .multi-year-finish{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:baseline;background:linear-gradient(135deg,#edf5eb,#fff7e8)}
 .multi-year-finish .eyebrow{grid-row:1/3;margin:0}
 .multi-year-finish strong{font-size:1.08rem;color:var(--forest)}
