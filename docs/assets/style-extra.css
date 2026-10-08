@@ -524,5 +524,5 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 }
 #multi-year-dialog>.modal-head>div:first-child{min-width:0}
 @media(max-width:650px){
- #multi-year-dialog>.modal-head{padding:15px 14px 13px;gap:10px;align-items:flex-start;flex-wrap:wrap}
+ #multi-year-dialog>.modal-head{padding:15px 18px 13px;gap:10px;align-items:flex-start;flex-wrap:wrap}
 }
