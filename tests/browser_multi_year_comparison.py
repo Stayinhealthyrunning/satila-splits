@@ -139,6 +139,11 @@ async def main():
         assert await camera.input_value() == "both"
         assert await page.locator("#multi-year-map-root [data-map-duration]").input_value() == "120"
         assert await page.locator("#multi-year-map-root [data-map-volume]").input_value() == "0.3"
+        await page.evaluate("""() => {
+          window.__stableReplayScene=document.querySelector('#multi-year-route-svg [data-map-scene]');
+          window.__stableReplayTiles=document.querySelector('#multi-year-route-svg [data-map-tiles]');
+          window.__stableReplayMarkers=document.querySelector('#multi-year-route-svg [data-map-markers]');
+        }""")
         await camera.select_option("full")
         original = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
         await camera.select_option("both")
@@ -147,6 +152,17 @@ async def main():
         await page.locator("#multi-year-map-root [data-map-zoom='1']").click()
         zoomed = await page.locator("#multi-year-route-svg [data-map-scene]").get_attribute("transform")
         assert zoomed != following, "Zoom-in must update the camera"
+        # A zoom-level transition must not rebuild the SVG scene/tile layer,
+        # which previously made map tiles flash during animated replay.
+        for _ in range(3):
+            await page.locator("#multi-year-map-root [data-map-zoom='1']").click()
+        stability = await page.evaluate("""() => ({
+          scene:window.__stableReplayScene===document.querySelector('#multi-year-route-svg [data-map-scene]'),
+          tiles:window.__stableReplayTiles===document.querySelector('#multi-year-route-svg [data-map-tiles]'),
+          markers:window.__stableReplayMarkers===document.querySelector('#multi-year-route-svg [data-map-markers]'),
+          tilesCount:document.querySelectorAll('#multi-year-route-svg [data-map-tile]').length
+        })""")
+        assert stability["scene"] and stability["tiles"] and stability["markers"] and stability["tilesCount"], stability
         await camera.select_option("leader")
         assert await camera.input_value() == "leader"
         await page.locator("#multi-year-map-root [data-map-fit]").click()
