@@ -118,7 +118,7 @@ function create(){
   }
   root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
   function updatePicker(focus=false){
-    const latest=editions()[0]?.year,current=String(year.value)===String(latest)&&currentYear===Number(latest);
+    const current=String(year.value)===String(currentYear);
     root.hidden=current;
     const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
     if(focus){if(!current)search.focus();else $('#map-duel-search')?.focus();}
@@ -129,7 +129,7 @@ function create(){
   renderSelected();
   return{
     init(payload){boot=payload.boot;},
-    setContext(nextFamily,nextYear){const changed=family!==nextFamily;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null}const latest=editions()[0]?.year,previous=changed?String(latest):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
