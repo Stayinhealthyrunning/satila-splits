@@ -91,7 +91,7 @@ async def main():
         legends = " ".join(await page.locator("#multi-year-map-root .multi-year-route-option").all_inner_texts())
         assert "2025" in legends and "2024" in legends, legends
         assert "Arrangörs-GPX" in legends and "Deltagarbaserad GPX" in legends, legends
-        await page.locator("#multi-year-map-root [data-map-range]").fill("3600")
+        await page.locator("#multi-year-map-root [data-map-range]").evaluate("(node) => {node.value='3600';node.dispatchEvent(new Event('input',{bubbles:true}))}")
         assert await page.locator("#multi-year-map-root [data-map-marker]").count() == 2
 
         await page.set_viewport_size({"width": 390, "height": 844})
