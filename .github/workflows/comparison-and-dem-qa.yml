@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - "docs/assets/app.js"
+      - "docs/assets/multi-year-comparison.js"
+      - "docs/index.html"
+      - "docs/assets/style-extra.css"
+      - "tests/test_multi_year_comparison_contract.py"
+      - "tests/browser_multi_year_comparison.py"
       - "tests/browser_synced_scrub_acceptance.py"
       - "tests/browser_comparison_v2_evidence_acceptance.py"
       - "tests/test_comparison_v2_contract.py"
@@ -25,7 +30,8 @@ jobs:
       - name: Check JavaScript and Python syntax
         run: |
           node --check docs/assets/app.js
-          python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py tests/browser_comparison_v2_evidence_acceptance.py tests/test_comparison_v2_contract.py
+          node --check docs/assets/multi-year-comparison.js
+          python -m py_compile tools/enrich_route_elevation.py tests/test_dem_elevation_enrichment.py tests/browser_comparison_v2_evidence_acceptance.py tests/test_comparison_v2_contract.py tests/test_multi_year_comparison_contract.py tests/browser_multi_year_comparison.py
       - name: Test deterministic elevation safeguards without external rasters
         run: python tests/test_dem_elevation_enrichment.py -v
       - name: Install offline Chromium
@@ -38,8 +44,10 @@ jobs:
           SATILA_INTERACTION_QA: /tmp/satila-comparison-qa
         run: |
           python -m unittest discover -s tests -p test_comparison_v2_contract.py -v
+          python -m unittest discover -s tests -p test_multi_year_comparison_contract.py -v
           python tests/browser_synced_scrub_acceptance.py
           python tests/browser_comparison_v2_evidence_acceptance.py
+          python tests/browser_multi_year_comparison.py
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
