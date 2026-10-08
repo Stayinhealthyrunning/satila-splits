@@ -116,6 +116,22 @@ async def main():
         names = await page.locator("#multi-year-selected").inner_text()
         assert "2025" in names and "2024" in names, names
 
+        # A single person can be compared for three editions in one map view.
+        await page.locator("#multi-year-year").select_option("2023")
+        await page.locator("#multi-year-search").fill("Petra Klevmar")
+        await page.wait_for_function("document.querySelectorAll('#multi-year-suggestions [data-multi-year-add]').length >= 1")
+        await page.locator("#multi-year-suggestions [data-multi-year-add]").first.click()
+        names = await page.locator("#multi-year-selected").inner_text()
+        assert all(str(year) in names for year in (2023, 2024, 2025)), names
+        await page.locator("#multi-year-year").select_option("2025")
+        names = await page.locator("#multi-year-selected").inner_text()
+        assert all(str(year) in names for year in (2023, 2024, 2025)), names
+        await page.locator("#open-multi-year-comparison").click()
+        await page.wait_for_function("document.querySelectorAll('#multi-year-route-svg path[stroke-width=\"3.8\"]').length === 3")
+        legends = " ".join(await page.locator("#multi-year-map-root .multi-year-route-option").all_inner_texts())
+        assert all(str(year) in legends for year in (2023, 2024, 2025)), legends
+        assert await page.locator("#multi-year-dialog-body .multi-year-section tbody tr").count() == 3
+
         assert not errors, errors
         await browser.close()
         print("PASS Sätila multi-year comparison", flush=True)
