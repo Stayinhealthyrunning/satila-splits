@@ -40,6 +40,8 @@ async def main():
         page.on("console", lambda message: errors.append(message.text) if message.type == "error" else None)
 
         await page.set_content(markup)
+        await page.add_style_tag(content=(ROOT / "assets" / "style.css").read_text(encoding="utf-8"))
+        await page.add_style_tag(content=(ROOT / "assets" / "style-extra.css").read_text(encoding="utf-8"))
         await page.evaluate(
             """payload=>{
               window.__fixtures=payload;
@@ -78,6 +80,11 @@ async def main():
         assert "Passage- och segmentduell är avstängd" in dialog, dialog
         assert "rangordnas inte mot varandra" in dialog, dialog
         assert "A snabbare med" not in dialog and "B snabbare med" not in dialog, dialog
+
+        await page.set_viewport_size({"width": 390, "height": 844})
+        await page.wait_for_timeout(100)
+        assert await page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1")
+        assert await page.locator("#multi-year-dialog").evaluate("node => node.scrollWidth <= node.clientWidth + 1")
 
         # The year filter must narrow search without discarding already selected cross-year results.
         await page.locator("#close-multi-year-dialog").click()
