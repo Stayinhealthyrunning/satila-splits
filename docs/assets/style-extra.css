@@ -394,3 +394,40 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 #multi-year-suggestions .suggestion span strong,#multi-year-suggestions .suggestion span small{display:block}
 @media(max-width:900px){.multi-year-picker-panel{grid-template-columns:1fr}.multi-year-picker-controls{grid-template-columns:140px minmax(0,1fr)}}
 @media(max-width:650px){.multi-year-picker-controls{grid-template-columns:1fr}.multi-year-picker-controls>*{grid-column:1!important}.multi-year-people{grid-template-columns:1fr}.multi-year-dialog-actions{flex-wrap:wrap;justify-content:flex-end}.multi-year-person dl{grid-template-columns:1fr}.multi-year-finish{grid-template-columns:1fr}.multi-year-finish .eyebrow{grid-row:auto}}
+
+/* Integrated comparison: one panel, year-scoped search, per-edition route overlay. */
+#map-duel-builder .duel-selector-panel{grid-template-columns:minmax(190px,.6fr) minmax(0,1.4fr);align-items:start}
+#map-duel-builder .duel-selector-copy{grid-column:1;grid-row:1/3}
+#map-duel-builder .multi-year-top-year{grid-column:2;display:grid;grid-template-columns:1fr;max-width:190px;gap:4px}
+#map-duel-builder .multi-year-top-year select{min-height:43px}
+#map-duel-builder #duel-current-picker,#map-duel-builder #multi-year-comparison{grid-column:2;min-width:0;width:100%}
+#map-duel-builder #duel-current-picker[hidden],#map-duel-builder #multi-year-comparison[hidden]{display:none!important}
+#map-duel-builder #duel-current-picker>.duel-search-wrap{margin-bottom:12px}
+#map-duel-builder #duel-current-picker .selected-duel-chips{margin-bottom:12px}
+#map-duel-builder .multi-year-picker-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+#map-duel-builder .multi-year-picker-controls>*{grid-column:1}
+#map-duel-builder #open-multi-year-comparison{width:100%}
+.multi-year-map-card{padding:18px;border:1px solid var(--border);border-radius:16px;background:#fff}
+.multi-year-map-head h3{margin:2px 0 9px}
+.multi-year-map-head p:not(.eyebrow){color:var(--muted);font-size:.83rem}
+.multi-year-route-legend{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.multi-year-route-option{display:flex;flex-direction:row;align-items:center;gap:8px;flex:1 1 220px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#f9fcf9;cursor:pointer}
+.multi-year-route-option input{width:auto;flex:0 0 auto}
+.multi-year-route-option i{display:block;width:12px;height:12px;flex:0 0 12px;border-radius:50%}
+.multi-year-route-option span{display:block;min-width:0}
+.multi-year-route-option strong,.multi-year-route-option small{display:block}
+.multi-year-route-option strong{font-size:.76rem}
+.multi-year-route-option small{font-size:.65rem;color:var(--muted);line-height:1.35}
+.multi-year-map-surface{position:relative;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#e9efe8}
+.multi-year-map-surface svg{display:block;width:100%;height:auto;aspect-ratio:900/470}
+.multi-year-map-zoom{position:absolute;top:10px;left:10px;display:grid;gap:5px}
+.multi-year-map-zoom button{min-height:34px;padding:6px 10px;border:1px solid #becac2;background:#fff;color:var(--forest);border-radius:8px}
+.multi-year-map-credit{font-size:.65rem;color:var(--muted);margin:6px 0 13px}
+.multi-year-map-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.multi-year-map-controls label{display:flex;flex-direction:row;gap:7px;align-items:center;font-size:.72rem}
+.multi-year-map-controls select{min-height:38px;width:auto}
+.multi-year-map-controls [data-map-time]{font-variant-numeric:tabular-nums;font-weight:850}
+.multi-year-map-range{width:100%;margin:12px 0}
+.multi-year-map-note{font-size:.72rem;color:var(--muted)}
+@media(max-width:900px){#map-duel-builder .duel-selector-panel{grid-template-columns:1fr}#map-duel-builder .duel-selector-copy,#map-duel-builder .multi-year-top-year,#map-duel-builder #duel-current-picker,#map-duel-builder #multi-year-comparison{grid-column:1;grid-row:auto}}
+@media(max-width:650px){.multi-year-map-card{padding:10px}.multi-year-dialog{width:calc(100vw - 12px)}.multi-year-map-controls{align-items:stretch}}
