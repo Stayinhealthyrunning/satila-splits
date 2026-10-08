@@ -112,6 +112,29 @@ async def main():
         assert "Arrangörs-GPX" in legends and "Deltagarbaserad GPX" in legends, legends
         await page.locator("#multi-year-map-root [data-map-range]").evaluate("(node) => {node.value='3600';node.dispatchEvent(new Event('input',{bubbles:true}))}")
         assert await page.locator("#multi-year-map-root [data-map-marker]").count() == 2
+        # Modal QA at the same widths as the other responsive browser audits.
+        for width in (1440, 1140, 900, 390):
+            await page.set_viewport_size({"width": width, "height": 900})
+            layout = await page.evaluate("""() => {
+              const dialog=document.querySelector('#multi-year-dialog'),head=dialog.querySelector('.modal-head'),title=head.querySelector('h2'),root=document.querySelector('#multi-year-map-root');
+              const rect=el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right,bottom:r.bottom,width:r.width}};
+              return {dialog:rect(dialog),title:rect(title),
+                play:rect(root.querySelector('[data-map-play]')),
+                duration:rect(root.querySelector('[data-map-duration]')),
+                camera:rect(root.querySelector('[data-map-camera]')),
+                music:rect(root.querySelector('[data-map-music]')),
+                clock:rect(root.querySelector('[data-map-time]')),
+                overflow:dialog.scrollWidth-dialog.clientWidth,
+                documentOverflow:document.documentElement.scrollWidth-innerWidth};
+            }""")
+            assert layout["title"]["left"] - layout["dialog"]["left"] >= 15, layout
+            assert layout["dialog"]["width"] <= width + 1, layout
+            assert layout["overflow"] <= 2 and layout["documentOverflow"] <= 2, layout
+            if width >= 1140:
+                assert layout["dialog"]["width"] >= width - 70, layout
+                bottoms = [layout[name]["bottom"] for name in ("play", "duration", "camera", "music", "clock")]
+                assert max(bottoms) - min(bottoms) <= 7, layout
+        await page.set_viewport_size({"width": 900, "height": 900})
         camera = page.locator("#multi-year-map-root [data-map-camera]")
         assert await camera.input_value() == "both"
         assert await page.locator("#multi-year-map-root [data-map-duration]").input_value() == "120"
