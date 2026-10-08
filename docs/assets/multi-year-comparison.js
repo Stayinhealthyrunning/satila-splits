@@ -52,7 +52,7 @@ function render(model){
 function create(){
   const root=$('#multi-year-comparison'),year=$('#multi-year-year'),search=$('#multi-year-search'),suggestions=$('#multi-year-suggestions'),chips=$('#multi-year-selected'),button=$('#open-multi-year-comparison'),feedback=$('#multi-year-feedback'),dialog=$('#multi-year-dialog'),body=$('#multi-year-dialog-body');
   if(!root||!year||!search||!suggestions||!chips||!button||!dialog||!body)return null;
-  let boot=null,family=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null;
+  let boot=null,family=null,currentYear=null,selected=[],suggestionMap=new Map(),cache=new Map(),searchVersion=0,restoredFamily=null,mapController=null,crossYearSelectionActive=false,getCurrentSelection=null;
   const editions=()=>boot?.editions?.filter(ed=>ed.family===family).slice().sort((a,b)=>b.year-a.year)||[];
   async function loadEdition(ed){
     if(!cache.has(ed.race_key))cache.set(ed.race_key,fetch('data/races/'+encodeURIComponent(ed.race_key)+'.json').then(r=>{if(!r.ok)throw Error('Upplagan kunde inte läsas');return r.json()}).then(race=>({edition:ed,race})).catch(error=>{cache.delete(ed.race_key);throw error;}));
@@ -60,9 +60,9 @@ function create(){
   }
   function hide(){suggestions.hidden=true;suggestions.innerHTML='';search.setAttribute('aria-expanded','false');suggestionMap.clear()}
   function renderSelected(){
-    chips.innerHTML=selected.length?selected.map((item,i)=>`<button type="button" data-multi-year-remove="${esc(item.token)}"><i>${i+1}</i><span>${esc(item.record.name)} · ${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}</span><b>×</b></button>`).join(''):'<span class="muted small">Välj exakt två resultat. Samma namn kan väljas från olika år utan att systemet antar att identiteten är verifierad.</span>';
-    button.disabled=selected.length!==2;button.textContent=selected.length===2?'Jämför två år':'Välj två resultat för årsjämförelse';
-    feedback.textContent=selected.length===2?(selected[0].edition.year===selected[1].edition.year?'Samma upplaga vald · använd gärna Direktjämförelse 2.0 ovan för full analys.':'Olika år valda · banjämförbarheten kontrolleras automatiskt.'):'';
+    chips.innerHTML=selected.length?selected.map((item,i)=>`<button type="button" data-multi-year-remove="${esc(item.token)}"><i>${i+1}</i><span>${esc(item.record.name)} · ${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}</span><b>×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
+    button.disabled=selected.length<2;button.textContent=selected.length>=2?'Jämför '+selected.length+' resultat på kartan':'Välj minst två resultat för kartjämförelse';
+    feedback.textContent=selected.length>=2?selected.map(x=>x.edition.year).join(' · ')+' · årsbanorna visas separat där dokumenterad GPX finns.':'';
   }
   async function runSearch(){
     const version=++searchVersion,q=search.value.trim();if(!q){hide();return}
@@ -75,30 +75,87 @@ function create(){
     suggestions.innerHTML=suggestionMap.size?[...suggestionMap.values()].map(item=>`<button type="button" class="suggestion" data-multi-year-add="${esc(item.token)}"><span><strong>${esc(item.record.name)}</strong><small>${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}${item.record.club?' · '+esc(item.record.club):''}</small></span><b>${formatTime(item.record.finish_seconds)}</b></button>`).join(''):'<p class="muted small">Ingen löpare hittades i valda år.</p>';
   }
   function shareUrl(){
-    const url=new URL(location.href);for(const key of ['myFamily','myA','myB'])url.searchParams.delete(key);
-    if(selected.length===2){url.searchParams.set('myFamily',family);url.searchParams.set('myA',selected[0].token);url.searchParams.set('myB',selected[1].token)}return url.href;
+    const url=new URL(location.href);for(const key of ['myFamily','myA','myB','myResult'])url.searchParams.delete(key);
+    if(selected.length>=2){url.searchParams.set('myFamily',family);for(const item of selected)url.searchParams.append('myResult',item.token)}return url.href;
   }
-  async function openComparison(){if(selected.length!==2)return;body.innerHTML=render(model(selected[0],selected[1]));if(!dialog.open)dialog.showModal()}
+  function observedAnchors(item,route){
+    const length=Number(route.geometry_length_km)||Number(route.points?.at(-1)?.[0])||0;
+    const nominal=Number(item.edition.nominal_km||item.race.nominal_km)||0;
+    if(length<=0||nominal<=0||['DNS','UNKNOWN'].includes(item.record.status))return[];
+    const stations=new Map((item.race.stations||[]).map(st=>[String(st.uid),st]));
+    const rows=(item.race.splits||[]).filter(row=>String(row.result_id)===String(item.record.id)).map(row=>({row,st:stations.get(String(row.station_uid))})).filter(x=>x.st&&finite(x.row.elapsed_seconds)&&finite(x.st.km)&&Number(x.st.km)>0&&Number(x.st.km)<=nominal+.1&&(!x.st.is_finish||finish(item.record))).sort((a,b)=>Number(a.st.km)-Number(b.st.km));
+    const anchors=[{time:0,distance:0}];let latest=anchors[0];
+    for(const {row,st} of rows){const time=Number(row.elapsed_seconds),distance=Math.min(length,Number(st.km)*length/nominal);if(time>latest.time&&distance>latest.distance){latest={time,distance};anchors.push(latest);}}
+    if(finish(item.record)&&Number(item.record.finish_seconds)>latest.time&&length>latest.distance)anchors.push({time:Number(item.record.finish_seconds),distance:length});
+    return anchors;
+  }
+  async function openComparison(){
+    if(selected.length<2||selected.length>5)return;
+    mapController?.destroy?.();mapController=null;
+    const detail=selected.length===2?render(model(selected[0],selected[1])):'<section class="multi-year-section"><h3>Valda år och prestation mot respektive fält</h3><div class="table-scroll"><table><thead><tr><th>År</th><th>Deltagare</th><th>Status</th><th>Sluttid</th><th>Plats</th><th>Fältindex</th></tr></thead><tbody>'+selected.map(x=>'<tr><td>'+esc(x.edition.year)+'</td><th>'+esc(x.record.name)+'</th><td>'+esc(x.record.status)+'</td><td>'+formatTime(x.record.finish_seconds)+'</td><td>'+esc(x.record.place??'—')+'</td><td>'+index(fieldMetrics(x.race,x.record).index)+'</td></tr>').join('')+'</tbody></table></div><p class="muted small">Olika banor ger ingen gemensam totalplacering och ingen direkt tidsgapstävling. Varje års fältindex är separat.</p></section>';
+    body.innerHTML='<section id="multi-year-map-root" class="multi-year-map-card"><p class="muted small">Laddar årsbanor…</p></section>'+detail;
+    if(!dialog.open)dialog.showModal();
+    const token=selected.map(x=>x.token).join('|');
+    const items=await Promise.all(selected.map(async item=>{
+      const file=item.edition.route_file;
+      if(!file)return{year:item.edition.year,name:item.record.name,provenance:'Rutt saknas för upplagan',points:[],anchors:[]};
+      try{
+        const response=await fetch('data/'+file);if(!response.ok)throw Error('route missing');const route=await response.json();
+        const reference=route.type==='OFFICIAL_ORGANIZER'?'Arrangörs-GPX · återanvändning 2025/2026 enligt dokumenterat antagande':route.type==='VERIFIED_PARTICIPANT'?'Deltagarbaserad GPX · endast visningsgeometri':String(route.type||'Banreferens');
+        return {year:item.edition.year,name:item.record.name,provenance:reference,
+          points:(route.points||[]).map(point=>[point[1],point[2],point[0]]),
+          anchors:observedAnchors(item,route)};
+      }catch{return{year:item.edition.year,name:item.record.name,provenance:'Publicerbar rutt saknas',points:[],anchors:[]};}
+    }));
+    if(!dialog.open||selected.map(x=>x.token).join('|')!==token)return;
+    mapController=globalThis.LoppMultiYearRouteMap?.mount(body.querySelector('#multi-year-map-root'),items);
+  }
   async function restore(){
     if(restoredFamily===family)return;const params=new URLSearchParams(location.search);if(params.get('myFamily')!==family){restoredFamily=family;return}
-    const tokens=[params.get('myA'),params.get('myB')].filter(Boolean);if(tokens.length!==2){restoredFamily=family;return}const rows=[];
+    const tokens=params.getAll('myResult').length?params.getAll('myResult'):[params.get('myA'),params.get('myB')].filter(Boolean);if(tokens.length<2||tokens.length>5){restoredFamily=family;return}const rows=[];
     for(const token of tokens){const parsed=parseToken(token),ed=editions().find(x=>x.race_key===parsed?.raceKey);if(!ed)return;const loaded=await loadEdition(ed),record=(loaded.race.results||[]).find(x=>String(x.id)===parsed.id);if(!record)return;rows.push({...loaded,record,token})}
     selected=rows;restoredFamily=family;renderSelected();await openComparison();
   }
-  root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)){selected=selected.length<2?[...selected,item]:[selected[1],item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
-  year.addEventListener('change',()=>{search.value='';hide();search.focus()});search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
-  button.addEventListener('click',openComparison);$('#close-multi-year-dialog')?.addEventListener('click',()=>dialog.close());$('#multi-year-share')?.addEventListener('click',async event=>{try{await navigator.clipboard.writeText(shareUrl());event.currentTarget.textContent='✓ Länk kopierad';setTimeout(()=>event.currentTarget.textContent='↗ Dela jämförelse',1600)}catch{prompt('Kopiera länken:',shareUrl())}});
+  root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
+  function captureCurrentSelection(){
+    if(!root.hidden||typeof getCurrentSelection!=='function')return;
+    const context=getCurrentSelection(),edition=context?.edition,race=context?.race,ids=context?.ids||[];
+    if(!edition||!race||edition.family!==family||!Array.isArray(ids))return;
+    for(const id of ids){
+      if(selected.length>=5)break;
+      const record=(race.results||[]).find(item=>String(item.id)===String(id));
+      if(!record)continue;
+      const token=tokenFor(edition.race_key,record.id);
+      if(!selected.some(item=>item.token===token))
+        selected.push({edition,race,record,token});
+    }
+    if(selected.length){crossYearSelectionActive=true;renderSelected();}
+  }
+  function updatePicker(focus=false){
+    const current=String(year.value)===String(currentYear)&&!crossYearSelectionActive;
+    root.hidden=current;
+    const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
+    if(focus){if(!current)search.focus();else $('#map-duel-search')?.focus();}
+  }
+  year.addEventListener('change',()=>{
+    captureCurrentSelection();
+    crossYearSelectionActive=true;
+    search.value='';hide();updatePicker(true);
+  });search.addEventListener('input',runSearch);search.addEventListener('focus',runSearch);search.addEventListener('keydown',event=>{if(event.key==='Escape')hide();if(event.key==='Enter'){const first=suggestions.querySelector('[data-multi-year-add]');if(first){event.preventDefault();first.click()}}});
+  button.addEventListener('click',openComparison);$('#close-multi-year-dialog')?.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{mapController?.destroy?.();mapController=null});$('#multi-year-share')?.addEventListener('click',async event=>{try{await navigator.clipboard.writeText(shareUrl());event.currentTarget.textContent='✓ Länk kopierad';setTimeout(()=>event.currentTarget.textContent='↗ Dela jämförelse',1600)}catch{prompt('Kopiera länken:',shareUrl())}});
   document.addEventListener('pointerdown',event=>{if(!event.target.closest('#multi-year-comparison'))hide()});
   renderSelected();
   return{
-    init(payload){boot=payload.boot;},
-    setContext(nextFamily){const changed=family!==nextFamily;family=nextFamily;if(changed){selected=[];restoredFamily=null}const previous=changed?'all':year.value;year.innerHTML='<option value="all">Alla år</option>'+editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('');year.value=editions().some(ed=>String(ed.year)===String(previous))?String(previous):'all';renderSelected();if(changed)hide();restore().catch(console.error)}
+    init(payload){boot=payload.boot;getCurrentSelection=payload.getCurrentSelection||null;},
+    captureCurrentSelection,
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
 window.SatilaMultiYearComparison={
   init(payload){controller?.init(payload)},
   setContext(family,year){controller?.setContext(family,year)},
+  captureCurrentSelection(){controller?.captureCurrentSelection?.()},
   _test:{promotedGroup,wholeCourseComparable,fieldMetrics,model}
 };
 })();

@@ -55,7 +55,7 @@ def test_budget():
         assert gz_size(p)<=75*1024,f"Race >75KiB gzip: {p}"
         obj=json.loads(p.read_text(encoding="utf-8"))
         assert len(obj["results"])==len({r["id"] for r in obj["results"]}),p
-    js=sum(gz_size(ROOT/"assets"/name) for name in ("app.js","multi-year-comparison.js"))
+    js=sum(gz_size(ROOT/"assets"/name) for name in ("app.js","multi-year-comparison.js","multi-year-map.js"))
     css=gz_size(ROOT/"assets/style.css")
     extra=ROOT/"assets/style-extra.css"
     if extra.exists():css+=gz_size(extra)
