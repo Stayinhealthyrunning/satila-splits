@@ -16,11 +16,8 @@ class MinorPrivacyTest(unittest.TestCase):
                 age=r.get('age')
                 self.assertFalse(type(age) is int and 0<=age<18,
                     f'Unprotected under-18 age in {path.name}')
-                if r.get('name')=='Anonym löpare':
-                    self.assertIsNone(r.get('source_uid'),path.name)
-                    self.assertIn(r.get('bib'),(None,''),path.name)
-                    self.assertIn(r.get('club'),(None,''),path.name)
-                    self.assertTrue(str(r.get('id')).startswith('anon-'),path.name)
+                self.assertNotEqual(r.get('name'),'Anonym löpare',
+                    f'Pseudonymous individual row must be removed from {path.name}')
             for split in doc['splits']:
                 self.assertIn(split['result_id'],result_ids,path.name)
 
