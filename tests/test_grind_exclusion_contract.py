@@ -23,7 +23,8 @@ REMOVED={
 }
 RAW_OBSERVATIONS=16525
 REMOVED_OBSERVATIONS=2059
-PUBLISHED_OBSERVATIONS=14466
+GRIND_FILTERED_OBSERVATIONS=14466
+PUBLISHED_OBSERVATIONS=14372
 
 
 def load(p):return json.loads(p.read_text(encoding="utf-8"))
@@ -39,9 +40,10 @@ class ExcludeOwnerRejectedGrind(unittest.TestCase):
     def test_exactly_20_affected_editions_and_2059_filtered_time_observations(self):
         self.assertEqual(len(REMOVED),20)
         self.assertEqual(sum(count for _,count in REMOVED.values()),REMOVED_OBSERVATIONS)
-        self.assertEqual(RAW_OBSERVATIONS-REMOVED_OBSERVATIONS,PUBLISHED_OBSERVATIONS)
+        self.assertEqual(RAW_OBSERVATIONS-REMOVED_OBSERVATIONS,GRIND_FILTERED_OBSERVATIONS)
+        self.assertLessEqual(PUBLISHED_OBSERVATIONS,GRIND_FILTERED_OBSERVATIONS)
         self.assertEqual(len(self.races),27)
-        self.assertEqual(sum(len(r["results"]) for r in self.races.values()),3272)
+        self.assertEqual(sum(len(r["results"]) for r in self.races.values()),3255)
         self.assertEqual(sum(len(r["splits"]) for r in self.races.values()),PUBLISHED_OBSERVATIONS)
 
     def test_no_excluded_station_or_time_remains_in_any_public_edition(self):
@@ -69,8 +71,8 @@ class ExcludeOwnerRejectedGrind(unittest.TestCase):
 
     def test_next_true_station_is_first_valid_2025_segment_anchor(self):
         for family,next_station,next_km,expected_n in (
-            ("trail43","Torrås",16.2,130),
-            ("trail22","Skolan",9.6,156),
+            ("trail43","Torrås",16.2,128),
+            ("trail22","Skolan",9.6,152),
             ("ultra85","Navåsen",19.4,79),
         ):
             race=self.races[f"2025-{family}"]

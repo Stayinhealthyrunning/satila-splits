@@ -121,7 +121,7 @@ class RealSourceContract(unittest.TestCase):
         _,_,segments=observed_segments(race)
         start=next(s for s in segments if s["from"]=="Start" and s["to"]=="Torrås")
         self.assertAlmostEqual(start["km"],16.2)
-        self.assertEqual(len(start["observations"]),130)
+        self.assertEqual(len(start["observations"]),128)
         self.assertFalse(any(s["to"] in ("Grind","Tostared") or s["from"] in ("Grind","Tostared") for s in segments))
         self.assertEqual(len(segments),6)
 

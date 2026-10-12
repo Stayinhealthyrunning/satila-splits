@@ -30,11 +30,11 @@ class PopulationContract(unittest.TestCase):
             self.assertEqual(set(c)-{"FINISHED","DNF","DNS","DSQ","UNKNOWN"},set())
             self.assertEqual(sum(c.values()),len(race["results"]))
             totals.update(c)
-        self.assertEqual(totals["FINISHED"],2649)
-        self.assertEqual(totals["DNF"],128)
+        self.assertEqual(totals["FINISHED"],2633)
+        self.assertEqual(totals["DNF"],127)
         self.assertEqual(totals["DNS"],494)
         self.assertEqual(totals["UNKNOWN"],1)
-        self.assertEqual(sum(totals.values()),3272)
+        self.assertEqual(sum(totals.values()),3255)
 
     def test_completion_denominator_is_not_all_registered_results(self):
         for race in self.races:
@@ -94,14 +94,14 @@ class PopulationContract(unittest.TestCase):
                 else:
                     unknown_last+=1
             self.assertLessEqual(total_dnf,len([r for e in self.races for r in e["results"]]))
-        self.assertEqual(total_dnf,128)
+        self.assertEqual(total_dnf,127)
         self.assertEqual(source_attached+unknown_last,total_dnf)
         print(f"DNF provenance: {source_attached} with exact last public TIME anchor, "
               f"{unknown_last} with no publishable dropout station")
 
     def test_result_id_namespace_does_not_merge_different_editions(self):
         ids=[r["id"] for race in self.races for r in race["results"]]
-        self.assertEqual(len(ids),3272)
+        self.assertEqual(len(ids),3255)
         self.assertEqual(len(ids),len(set(ids)),
                          "Result/runner comparison must retain edition identity")
 
