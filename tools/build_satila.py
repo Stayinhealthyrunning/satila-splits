@@ -107,7 +107,14 @@ def parse(root,out,source_cat):
     r={'id':resultid,'source_uid':uid,'name':name,'bib':str(c.get('Startnummer') or ed.get('Startnummer') or ''),'sex':sex,'age':age,'class_name':cl.get('Navn') or '', 'club':club,'status':status,'finish_seconds':tim,'place':pl if isinstance(pl,int) and pl>0 else None}
     db.execute('INSERT OR REPLACE INTO results VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',(resultid,racekey,uid,name,r['bib'],sex,age,r['class_name'],club,status,tim,r['place'],json.dumps({'contestant':c,'entry':ed},ensure_ascii=False)))
     public_resultid=resultid
-    if sanitize_identity(r,privacy_rules):
+    # EQ Timing's explicitly recorded age is accepted only when an integer.
+    # Children never have their name, club, bib or source UID in public JSON.
+    minor=isinstance(age,int) and not isinstance(age,bool) and 0<=age<18
+    if minor:
+     r['name']='Anonym löpare';r['bib']=None;r['club']=None
+     r['age']=None;r['class_name']=None
+     public_resultid=opaque_result_id(racekey,resultid);r['id']=public_resultid;r['source_uid']=None
+    elif sanitize_identity(r,privacy_rules):
      public_resultid=opaque_result_id(racekey,resultid);r['id']=public_resultid;r['source_uid']=None
     rows.append(r)
     prev=-1
