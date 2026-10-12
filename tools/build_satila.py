@@ -8,9 +8,9 @@ import json,re,math,hashlib,argparse,collections,statistics,sqlite3,unicodedata,
 from pathlib import Path
 from datetime import datetime
 try:
- from .privacy import load_rules, sanitize_identity, opaque_result_id
+ from .privacy import load_rules, record_is_suppressed
 except ImportError:
- from privacy import load_rules, sanitize_identity, opaque_result_id
+ from privacy import load_rules, record_is_suppressed
 ROOT=Path(__file__).resolve().parents[1]
 PRIVACY=ROOT/'config'/'privacy-suppressions.json' if Path(__file__).resolve().parent.name=='tools' else Path(__file__).resolve().parent
 FAMS=('ultra85','trail43','trail22')
@@ -106,16 +106,13 @@ def parse(root,out,source_cat):
     pl=(finish.get('Plassering') or {}).get('Total') if status=='FINISHED' else None
     r={'id':resultid,'source_uid':uid,'name':name,'bib':str(c.get('Startnummer') or ed.get('Startnummer') or ''),'sex':sex,'age':age,'class_name':cl.get('Navn') or '', 'club':club,'status':status,'finish_seconds':tim,'place':pl if isinstance(pl,int) and pl>0 else None}
     db.execute('INSERT OR REPLACE INTO results VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',(resultid,racekey,uid,name,r['bib'],sex,age,r['class_name'],club,status,tim,r['place'],json.dumps({'contestant':c,'entry':ed},ensure_ascii=False)))
-    public_resultid=resultid
     # EQ Timing's explicitly recorded age is accepted only when an integer.
-    # Children never have their name, club, bib or source UID in public JSON.
+    # Verified minors and registry-blocked people are omitted from the public
+    # individual data entirely, including linked split observations.
     minor=isinstance(age,int) and not isinstance(age,bool) and 0<=age<18
-    if minor:
-     r['name']='Anonym löpare';r['bib']=None;r['club']=None
-     r['age']=None;r['class_name']=None
-     public_resultid=opaque_result_id(racekey,resultid);r['id']=public_resultid;r['source_uid']=None
-    elif sanitize_identity(r,privacy_rules):
-     public_resultid=opaque_result_id(racekey,resultid);r['id']=public_resultid;r['source_uid']=None
+    if minor or record_is_suppressed(r,privacy_rules,scope=racekey):
+     continue
+    public_resultid=resultid
     rows.append(r)
     prev=-1
     for st in stations:
