@@ -184,8 +184,8 @@ def audit(root):
     for year in expected_years:
         if {ed["family"] for ed in editions if ed["year"] == year} != set(FAMILIES):
             failures.append(f"{year}: one or more core race families missing")
-    if total_results != 3272:
-        failures.append(f"Unexpected results total: {total_results} vs baseline 3272")
+    if total_results != 3255:
+        failures.append(f"Unexpected privacy-safe results total: {total_results} vs baseline 3255")
 
     inventory_file = root / "route-inventory.json"
     inventory = read(inventory_file) if inventory_file.exists() else []

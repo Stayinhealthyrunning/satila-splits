@@ -69,7 +69,7 @@ if __name__=="__main__":
     assert any(x["name"]=="Tostared" and x["km"]==10.2 and x["uid"]==1416266
                for x in target["metadata_only_stations"])
     bridge=next(x for x in target["observed_only_segments"] if x["from"]=="Start" and x["to"]=="Torrås")
-    assert bridge["timing_km"]==16.2 and bridge["valid_exact_time_pairs"]==130, bridge
+    assert bridge["timing_km"]==16.2 and bridge["valid_exact_time_pairs"]==128, bridge
     assert bridge["bypassed_zero_time_stations"]==["Tostared"], bridge
     assert all(s["valid_exact_time_pairs"]>=0 for r in rows for s in r["observed_only_segments"])
     assert len(rows)==27

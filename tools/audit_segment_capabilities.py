@@ -83,7 +83,7 @@ def main():
     for r in report:
         print(f"{r['race_key']} | {r['finishers']} | {r['observed_source_splits']} | {r['analysable_segments']} | {r['median_ready_segments']} | {r['q25_q75_ready_segments']} | {r['q10_q90_ready_segments']} | {r['dual_sex_median_segments']} | {r['pooled_goal_plan_complete']}")
     assert len(report)==27
-    assert sum(r["finishers"] for r in report)==2649
+    assert sum(r["finishers"] for r in report)==2633
     assert all(s["valid_finishers"]<=r["finishers"] for r in report for s in r["segment_capabilities"])
     assert all(s["q10_q90"]<=s["q25_q75"]<=s["field_median"] for r in report for s in r["segment_capabilities"])
     assert all(s["women"]+s["men"]<=s["valid_finishers"] for r in report for s in r["segment_capabilities"])

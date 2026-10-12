@@ -33,7 +33,7 @@ async def assert_full_osm(page,host):
 
 async def main():
  b=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
- assert len(b["editions"])==27 and sum(e["results"] for e in b["editions"])==3272
+ assert len(b["editions"])==27 and sum(e["results"] for e in b["editions"])==3255
  data={"data/bootstrap.json":b,"data/coverage.json":json.loads((ROOT/"data/coverage.json").read_text(encoding="utf-8"))}
  for e in b["editions"]:
   f=ROOT/"data/races"/(e["race_key"]+".json")
@@ -406,5 +406,5 @@ async def main():
    print("PASS browser",width,height,"overflow",overflow,flush=True)
    await page.close()
   await browser.close()
- print("PASS 27 real editions and 3272 result appearances",flush=True)
+ print("PASS 27 real editions and 3255 privacy-safe result appearances",flush=True)
 asyncio.run(main())

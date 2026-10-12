@@ -13,21 +13,21 @@ ROOT=Path(__file__).resolve().parents[1]/"docs"/"data"
 
 GOLDEN={
  "2025-trail43":{
-   "results":163,"finishers":135,"median_finish":17986.43,
+   "results":161,"finishers":133,"median_finish":17986.43,
    "segments":[
-    ("Start","Torrås",16.2,130,6392.97,29,101),
-    ("Torrås","Almered",7.8,130,2580.25,29,101),
-    ("Almered","Skolan",7.0,133,2857.27,32,101),
-    ("Skolan","Ramhulta",6.0,134,2739.52,32,102),
-    ("Ramhulta","Smälteryd",4.5,133,2653.66,32,101),
-    ("Smälteryd","Mål",1.5,133,521.45,32,101)]},
+    ("Start","Torrås",16.2,128,6392.97,29,99),
+    ("Torrås","Almered",7.8,128,2580.25,29,99),
+    ("Almered","Skolan",7.0,131,2857.27,32,99),
+    ("Skolan","Ramhulta",6.0,132,2746.84,32,100),
+    ("Ramhulta","Smälteryd",4.5,131,2653.66,32,99),
+    ("Smälteryd","Mål",1.5,131,521.49,32,99)]},
  "2025-trail22":{
-   "results":190,"finishers":160,"median_finish":8828.25,
+   "results":186,"finishers":156,"median_finish":8828.25,
    "segments":[
-    ("Start","Skolan",9.6,156,3513.975,47,109),
-    ("Skolan","Ramhulta",6.7,156,2402.13,47,109),
-    ("Ramhulta","Smälteryd",4.2,156,2403.905,46,110),
-    ("Smälteryd","Mål",1.5,156,505.39,46,110)]},
+    ("Start","Skolan",9.6,152,3514.935,47,105),
+    ("Skolan","Ramhulta",6.7,152,2402.13,47,105),
+    ("Ramhulta","Smälteryd",4.2,152,2403.905,46,106),
+    ("Smälteryd","Mål",1.5,152,505.39,46,106)]},
  "2025-ultra85":{
    "results":99,"finishers":79,"median_finish":44118.96,
    "segments":[
@@ -96,7 +96,7 @@ class GoldenAggregateRegression(unittest.TestCase):
 
     def test_golden_cases_encode_known_method_edges(self):
         t=GOLDEN["2025-trail43"]["segments"]
-        self.assertIn(("Start","Torrås",16.2,130,6392.97,29,101),t)
+        self.assertIn(("Start","Torrås",16.2,128,6392.97,29,99),t)
         self.assertFalse(any("Grind" in x[:2] for group in GOLDEN.values() for x in group["segments"]))
         sparse=[x for x in GOLDEN["2023-trail43"]["segments"] if x[3]==8]
         self.assertEqual(len(sparse),2)
