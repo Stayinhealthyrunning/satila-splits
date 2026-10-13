@@ -1,20 +1,11 @@
-# Sätila EQ Timing – permanent source archive
+# Sätila source archive – privacy and retention notice
 
-The canonical public reconstruction input is `satila-eqtiming-full-source-2026-10-01.zip` (to be uploaded alongside this README).
+**2026-10-13 security correction:** A former workflow stored a complete 422-file EQ Timing reconstruction archive as a ZIP in this **public** GitHub repository. Keeping it outside `docs/` excluded it from GitHub Pages, but **did not make it private**.
 
-- Source: GitHub Actions run `36818159977`, artifact ID `11142571759`, created 2026-10-01.
-- This ZIP retains **all 422 files from `eqtiming-full/`**, for the years 2016–2019 and 2021–2025, and adds `SOURCE_MANIFEST.json` with per-file SHA-256 and byte counts.
-- Committed ZIP size (Actions-generated): **5,181,913 bytes**.
-- Committed ZIP SHA-256 (Actions-generated): `25b28550ea4b5ae1f2464f150ba8a16439b8cec4e9d9b1b4168d7dba4b288217`. The independently repackaged downloadable copy has identical 422 source members but different ZIP container bytes (SHA-256 `868770e34d892e6dbf792e3d04ee7848cc977fc236aee068d74eb936b00c7dc4`).
-- The original temporary artifact also included 138 ancillary `eqtiming/` browser/network traces. They are **not** part of the reconstruction database and include access/connection negotiation tokens; they must not be committed publicly.
-- The archive is stored outside `docs/` and is not a GitHub Pages site asset. Do not put personal access credentials or other non-race technical traces here.
+The source ZIP and its public republishing workflow have been removed from the current branch. This is a **current-tree exposure reduction only**: prior Git commits, forks, GitHub caches, and previously downloaded copies may still contain the file. Do not describe the archive as fully deleted or the incident as closed.
 
-## Validation
+The original temporary GitHub Actions artifact is `satila-eqtiming-raw-36818159977` (run `36818159977`, artifact ID `11142571759`, expiry `2026-10-31T05:09:48Z`). Issue [#6](https://github.com/Stayinhealthyrunning/satila-splits/issues/6) tracks preservation to a **private, access-controlled** storage location, encrypted backup and restoration verification, ideally before October 25. Do **not** recommit the raw archive, source contestant JSON, network/browser traces or other original personal records to a public repo.
 
-```bash
-python -c "import hashlib,pathlib; p=pathlib.Path('data/source-archive/satila-eqtiming-full-source-2026-10-01.zip'); print(p.stat().st_size,hashlib.sha256(p.read_bytes()).hexdigest())"
-```
+A later history purge or external-cache takedown needs a verified private backup and coordinated admin review first. Force-rewriting public Git history may invalidate clones, tags and release references and is **not** performed in this correction.
 
-Expected for committed ZIP: `5181913 25b28550ea4b5ae1f2464f150ba8a16439b8cec4e9d9b1b4168d7dba4b288217`.
-
-Then unpack the archive in a temporary directory and inspect `SOURCE_MANIFEST.json`. Do not replace the published, sanitized `docs/data/` with unprocessed source files.
+The existing participant GPX/source package in this directory is separate and requires an independent provenance, redistribution-rights and privacy review. The sanitized `docs/data/` files remain the only intended publicly served race results.
