@@ -45,7 +45,7 @@ def normalized_sex(athlete, race_class):
  return None if athlete_sex and class_sex and athlete_sex != class_sex else athlete_sex or class_sex
 
 def parse(root,out,source_cat):
- privacy_rules=load_rules(PRIVACY)
+ privacy_rules=load_rules(PRIVACY, require_private=True)
  events=load(source_cat)['events'];catalog=[];history=[];samples=[];coverage=[];archive_hashes={};(out/'satila.sqlite').unlink(missing_ok=True);db=sqlite3.connect(str(out/'satila.sqlite'));db.executescript('''
  CREATE TABLE IF NOT EXISTS editions(race_key TEXT PRIMARY KEY,year INT,leg_uid INT,event_id INT,family TEXT,name TEXT,source_distance REAL,source TEXT);
  CREATE TABLE IF NOT EXISTS results(result_id TEXT PRIMARY KEY,race_key TEXT,entrant_uid INT,name TEXT,bib TEXT,sex TEXT,age INT,class TEXT,club TEXT,status TEXT,finish_seconds REAL,place INT,raw_json TEXT,FOREIGN KEY(race_key) REFERENCES editions(race_key));
