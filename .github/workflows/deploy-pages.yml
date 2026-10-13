@@ -10,6 +10,10 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'config/privacy-suppressions.json'
+      - 'tools/privacy.py'
+      - 'tools/remove_protected_public_results.py'
+      - 'tools/build_satila.py'
       - '.github/workflows/deploy-pages.yml'
 
 permissions:
