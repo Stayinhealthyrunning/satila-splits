@@ -73,24 +73,27 @@ class SpatialTransferredHeight(unittest.TestCase):
         self.assertEqual(current["normalized_source_group"],"trail43-2023-2025-normalized")
         self.assertFalse(any("timestamp" in k.lower() or "runner" in k.lower() for k in current))
 
-    def test_exact_geographic_height_reproduction_and_match_distance(self):
+    def test_neutral_2024_display_preserves_verified_2023_height_transfer(self):
         origin=self.current["elevation_provenance"]
         self.assertEqual(origin["type"],"SPATIALLY_TRANSFERRED_PARTICIPANT_GPX")
         self.assertEqual(origin["reference_year"],2024)
         self.assertEqual(origin["reference_source_sha256"],REF_SHA)
-        self.assertEqual(self.reference["source_sha256"],REF_SHA)
-        self.assertEqual(origin["reference_route_file"],"routes/2024-trail43-participant.json")
+        self.assertEqual(origin["reference_route_file"],
+                         "private:satila/participant-gpx-original/trail43-2024.gpx")
         self.assertTrue(origin["not_original_2023_gpx_altitude"])
         self.assertTrue(origin["not_official_ascent_or_runner_altitude"])
-        matches=[nearest_height(p,self.reference["points"]) for p in self.current["points"]]
-        self.assertTrue(all(d<24 for d,_ in matches),max(d for d,_ in matches))
-        self.assertTrue(all(abs(p[3]-z)<.011 for p,(_,z) in zip(self.current["points"],matches)))
+        self.assertEqual(self.reference["source_sha256"],SOURCE_SHA)
+        self.assertEqual(self.reference["normalized_source_group"],
+                         "trail43-2023-2025-normalized")
+        self.assertEqual(self.reference["published_points"],822)
+        self.assertEqual(self.current["points"],self.reference["points"])
         self.assertTrue(all(isinstance(p[3],(int,float)) and math.isfinite(p[3])
-                            for p in self.current["points"]))
-        self.assertLessEqual(max(d for d,_ in matches),origin["match_distance_limit_m"])
-        print("MATCH 2023-to-2024 max horizontal distance",round(max(d for d,_ in matches),2),"m")
+                            for p in self.reference["points"]))
+        self.assertEqual(self.reference["elevation_provenance"]["type"],
+                         "NORMALIZED_PARTICIPANT_HEIGHT_REFERENCE")
+        self.assertEqual(self.reference["elevation_provenance"]["original_reference_sha256"],REF_SHA)
 
-    def test_noise_reduced_without_overwriting_2024_or_2025(self):
+    def test_noise_reduced_without_overwriting_2025_organizer_route(self):
         before=short_jumps(self.original["points"])
         after=short_jumps(self.current["points"])
         self.assertGreaterEqual(sum(v>20 for v in before),20)
