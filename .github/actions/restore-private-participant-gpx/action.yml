@@ -1,0 +1,45 @@
+name: Restore private original Sätila 43 km GPX
+description: Restore exactly five verified participant files from the private repository
+inputs:
+  app-id:
+    description: GitHub App ID with read permission only on private sources
+    required: true
+  private-key:
+    description: GitHub App private key
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Require private source credentials
+      shell: bash
+      env:
+        SOURCE_APP_ID: ${{ inputs.app-id }}
+        SOURCE_APP_PRIVATE_KEY: ${{ inputs.private-key }}
+      run: |
+        set -euo pipefail
+        test -n "$SOURCE_APP_ID" || { echo "Private source app credentials missing; source QA stopped"; exit 1; }
+        test -n "$SOURCE_APP_PRIVATE_KEY" || { echo "Private source app credentials missing; source QA stopped"; exit 1; }
+    - name: Create short-lived private source read token
+      id: source-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: Stayinhealthyrunning
+        repositories: loppanalys-private-data
+    - name: Checkout only Sätila original GPX from private repository
+      uses: actions/checkout@v4
+      with:
+        repository: Stayinhealthyrunning/loppanalys-private-data
+        token: ${{ steps.source-token.outputs.token }}
+        persist-credentials: false
+        path: .private-source
+        sparse-checkout: |
+          satila/participant-gpx-original
+    - name: Restore and verify exactly five original GPX
+      shell: bash
+      run: python3 tools/restore_private_43_gpx.py --private-root .private-source
+    - name: Always erase private checkout
+      if: ${{ always() }}
+      shell: bash
+      run: rm -rf -- .private-source

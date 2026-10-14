@@ -18,3 +18,8 @@ test-results/
 data/derived/
 data/work/
 data/private/
+
+# Private restore checkout and original participant GPX must never be recommitted
+.private-source/
+/data/participant-gpx/trail43-202*.gpx
+/data/source-archive/*.zip
