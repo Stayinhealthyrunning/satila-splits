@@ -1,6 +1,6 @@
 # 43 km owner GPX source and reconstructed normalized route families
 
-The exact five original Suunto GPX uploads, one per race day (2021–2025), are preserved at `data/participant-gpx/trail43-YYYY.gpx`. They are original race-day **participant recordings**, not official organizer files. The project owner explicitly approved storing these original personal GPX publicly. No Sports Tracker export URLs or session tokens are committed.
+The exact five original Suunto GPX uploads, one per race day (2021–2025), are original **participant recordings**, not organizer files. Their byte-identical originals are now retained in the restricted `loppanalys-private-data/satila/participant-gpx-original/` archive. Historical copies currently remain reachable in public Git and require a separate history and cache cleanup; do not recommit or republish them. No Sports Tracker export URLs or session tokens are committed.
 
 ## Restored routes
 
@@ -21,6 +21,6 @@ Run `python tools/rebuild_owner_normalized_43.py` (requires `numpy` and `scipy`)
 
 ### Publication policy
 
-Three previously missing year-specific maps (2021–2023) are published as `docs/data/routes/YYYY-trail43-participant.json`, linked from the year catalog and coverage. The already accepted **2024 real participant route** and **2025 organizer-assumed route** remain the active display assets. The consensus normalizations are separately retained as accepted course-family evidence for both 2024 and 2025.
+Three previously missing year-specific maps (2021–2023) are published as `docs/data/routes/YYYY-trail43-participant.json`, linked from the year catalog and coverage. The 2024 display has been replaced with the neutral **2023–2025 normalized route-family corridor** (822 points, 41.873734 km), while keeping the 2023 approved smoothed elevation presentation. The **2025 organizer-assumed route** remains its active display asset. The consensus normalizations are separately retained as accepted course-family evidence for both 2024 and 2025.
 
 Neither GPX geodesic length nor an interpolated map cursor becomes an official timing axis. A runner's segment analysis still uses only valid observed EQ Timing endpoint TIME pairs; missing checkpoint observations are not fabricated.

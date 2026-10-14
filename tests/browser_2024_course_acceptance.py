@@ -52,12 +52,12 @@ async def main():
             await page.add_script_tag(content=js)
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             await page.locator("#year-select").select_option("2024")
-            await page.wait_for_function("document.querySelector('#course-source').textContent.includes('Verifierat deltagar-GPX för 2024')")
+            await page.wait_for_function("document.querySelector('#course-source').textContent.includes('Normaliserad deltagarbaserad bana för 2024')")
             assert "43 km · 2024" in await page.locator("#race-title").inner_text()
             assert await page.locator("#course-map .simple-route-line").count()==0
             assert await page.locator("#course-map .route-base").count()==1,(width,"map missing")
             assert await page.locator("#course-elevation svg line[stroke]").count()>1,(width,"colored elevation segments missing")
-            assert "DELTAGARSPÅR" in await page.locator("#course-map .map-label").first.text_content()
+            assert "NORMALISERAD DELTAGARBANA" in await page.locator("#course-map .map-label").first.text_content()
             assert await page.locator("#course-map [data-map-hit]").count()==1
             assert await page.locator("#course-elevation [data-elev-hit]").count()==1
             assert not await page.evaluate("window.__missing||[]"),(width,await page.evaluate("window.__missing"))
@@ -70,7 +70,7 @@ async def main():
             assert not errors,(width,errors)
             await page.close()
         await browser.close()
-    print("PASS 2024/43 real participant GPS shows map and elevation at desktop/mobile with 750 accepted TIME observations (100 nonofficial Grind excluded; raw source retained)")
+    print("PASS 2024/43 neutral normalized participant corridor shows map and elevation at desktop/mobile with 750 accepted TIME observations (100 nonofficial Grind excluded; raw source retained)")
 
 if __name__=="__main__":
     asyncio.run(main())

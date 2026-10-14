@@ -20,7 +20,7 @@ async def main():
         fixtures["data/races/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
     for p in (ROOT/"data/routes").glob("*.json"):
         fixtures["data/routes/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
-    expected={2021:1090,2022:1090,2023:822,2024:1018,2025:1380}
+    expected={2021:1090,2022:1090,2023:822,2024:822,2025:1380}
     for year in YEARS:
         edition=editions[f"{year}-trail43"]
         route=fixtures["data/"+edition["route_file"]]
@@ -30,7 +30,7 @@ async def main():
             assert route["type"]=="VERIFIED_PARTICIPANT"
         else:
             assert route["type"]=="OFFICIAL_ORGANIZER"
-        if year in (2021,2022,2023):
+        if year in (2021,2022,2023,2024):
             assert route["normalized_source_group"]==("trail43-2021-2022-normalized" if year<=2022 else "trail43-2023-2025-normalized")
     markup=(ROOT/"index.html").read_text(encoding="utf-8")
     markup=re.sub(r"<link [^>]*>","",markup)
@@ -84,8 +84,6 @@ async def main():
                     assert "Överförd GPX-höjd (2024)" in label_text,(width,year,label_text)
                     assert "Inte originalhöjd från 2023" in label_text,(width,year,label_text)
                     assert "överförd från 2024" in note,(width,year,note)
-                elif year==2024:
-                    assert "DELTAGARSPÅR" in label,(width,year,label)
                 elif year==2025:
                     assert "ARRANGÖRSRUTT" in label,(width,year,label)
                 route=fixtures["data/"+editions[f"{year}-trail43"]["route_file"]]

@@ -48,8 +48,9 @@ class RestoredOriginals(unittest.TestCase):
     self.assertEqual(coverage[key]["route_sha256"],route["source_sha256"],key)
     self.assertEqual(inventory[key]["source_sha256"],route["source_sha256"],key)
    else:self.assertEqual(route["type"],"OFFICIAL_ORGANIZER",key)
-  # The 2024 year-scoped recorded route and 2025 organizer route remain intact.
+  # 2024 is now a year-scoped normalized, neutral route; 2025 organizer unchanged.
   self.assertEqual(editions["2024-trail43"]["route_file"],"routes/2024-trail43-participant.json")
+  self.assertEqual(read(DATA/"routes/2024-trail43-participant.json")["normalized_source_group"],"trail43-2023-2025-normalized")
   self.assertEqual(editions["2025-trail43"]["route_file"],"routes/trail43-2025-2026.json")
  def test_no_source_timing_rows_changed(self):
   allr=[read(p) for p in (DATA/"races").glob("*.json")]
