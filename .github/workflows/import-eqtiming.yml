@@ -18,6 +18,10 @@ permissions:
   contents: read
 jobs:
   import:
+    # PRIVACY HOLD: this legacy job packages unfiltered EQ Timing participant sources
+    # into a public-repository Actions artifact. Resume only after private-source
+    # writer/storage and GDPR gates are implemented and reviewed.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
