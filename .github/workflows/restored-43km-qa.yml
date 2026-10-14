@@ -13,6 +13,8 @@ on:
       - 'tools/rebuild_owner_normalized_43.py'
       - 'tests/test_restored_43km_gpx.py'
       - '.github/workflows/restored-43km-qa.yml'
+      - '.github/actions/restore-private-participant-gpx/**'
+      - 'tools/restore_private_43_gpx.py'
 permissions:
   contents: read
 jobs:
@@ -21,6 +23,11 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Restore exact owner GPX from private archive
+        uses: ./.github/actions/restore-private-participant-gpx
+        with:
+          app-id: ${{ secrets.LOPPANALYS_SOURCE_APP_ID }}
+          private-key: ${{ secrets.LOPPANALYS_SOURCE_APP_PRIVATE_KEY }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
