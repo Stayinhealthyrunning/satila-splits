@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   verify-and-import:
+    # Disabled: legacy workflow required a raw ZIP tracked publicly.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
