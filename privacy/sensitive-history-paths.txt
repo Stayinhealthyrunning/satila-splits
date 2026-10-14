@@ -1,0 +1,6 @@
+data/participant-gpx/trail43-2021.gpx
+data/participant-gpx/trail43-2022.gpx
+data/participant-gpx/trail43-2023.gpx
+data/participant-gpx/trail43-2024.gpx
+data/participant-gpx/trail43-2025.gpx
+data/source-archive/satila-43km-source-and-normalized-2021-2025.zip
