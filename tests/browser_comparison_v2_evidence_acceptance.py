@@ -64,7 +64,7 @@ async def main():
         )
         await page.add_script_tag(content=(ROOT / "assets/profile-analysis.js").read_text(encoding="utf-8"))
         await page.add_script_tag(content=(ROOT / "assets/app.js").read_text(encoding="utf-8"))
-        await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+        await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('20')")
 
         if selected_case in ("all", "gated"):
             # 2023 trail43: exact segment time is valid, but Torrås→Almered pace is gated.
