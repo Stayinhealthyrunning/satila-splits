@@ -48,6 +48,23 @@ async def main():
                 }""",fixtures)
                 await page.add_script_tag(content=js)
                 await page.wait_for_function("document.querySelector('#source-indicator').textContent.includes('Verifierat EQ Timing')")
+                # An ordinary first visit (no URL year, no hash or saved state)
+                # must select the latest published edition. The 2026 release
+                # explicitly requires 2026 for all three families.
+                expected_latest=max(ed["year"] for ed in catalog["editions"])
+                if len(catalog["editions"])==30:
+                    assert expected_latest==2026,"Published 2026 edition missing"
+                assert await page.locator("#year-select").input_value()==str(expected_latest),(width,"default year")
+                assert f"43 km · {expected_latest}" in await page.locator("#race-title").inner_text(),(width,"default family")
+                for family,km in (("ultra85","85"),("trail22","22"),("trail43","43")):
+                    await page.locator(f'[data-family="{family}"]').click()
+                    await page.wait_for_function("""a=>{
+                      const title=document.querySelector('#race-title')?.textContent||'';
+                      return document.querySelector('#year-select')?.value===String(a.year) &&
+                             title.includes(a.km+' km · '+a.year) &&
+                             (document.querySelector('#source-indicator')?.textContent||'').includes('Verifierat EQ Timing');
+                    }""",arg={"year":expected_latest,"km":km},timeout=15000)
+                print("PASS first-visit latest default",expected_latest,"for all three families:",width,height,flush=True)
                 visited=[]
                 for family in ("ultra85","trail43","trail22"):
                     await page.locator('[data-family="'+family+'"]').click()
