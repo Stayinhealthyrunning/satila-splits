@@ -92,7 +92,7 @@ async def main():
                         f'#course-elevation [data-aid-elevation="{name}"]').count() == 1, (
                         width, name, "missing elevation marker")
                     assert str(round(official, 1)).replace(".", ",") in (
-                        await marker.locator("title").inner_text()), name
+                        await marker.locator("title").text_content()), name
 
                 # Show a real published finisher's personal 2026 replay.
                 await page.locator("#runner-search").fill(runner["name"])
