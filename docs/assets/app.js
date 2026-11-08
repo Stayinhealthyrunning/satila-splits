@@ -451,7 +451,36 @@ function focusSelectedSegmentOnCourse(){
 }
 function renderCourse(){renderCourseMap();renderPlan()}
 function routePoints(){return S.route?.points||[]}
-function timingToRouteKm(timingKm,points=routePoints()){const total=points.at(-1)?.[0],timingTotal=S.race?.nominal_km;if(!num(total)||!num(timingTotal)||timingTotal<=0)return 0;return Math.max(0,Math.min(total,Number(timingKm)/timingTotal*total))}
+// Public display-only depot positions: organizer distances plus five manual
+// 2026 FIT laps snapped to the immutable official GPX. EQ TIME is unchanged.
+function ultraAidStations(){return S.race?.race_key==='2026-ultra85'&&S.route?.type==='OFFICIAL_ORGANIZER'&&Array.isArray(S.route.aid_stations)?S.route.aid_stations:[]}
+function timingToRouteKm(timingKm,points=routePoints()){
+  const total=points.at(-1)?.[0],timingTotal=S.race?.nominal_km;
+  if(!num(total)||!num(timingTotal)||timingTotal<=0||!num(Number(timingKm)))return 0;
+  const aids=ultraAidStations().filter(a=>num(a.timing_km)&&num(a.route_km));
+  if(aids.length){
+    const anchors=[{timing_km:0,route_km:0},...aids,{timing_km:timingTotal,route_km:total}].sort((a,b)=>a.timing_km-b.timing_km);
+    const t=Math.max(0,Math.min(timingTotal,Number(timingKm)));
+    for(let i=1;i<anchors.length;i++){
+      const from=anchors[i-1],to=anchors[i];
+      if(t<=to.timing_km)return from.route_km+(to.route_km-from.route_km)*(t-from.timing_km)/Math.max(1e-6,to.timing_km-from.timing_km);
+    }
+    return total;
+  }
+  return Math.max(0,Math.min(total,Number(timingKm)/timingTotal*total));
+}
+function routeProjectedXY(pts,path,km){
+  let idx=1;while(idx<pts.length-1&&pts[idx][0]<km)idx++;
+  const a=pts[idx-1],b=pts[idx],f=Math.max(0,Math.min(1,(km-a[0])/Math.max(1e-7,b[0]-a[0])));
+  return [path[idx-1][0]+(path[idx][0]-path[idx-1][0])*f,path[idx-1][1]+(path[idx][1]-path[idx-1][1])*f];
+}
+function officialAidSvg(pts,path){
+  return ultraAidStations().map(a=>{
+    const [x,y]=routeProjectedXY(pts,path,a.route_km);
+    const source=a.position_basis==='official_advertised_distance_only'?'ungefärlig placering efter arrangörens distans':'GPS-verifierad depå på arrangörens GPX';
+    return `<circle class="aid-route-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="4" fill="#fff" stroke="#a45c12" stroke-width="2"><title>${html(a.name)} · ${fmtKm(a.official_km)} km · ${source}</title></circle>`;
+  }).join('');
+}
 function elevationSegmentRanges(points=routePoints()){const bs=boundaries();return bs.slice(1).map((to,index)=>{const from=bs[index],start=timingToRouteKm(from.km,points),end=timingToRouteKm(to.km,points);return {index,from,to,start,end,label:`${from.name} → ${to.name}`}}).filter(s=>s.end>s.start)}
 function mapProjection(points,W,H,pad=17){
  const radians=value=>Number(value)*Math.PI/180,merc=lat=>Math.log(Math.tan(Math.PI/4+radians(Math.max(-85,Math.min(85,lat)))/2)),xs=points.map(p=>radians(p[2])),ys=points.map(p=>merc(p[1])),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys),scale=Math.min((W-pad*2)/Math.max(1e-9,xmax-xmin),(H-pad*2)/Math.max(1e-9,ymax-ymin)),ox=(W-(xmax-xmin)*scale)/2,oy=(H-(ymax-ymin)*scale)/2;
@@ -503,7 +532,7 @@ function activateSegment(index){selectAdjacentSegment(index);focusSelectedSegmen
 function attachElevation(host,pts,callback){if(S.route?.elevation_provenance?.type==='DSM_RECONSTRUCTED_SURFACE'&&!$('.worlddem-attribution',host))host.insertAdjacentHTML('beforeend','<p class="muted small elevation-source-note worlddem-attribution">Copernicus WorldDEM-30 · rekonstruerad ythöjd; inte uppmätt löparhöjd eller officiella höjdmeter.</p>');let el=$('[data-elev-hit]',host);if(!el)return;const svg=el.ownerSVGElement,md=pts.at(-1)[0];function kmAt(e){const box=svg.getBoundingClientRect(),view=svg.viewBox.baseVal,width=view?.width||780,height=view?.height||135,left=view?.x||0,scale=Math.min(box.width/width,box.height/height),insetX=(box.width-width*scale)/2,x=left+(e.clientX-box.left-insetX)/Math.max(.0001,scale),hitLeft=Number(el.getAttribute('x'))||17,hitWidth=Number(el.getAttribute('width'))||(width-34);return Math.max(0,Math.min(md,(x-hitLeft)/hitWidth*md))}function seek(e){callback(kmAt(e))}el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);seek(e)});svg.addEventListener('pointermove',seek);el.addEventListener('click',e=>{if(!e.detail)return;const hit=elevationSegmentRanges(pts).find(s=>kmAt(e)>=s.start&&kmAt(e)<=s.end);if(hit)activateSegment(hit.index)});el.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();let d=Number(el.getAttribute('aria-valuenow'))||0,d2=e.key==='Home'?0:e.key==='End'?md:d+(e.key==='ArrowLeft'?-md/100:md/100);callback(Math.max(0,Math.min(md,d2)))}});$$('[data-elev-segment]',host).forEach(node=>{const go=e=>{e.preventDefault();e.stopPropagation();activateSegment(+node.dataset.elevSegment)};node.addEventListener('pointerdown',go);node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){go(e)}})})}
 function renderCourseMap(){let host=$('#course-map'),height=$('#course-elevation'),pts=routePoints();if(!pts.length){host.innerHTML=empty('Ingen godkänd lokal ruttskiss är registrerad för den historiska upplagan. Resultatanalysen är ändå komplett.');height.innerHTML='';$('#course-scrub-label').textContent='Ingen rutt kopplad till denna upplaga.';return}let {W,H}=mapViewport(host,340),path=project(pts,W,H,20),d=Number.isFinite(S.courseD)?S.courseD:0,mark=pointAtDistance(pts,d),midx=project(mark?[mark]:[pts[0]],W,H,20)[0]; // mark projected on same immutable bounds below
 let idx=1;while(idx<pts.length-1&&pts[idx][0]<d)idx++;let a=pts[idx-1],b=pts[idx],f=(d-a[0])/Math.max(1e-7,b[0]-a[0]),px=path[idx-1][0]+(path[idx][0]-path[idx-1][0])*f,py=path[idx-1][1]+(path[idx][1]-path[idx-1][1])*f;
-host.innerHTML=svg(W,H,`${osmTiles(pts,W,H,20)}<path class="route-base" d="${pathFor(path)}"/><path class="route-gold" d="${pathFor(path)}"/><circle class="map-crosshair" cx="${px}" cy="${py}" r="7"/><text class="map-label" x="25" y="27">SÄTILA · ${S.route?.normalized_source_group?'NORMALISERAD DELTAGARBANA':S.route?.type==='VERIFIED_PARTICIPANT'?'DELTAGARSPÅR':'ARRANGÖRSRUTT'}</text><text class="map-label" x="25" y="${H-18}">${fmtKm(d)} / ${fmtKm(pts.at(-1)[0])} km</text><rect data-map-hit="course" x="0" y="0" width="${W}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-label="Välj position på banan" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}"/>`,'Interaktiv OpenStreetMap-bakgrund med faktisk GPX-form')+osmAttribution();height.innerHTML=elevationSvg(pts,d);let seek=n=>{
+host.innerHTML=svg(W,H,`${osmTiles(pts,W,H,20)}<path class="route-base" d="${pathFor(path)}"/><path class="route-gold" d="${pathFor(path)}"/>${officialAidSvg(pts,path)}<circle class="map-crosshair" cx="${px}" cy="${py}" r="7"/><text class="map-label" x="25" y="27">SÄTILA · ${S.route?.normalized_source_group?'NORMALISERAD DELTAGARBANA':S.route?.type==='VERIFIED_PARTICIPANT'?'DELTAGARSPÅR':'ARRANGÖRSRUTT'}</text><text class="map-label" x="25" y="${H-18}">${fmtKm(d)} / ${fmtKm(pts.at(-1)[0])} km</text><rect data-map-hit="course" x="0" y="0" width="${W}" height="${H}" fill="transparent" role="slider" tabindex="0" aria-label="Välj position på banan" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}"/>`,'Interaktiv OpenStreetMap-bakgrund med faktisk GPX-form')+osmAttribution();height.innerHTML=elevationSvg(pts,d);let seek=n=>{
   // Keep the current SVG and its captured pointer in place while scrubbing.
   // Rebuilding either SVG during pointerdown detaches the hit target and makes
   // a later mouse click or keyboard activation intermittently fail.
@@ -739,7 +768,7 @@ function runnerAnchors(r){
   const stations=S.race.stations.filter(st=>st.is_analysis_boundary&&num(st.km)&&st.km>0&&st.km<=S.race.nominal_km).sort((a,b)=>a.km-b.km);
   const raw=[{km:0,t:0,name:'Start',mode:'observed',station:null}];
   for(const st of stations){
-    const obs=observed(r,st),last=raw.at(-1),km=Math.min(endKm,st.km*factor);
+    const obs=observed(r,st),last=raw.at(-1),km=timingToRouteKm(st.km);
     if(obs&&num(obs.elapsed_seconds)&&obs.elapsed_seconds>last.t&&km>last.km+1e-6)
       raw.push({km,t:obs.elapsed_seconds,name:st.name,mode:'observed',station:st});
   }
@@ -751,9 +780,9 @@ function runnerAnchors(r){
   const all=[raw[0]];
   for(let i=1;i<raw.length;i++){
     const from=raw[i-1],to=raw[i];
-    const missing=stations.filter(st=>st.km*factor>from.km+1e-5&&st.km*factor<to.km-1e-5);
+    const missing=stations.filter(st=>timingToRouteKm(st.km)>from.km+1e-5&&timingToRouteKm(st.km)<to.km-1e-5);
     if(!missing.length){all.push(to);continue}
-    const boundaries=[from,...missing.map(st=>({km:st.km*factor,station:st,name:st.name})),to];
+    const boundaries=[from,...missing.map(st=>({km:timingToRouteKm(st.km),station:st,name:st.name})),to];
     const peers=[];
     for(const peer of records().filter(finish)){
       if(peer.id===r.id)continue;
@@ -777,11 +806,27 @@ function runnerAnchors(r){
     let elapsed=from.t;
     for(let j=0;j<missing.length;j++){
       elapsed+=(to.t-from.t)*shares[j]/total;
-      all.push({km:missing[j].km*factor,t:elapsed,name:missing[j].name,mode:'cohort_estimate',referenceCount:cohort.length});
+      all.push({km:timingToRouteKm(missing[j].km),t:elapsed,name:missing[j].name,mode:'cohort_estimate',referenceCount:cohort.length});
     }
     all.push(to); // exact observed endpoint preserved, with no drift
   }
-  return all;
+  const aid=ultraAidStations();
+  if(!aid.length)return all;
+  // Unmeasured depots are visual-only checkpoints. Their illustrative
+  // playback time is never emitted as a source observation or statistic.
+  const display=[all[0]];
+  for(let i=1;i<all.length;i++){
+    const from=all[i-1],to=all[i];
+    for(const stop of aid){
+      if(stop.route_km>from.km+1e-5&&stop.route_km<to.km-1e-5){
+        const f=(stop.route_km-from.km)/(to.km-from.km);
+        display.push({km:stop.route_km,t:from.t+(to.t-from.t)*f,name:stop.name,mode:'illustrative_aid_position',station:null});
+      }
+    }
+    const match=aid.find(stop=>num(stop.timing_km)&&Math.abs(timingToRouteKm(stop.timing_km)-to.km)<1e-5);
+    display.push(match?{...to,name:match.name}:to);
+  }
+  return display;
 }
 function estimatedAt(anchors,d){if(!anchors?.length)return null;d=Math.max(0,d);if(d>anchors.at(-1).km+1e-6)return null;for(let i=1;i<anchors.length;i++){let a=anchors[i-1],b=anchors[i];if(d>=a.km&&d<=b.km){let f=(d-a.km)/Math.max(1e-6,b.km-a.km);return a.t+(b.t-a.t)*f}}return d===0?0:null}
 function drawSimpleRoute(host,pts,d,markers=null,cameraDistance=d){
@@ -796,7 +841,7 @@ function drawSimpleRoute(host,pts,d,markers=null,cameraDistance=d){
   if(routeSvg&&Math.abs(Number(routeSvg.dataset.fullMapWidth||W)-W)>2){routeSvg.remove();host.querySelectorAll('.osm-attribution').forEach(node=>node.remove());routeSvg=null;hit=null}
   if(!routeSvg){
     const markerSvg=Array.isArray(markers)?markers.map((marker,i)=>`<circle data-runner-marker="${i}" r="6" fill="${marker.color}" fill-opacity=".72" stroke="#173b2a" stroke-width="1.5" stroke-opacity=".82"><title>${html(marker.label)}</title></circle>`).join(''):'';
-    host.insertAdjacentHTML('beforeend',svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/><circle data-route-cursor r="5" fill="#d4a858" stroke="#173b2a" stroke-width="1" opacity=".65"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Interaktiv GPX-rutt över OpenStreetMap')+osmAttribution());
+    host.insertAdjacentHTML('beforeend',svg(W,H,`${osmTiles(pts,W,H,18)}<path class="simple-route-base" d="${pathFor(path)}"/><path class="simple-route-line" d="${pathFor(path)}"/>${officialAidSvg(pts,path)}<circle data-route-cursor r="5" fill="#d4a858" stroke="#173b2a" stroke-width="1" opacity=".65"/>${markerSvg}<rect data-local-hit x="0" y="0" width="${W}" height="${H}" fill="transparent" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${pts.at(-1)[0]}" aria-valuenow="${d}" aria-label="Sök i kartan"/>`,'Interaktiv GPX-rutt över OpenStreetMap')+osmAttribution());
     routeSvg=host.querySelector('svg');routeSvg.dataset.fullMapWidth=String(W);hit=host.querySelector('[data-local-hit]');
     const seek=event=>{
       const rect=routeSvg.getBoundingClientRect(),box=routeSvg.viewBox.baseVal;
