@@ -57,6 +57,20 @@ def require_private_source_build_output(out):
   raise RuntimeError('Private source build required: --out must be outside the public Git repository (raw satila.sqlite contains participant information)')
  return target
 
+def private_match_record(public_row, contestant, entry_uid):
+ """Pass exact source identifiers only to private registry matching.
+
+ These helper fields must NEVER be included in race JSON or public SQLite
+ exports. Protected-name collisions with approved source IDs are evaluated
+ without weakening suppression: a match still removes the entire row.
+ """
+ candidate = dict(public_row)
+ candidate["source_result_id"] = str(entry_uid)
+ contestant_uid = contestant.get("UID")
+ if contestant_uid not in (None, ""):
+  candidate["public_contestant_uid"] = str(contestant_uid)
+ return candidate
+
 def parse(root,out,source_cat):
  require_private_source_build_output(out)
  privacy_rules=load_rules(PRIVACY, require_private=True)
@@ -124,7 +138,7 @@ def parse(root,out,source_cat):
     # Verified minors and registry-blocked people are omitted from the public
     # individual data entirely, including linked split observations.
     minor=isinstance(age,int) and not isinstance(age,bool) and 0<=age<18
-    if minor or record_is_suppressed(r,privacy_rules,scope=racekey):
+    if minor or record_is_suppressed(private_match_record(r,c,uid),privacy_rules,scope=racekey):
      continue
     public_resultid=resultid
     rows.append(r)
