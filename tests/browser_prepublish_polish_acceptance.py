@@ -57,7 +57,7 @@ async def main():
             await linked.close()
 
             for width,height in ((1440,900),(900,900),(768,900),(390,844)):
-                page,errors=await build_page(browser,data,markup,script,width,height)
+                page,errors=await build_page(browser,data,markup,script,width,height,"http://satila.test/?family=trail43&year=2025")
                 await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2025')")
 
                 # The two analysis entry flows should follow the race status and
@@ -72,7 +72,7 @@ async def main():
                 assert 12<=gaps["statusToRunner"]<=52,(width,gaps,"race status to runner heading rhythm")
                 assert 18<=gaps["searchToMap"]<=58,(width,gaps,"runner search to map heading rhythm")
 
-                # 1–2: default latest 43 km and real arithmetic FINISHED mean.
+                # 1–2: explicitly selected historical 2025 43 km and real arithmetic FINISHED mean.
                 assert await page.locator("#goal-placement-time").input_value()==expected_mean
                 assert await page.locator("#goal-placement-time").get_attribute("data-default-source")=="finished-mean"
                 assert "aritmetiskt medel" in (await page.locator("#goal-placement").inner_text()).lower()

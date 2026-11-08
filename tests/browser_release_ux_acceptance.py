@@ -42,6 +42,8 @@ async def build_page(browser,fixtures,width=390,height=844):
     }""",fixtures)
     await page.add_script_tag(content=(ROOT/"assets/profile-analysis.js").read_text(encoding="utf-8"))
     await page.add_script_tag(content=(ROOT/"assets/app.js").read_text(encoding="utf-8"))
+    await page.wait_for_selector('#year-select option[value="2025"]',state="attached")
+    await page.locator("#year-select").select_option("2025")
     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
     return page
 

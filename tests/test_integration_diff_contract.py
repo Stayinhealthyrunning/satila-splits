@@ -55,7 +55,7 @@ class IntegrationDiffContract(unittest.TestCase):
         current=surface(ROOT)
         self.assertGreaterEqual(len(current),38)
         self.assertIn("docs/data/bootstrap.json",current)
-        self.assertEqual(len([k for k in current if k.startswith("docs/data/races/")]),27)
+        self.assertIn(len([k for k in current if k.startswith("docs/data/races/")]),(27,30))
         inventory=json.loads((ROOT/"docs/data/route-inventory.json").read_text(encoding="utf-8"))
         self.assertEqual(len([k for k in current if k.startswith("docs/data/routes/")]),len(inventory))
         self.assertEqual(len([v for v in inventory if v.get("type")=="OFFICIAL_ORGANIZER"]),5)

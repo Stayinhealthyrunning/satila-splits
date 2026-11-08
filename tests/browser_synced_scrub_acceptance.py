@@ -67,6 +67,8 @@ async def main():
                 }""",data)
                 await page.add_script_tag(content=profile_js)
                 await page.add_script_tag(content=js)
+                await page.wait_for_selector('#year-select option[value="2025"]',state="attached")
+                await page.locator("#year-select").select_option("2025")
                 try:
                     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
                 except Exception:
@@ -76,7 +78,8 @@ async def main():
                           "missing",await page.evaluate("window.__missing||[]"),flush=True)
                     raise
                 await page.locator('[data-family="trail43"]').click()
-                await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km')")
+                await page.locator("#year-select").select_option("2025")
+                await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km · 2025')")
                 # Clicking elevation, then keyboard-operating the map, must update both.
                 course_map="#course-map [data-map-hit]"
                 course_elev="#course-elevation [data-elev-hit]"
