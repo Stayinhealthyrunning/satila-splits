@@ -55,7 +55,6 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_comparison_v2_contract.py -v
           python -m unittest discover -s tests -p test_multi_year_comparison_contract.py -v
-          python -m unittest discover -s tests -p test_ultra85_2026_aid_positions.py -v
           python tests/browser_ultra85_2026_aid_map.py
           python -m unittest discover -s tests -p test_ultra85_2026_aid_positions.py -v
           python tests/browser_ultra85_2026_aid_replay_acceptance.py
