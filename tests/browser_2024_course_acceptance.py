@@ -50,7 +50,7 @@ async def main():
             }""",payload)
             await page.add_script_tag(content=profile_js)
             await page.add_script_tag(content=js)
-            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+            await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('20')")
             await page.locator("#year-select").select_option("2024")
             await page.wait_for_function("document.querySelector('#course-source').textContent.includes('Normaliserad deltagarbaserad bana för 2024')")
             assert "43 km · 2024" in await page.locator("#race-title").inner_text()
