@@ -67,6 +67,8 @@ async def main():
                 }""",data)
                 await page.add_script_tag(content=profile_js)
                 await page.add_script_tag(content=js)
+                await page.wait_for_selector('#year-select option[value="2025"]')
+                await page.locator("#year-select").select_option("2025")
                 try:
                     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
                 except Exception:
