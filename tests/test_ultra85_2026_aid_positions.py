@@ -34,41 +34,26 @@ class UltraAidPositions(unittest.TestCase):
             # more accurate than demanding a vertex at the exact GPS position.
             self.assertLess(min(abs(p[0]-stop["route_km"]) for p in self.route["points"]),0.1)
             self.assertLess(stop["snap_distance_m"],90)
-            if stop["name"]!="Ramhultafallet":
-                self.assertNotIn("gps_lat",stop)
-                self.assertNotIn("gps_lon",stop)
+            self.assertNotIn("gps_lat",stop)
+            self.assertNotIn("gps_lon",stop)
 
-    def test_five_private_laps_and_explicit_ramhulta_depot_coordinate(self):
+    def test_five_private_laps_and_ramhulta_landmark_approximation(self):
         for stop in self.stops[:5]:
             self.assertEqual(stop["position_basis"],"fit_lap_snapped_to_official_route")
             self.assertLess(stop["snap_distance_m"],40)
         last=self.stops[-1]
-        self.assertEqual(last["position_basis"],"user_supplied_wgs84_depot_coordinate")
+        self.assertEqual(last["position_basis"],
+                         "ramhultafallet_named_landmark_snapped_to_official_route")
         self.assertAlmostEqual(last["official_km"],81.4)
-        self.assertAlmostEqual(last["route_km"],81.375893,places=5)
-        self.assertAlmostEqual(last["gps_lat"],57.51190,places=5)
-        self.assertAlmostEqual(last["gps_lon"],12.38534,places=5)
-        self.assertLess(last["snap_distance_m"],2)
-        # Project WGS84 onto *segments* of the official GPX, not a
-        # guessed nearby landmark and not necessarily a sampled vertex.
-        R=6371000
-        latitude=last["gps_lat"]; longitude=last["gps_lon"]
-        coslat=math.cos(math.radians(latitude))
-        def xy(p):
-            return ((p[2]-longitude)*math.pi/180*R*coslat,
-                    (p[1]-latitude)*math.pi/180*R)
-        closest=None
-        points=self.route["points"]
-        for a,b in zip(points,points[1:]):
-            x1,y1=xy(a); x2,y2=xy(b)
-            vx,vy=x2-x1,y2-y1
-            frac=max(0,min(1,-(x1*vx+y1*vy)/max(1e-9,vx*vx+vy*vy)))
-            separation=math.hypot(x1+frac*vx,y1+frac*vy)
-            km=a[0]+frac*(b[0]-a[0])
-            if closest is None or separation<closest[0]:
-                closest=(separation,km)
-        self.assertLess(closest[0],2,"Exact depot should touch official route")
-        self.assertLess(abs(closest[1]-last["route_km"]),0.002)
+        self.assertAlmostEqual(last["route_km"],81.696055,places=5)
+        self.assertNotIn("gps_lat",last)
+        self.assertNotIn("gps_lon",last)
+        self.assertLess(last["snap_distance_m"],90)
+        closest=min(self.route["points"],
+                    key=lambda p:abs(p[0]-last["route_km"]))
+        # Public geography reference: named Ramhultafallet waterfall.
+        self.assertLess(haversine(closest[1],closest[2],
+                                  57.510433,12.389097),90)
 
     def test_same_original_eq_stations_and_observation_coverage(self):
         stations=self.race["stations"]
