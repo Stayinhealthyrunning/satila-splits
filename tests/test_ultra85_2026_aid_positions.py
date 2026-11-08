@@ -34,26 +34,40 @@ class UltraAidPositions(unittest.TestCase):
             # more accurate than demanding a vertex at the exact GPS position.
             self.assertLess(min(abs(p[0]-stop["route_km"]) for p in self.route["points"]),0.1)
             self.assertLess(stop["snap_distance_m"],90)
-            self.assertNotIn("gps_lat",stop)
-            self.assertNotIn("gps_lon",stop)
+            if stop["name"]!="Ramhultafallet":
+                self.assertNotIn("gps_lat",stop)
+                self.assertNotIn("gps_lon",stop)
 
-    def test_five_private_laps_and_ramhulta_landmark_approximation(self):
+    def test_five_private_laps_and_owner_confirmed_ramhulta_coordinate(self):
         for stop in self.stops[:5]:
             self.assertEqual(stop["position_basis"],"fit_lap_snapped_to_official_route")
             self.assertLess(stop["snap_distance_m"],40)
-        last=self.stops[-1]
-        self.assertEqual(last["position_basis"],
-                         "ramhultafallet_named_landmark_snapped_to_official_route")
-        self.assertAlmostEqual(last["official_km"],81.4)
-        self.assertAlmostEqual(last["route_km"],81.696055,places=5)
-        self.assertNotIn("gps_lat",last)
-        self.assertNotIn("gps_lon",last)
-        self.assertLess(last["snap_distance_m"],90)
-        closest=min(self.route["points"],
-                    key=lambda p:abs(p[0]-last["route_km"]))
-        # Public geography reference: named Ramhultafallet waterfall.
-        self.assertLess(haversine(closest[1],closest[2],
-                                  57.510433,12.389097),90)
+        stop=self.stops[-1]
+        self.assertEqual(stop["position_basis"],"owner_confirmed_depot_wgs84_coordinate")
+        self.assertAlmostEqual(stop["official_km"],81.4)
+        self.assertAlmostEqual(stop["route_km"],81.375893,places=5)
+        self.assertAlmostEqual(stop["gps_lat"],57.51190,places=5)
+        self.assertAlmostEqual(stop["gps_lon"],12.38534,places=5)
+        self.assertLess(stop["snap_distance_m"],2)
+        # The screenshot is a depå coordinate, NOT the nearby waterfall
+        # landmark. The precise point lies between two GPX vertices.
+        R=6371000
+        lat,lon=stop["gps_lat"],stop["gps_lon"]
+        scale=math.cos(math.radians(lat))
+        def xy(point):
+            return ((point[2]-lon)*math.pi/180*R*scale,
+                    (point[1]-lat)*math.pi/180*R)
+        closest=None
+        for a,b in zip(self.route["points"],self.route["points"][1:]):
+            x1,y1=xy(a);x2,y2=xy(b)
+            dx,dy=x2-x1,y2-y1
+            f=max(0,min(1,-(x1*dx+y1*dy)/max(1e-9,dx*dx+dy*dy)))
+            separation=math.hypot(x1+f*dx,y1+f*dy)
+            km=a[0]+f*(b[0]-a[0])
+            if closest is None or separation<closest[0]:
+                closest=(separation,km)
+        self.assertLess(closest[0],2)
+        self.assertLess(abs(closest[1]-stop["route_km"]),0.002)
 
     def test_same_original_eq_stations_and_observation_coverage(self):
         stations=self.race["stations"]
