@@ -655,7 +655,7 @@ function openProfile(id){let r=findRecord(id);if(!r)return;S.profileReturnFocus=
 function renderProfileIfOpen(){if(openId&&$('#profile-dialog').open){let r=findRecord(openId);if(r)renderProfile(r)}}
 function renderProfile(r){
   if(window.SatilaProfile?.render){
-    return window.SatilaProfile.render(r,{S,html,num,time,pace,signed,fmtKm,sexLabel,analyticalSex,records,finish,observed,splitsFor,pairs,segmentStats,paceDistanceSupported,boundaries,wholeCoursePaceKm,eqTimingKm,toggleFav,addCompare,renderReplay:renderProfileReplay,routePoints,svg,profileInsights});
+    return window.SatilaProfile.render(r,{S,html,num,time,pace,signed,fmtKm,sexLabel,analyticalSex,records,finish,observed,splitsFor,pairs,segmentStats,paceDistanceSupported,boundaries,wholeCoursePaceKm,eqTimingKm,toggleFav,addCompare,renderReplay:renderProfileReplay,routePoints,timingToRouteKm,svg,profileInsights});
   }
   return renderProfileLegacy(r);
 }
