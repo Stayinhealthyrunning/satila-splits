@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/satila-2026-sanitized-publication.yml'
+      - 'tests/test_public_summary_reconciliation.py'
+      - 'tools/audit_historical_station_alignment.py'
   workflow_dispatch:
 
 permissions:
