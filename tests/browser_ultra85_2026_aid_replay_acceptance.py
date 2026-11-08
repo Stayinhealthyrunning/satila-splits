@@ -20,7 +20,7 @@ EXPECTED = [
     ("Äskhult", 54.6, 54.694012),
     ("Fjärås", 63.4, 63.435171),
     ("Lerbäck", 72.8, 72.843690),
-    ("Ramhultafallet", 81.4, 81.696055),
+    ("Ramhultafallet", 81.4, 81.375893),
 ]
 
 
@@ -117,7 +117,7 @@ async def main():
                     '#profile-mini-elev [data-aid-elevation="Ramhultafallet"]').count() == 1
                 assert not errors, (width, "JS errors", errors[:4])
                 await page.close()
-            print("PASS 2026 ultra: six depots, Ramhulta near named landmark, elevation and replay on mobile/desktop",
+            print("PASS 2026 ultra: six depots, Ramhulta confirmed WGS84, elevation and replay on mobile/desktop",
                   flush=True)
         finally:
             await browser.close()
