@@ -8,7 +8,10 @@ ROOT=Path(__file__).resolve().parents[1]
 class MinorPrivacyTest(unittest.TestCase):
     def test_public_race_data_has_no_identifiable_minors(self):
         bundles=list((ROOT/'docs/data/races').glob('*.json'))
-        self.assertEqual(len(bundles),27)
+        self.assertIn(len(bundles),(27,30))
+        if len(bundles)==30:
+            self.assertEqual({p.name for p in bundles if p.name.startswith('2026-')},
+                             {'2026-ultra85.json','2026-trail43.json','2026-trail22.json'})
         for path in bundles:
             doc=json.loads(path.read_text(encoding='utf-8'))
             result_ids={r['id'] for r in doc['results']}
