@@ -46,10 +46,19 @@ class CourseComparabilityContract(unittest.TestCase):
         cls.participant_versions=read(ROOT/"config"/"course-versions.json")
 
     def test_historical_years_are_source_supported(self):
-        self.assertEqual({e["year"] for e in self.editions},
-                         {2016,2017,2018,2019,2021,2022,2023,2024,2025})
-        self.assertFalse(any(e["year"]==2026 for e in self.editions),
-                         "A future official course is NOT a future result archive")
+        historical={2016,2017,2018,2019,2021,2022,2023,2024,2025}
+        actual={e["year"] for e in self.editions}
+        self.assertIn(actual,(historical,historical|{2026}))
+        self.assertEqual({e["race_key"] for e in self.editions if e["year"]<=2025},
+                         {f"{year}-{fam}" for year in historical
+                          for fam in ("ultra85","trail43","trail22")})
+        current={e["race_key"] for e in self.editions if e["year"]==2026}
+        self.assertIn(current, (set(),{"2026-ultra85","2026-trail43","2026-trail22"}))
+        # Organizer route evidence alone must never create an edition.
+        if current:
+            published=read(ROOT/"config"/"eqtiming-events.json").get("published_events",[])
+            self.assertEqual(len([e for e in published
+                                  if e.get("year")==2026 and e.get("event_id")==82600]),1)
 
     def test_no_authoritative_2026_ultra_85_backfill(self):
         self.assertTrue(display_route_authorized("ultra85",2026,self.route_inventory))
