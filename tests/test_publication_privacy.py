@@ -25,7 +25,9 @@ def main():
     assert not forbidden,f"Do not publish raw/archive/private assets: {forbidden}"
     assert all(not p.name.lower().startswith((".env","secrets")) for p in paths)
     race_files=list((ROOT/"data"/"races").glob("*.json"))
-    assert len(race_files)==27
+    assert len(race_files) in (27,30)
+    if len(race_files)==30:
+        assert {p.name for p in race_files if p.name.startswith('2026-')}=={'2026-ultra85.json','2026-trail43.json','2026-trail22.json'}
     for f in race_files:
         race=json.loads(f.read_text(encoding="utf-8"))
         for r in race["results"]:
