@@ -42,9 +42,11 @@ class ExcludeOwnerRejectedGrind(unittest.TestCase):
         self.assertEqual(sum(count for _,count in REMOVED.values()),REMOVED_OBSERVATIONS)
         self.assertEqual(RAW_OBSERVATIONS-REMOVED_OBSERVATIONS,GRIND_FILTERED_OBSERVATIONS)
         self.assertLessEqual(PUBLISHED_OBSERVATIONS,GRIND_FILTERED_OBSERVATIONS)
-        self.assertEqual(len(self.races),27)
-        self.assertEqual(sum(len(r["results"]) for r in self.races.values()),3255)
-        self.assertEqual(sum(len(r["splits"]) for r in self.races.values()),PUBLISHED_OBSERVATIONS)
+        self.assertIn(len(self.races),(27,30))
+        hist={k:r for k,r in self.races.items() if not k.startswith('2026-')}
+        self.assertEqual(len(hist),27)
+        self.assertEqual(sum(len(r["results"]) for r in hist.values()),3255)
+        self.assertEqual(sum(len(r["splits"]) for r in hist.values()),PUBLISHED_OBSERVATIONS)
 
     def test_no_excluded_station_or_time_remains_in_any_public_edition(self):
         for key,race in self.races.items():
@@ -92,7 +94,8 @@ class ExcludeOwnerRejectedGrind(unittest.TestCase):
         self.assertIn("casefold()!='grind'",builder)
         for p in (DATA/"bootstrap.json",DATA/"coverage.json"):
             self.assertNotIn('"Grind"',p.read_text(encoding="utf-8"))
-        self.assertEqual(len(load(DATA/"source-fingerprints.json")),9)
+        self.assertEqual(set(load(DATA/"source-fingerprints.json")) - {"2026"},
+                         {"2016","2017","2018","2019","2021","2022","2023","2024","2025"})
         self.assertNotIn('"Grind"',(ROOT/"docs"/"assets"/"app.js").read_text(encoding="utf-8"))
 
 
