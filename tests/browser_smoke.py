@@ -33,7 +33,10 @@ async def assert_full_osm(page,host):
 
 async def main():
  b=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
- assert len(b["editions"])==27 and sum(e["results"] for e in b["editions"])==3255
+ assert len(b["editions"]) in (27,30)
+ assert sum(e["results"] for e in b["editions"] if e["year"]<=2025)==3255
+ assert {e["race_key"] for e in b["editions"] if e["year"]==2026} in (
+    set(),{"2026-trail22","2026-trail43","2026-ultra85"})
  data={"data/bootstrap.json":b,"data/coverage.json":json.loads((ROOT/"data/coverage.json").read_text(encoding="utf-8"))}
  for e in b["editions"]:
   f=ROOT/"data/races"/(e["race_key"]+".json")
@@ -73,6 +76,8 @@ async def main():
    await page.add_script_tag(content=profile_js)
    await page.add_script_tag(content=js)
    try:
+    await page.wait_for_selector('#year-select option[value="2025"]',state="attached",timeout=20000)
+    await page.locator("#year-select").select_option("2025")
     await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')",timeout=20000)
    except Exception:
     print("STARTUP_DIAGNOSTICS",width,"title",await page.locator('#race-title').inner_text(),"errors",errors,"missing",await page.evaluate("window.__missing||[]"),flush=True)
@@ -101,6 +106,8 @@ async def main():
    assert "Ingen godkänd" in await page.locator("#course-map").inner_text()
    await page.locator("#year-select").select_option("2025")
    await page.locator('[data-family="trail43"]').click()
+   await page.locator("#year-select").select_option("2025")
+   await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km · 2025')")
    # Club/ort: source-backed suggestions must allow pointer + keyboard selection
    # while preserving free-text substring filtering and exact club filtering.
    club_input=page.locator('#club-filter')
@@ -406,5 +413,5 @@ async def main():
    print("PASS browser",width,height,"overflow",overflow,flush=True)
    await page.close()
   await browser.close()
- print("PASS 27 real editions and 3255 privacy-safe result appearances",flush=True)
+ print("PASS",len(b["editions"]),"real editions and 3255 historic privacy-safe results",flush=True)
 asyncio.run(main())

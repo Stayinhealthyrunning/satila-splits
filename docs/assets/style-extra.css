@@ -526,3 +526,9 @@ svg [data-extra-segment]:focus-visible{stroke:#d4a858;stroke-width:3px;outline:n
 @media(max-width:650px){
  #multi-year-dialog>.modal-head{padding:15px 18px 13px;gap:10px;align-items:flex-start;flex-wrap:wrap}
 }
+
+/* Kartduell: compact share action also fits narrow modal headers. */
+#map-duel-dialog .modal-head{gap:10px;flex-wrap:wrap}
+#map-duel-dialog .modal-head>div:first-child{min-width:0}
+#map-duel-dialog .multi-year-dialog-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto;justify-content:flex-end}
+#map-duel-modal-share-status:not(:empty){flex-basis:100%;text-align:right}

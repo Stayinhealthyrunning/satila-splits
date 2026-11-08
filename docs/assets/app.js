@@ -163,10 +163,10 @@ function selectClubSuggestion(name){
 }
 
 function subset(){let list=records().filter(r=>(S.sex==='all'||analyticalSex(r)===S.sex)&&(S.status==='all'||r.status===S.status)&&(S.className==='all'||r.class_name===S.className)&&(!S.club||(S.clubExact?clubKey(r.club)===clubKey(S.club):clubKey(r.club).includes(clubKey(S.club)))));S.filtered=list;$('#filter-count').textContent=`${format(list.length)} av ${format(records().length)} resultat i detta urval. Individuell sök och jämförelse använder hela upplagan.`;return list}
-function updateQuery(mode='replace'){let hash=new URLSearchParams(location.hash.includes('=')?location.hash.slice(1):'');hash.set('family',S.family);hash.set('year',S.year);if(mode==='push')for(const key of ['compareA','compareB','compareTime','compareSegment'])hash.delete(key);let target='#'+hash.toString();if(location.hash===target)return;if(mode==='push')history.pushState(null,'',target);else if(mode==='replace')history.replaceState(null,'',target);}
+function updateQuery(mode='replace'){let hash=new URLSearchParams(location.hash.includes('=')?location.hash.slice(1):'');hash.set('family',S.family);hash.set('year',S.year);if(mode==='push')for(const key of ['compareA','compareB','compareTime','compareSegment','mapDuel','mapDuelTime'])hash.delete(key);let target='#'+hash.toString();if(location.hash===target)return;if(mode==='push')history.pushState(null,'',target);else if(mode==='replace')history.replaceState(null,'',target);}
 function requestedEdition(){const query=new URLSearchParams(location.search),hash=new URLSearchParams(location.hash.slice(1));return {family:hash.get('family')||query.get('family'),year:Number(hash.get('year')||query.get('year'))||null}}
 function parseQuery(){const requested=requestedEdition(),family=requested.family;if(['ultra85','trail43','trail22'].includes(family))S.family=family;const year=requested.year;if(year&&S.boot.editions.some(e=>e.family===S.family&&e.year===year))S.year=year;}
-async function init(){try{S.boot=await fetch('data/bootstrap.json').then(r=>{if(!r.ok)throw Error('Katalogen kunde inte läsas ('+r.status+')');return r.json()});window.SatilaMultiYearComparison?.init?.({boot:S.boot,getCurrentSelection:()=>({edition:S.boot?.editions?.find(e=>e.race_key===S.race?.race_key),race:S.race,ids:[...S.mapDuel]})});parseQuery();if(!S.year)S.year=Math.max(...S.boot.editions.filter(e=>e.family===S.family).map(e=>e.year));ensureMapDuelControls();bind();await loadRace();const initialHash=new URLSearchParams(location.hash.slice(1)),requestedRunner=initialHash.get('runner')||new URLSearchParams(location.search).get('runner');if(requestedRunner){const runner=findRecord(requestedRunner)||records().find(row=>String(row.bib)===String(requestedRunner));if(runner)openProfile(runner.id)}else restoreComparisonFromUrl(initialHash);const nextHash=initialHash.get('section');if(nextHash)document.getElementById(nextHash)?.scrollIntoView();else if(!location.hash)scrollTo(0,0);}catch(err){$('#race-title').textContent='Källmaterialet kunde inte laddas';$('#race-subtitle').textContent=err.message;console.error(err);}}
+async function init(){try{S.boot=await fetch('data/bootstrap.json').then(r=>{if(!r.ok)throw Error('Katalogen kunde inte läsas ('+r.status+')');return r.json()});window.SatilaMultiYearComparison?.init?.({boot:S.boot,getCurrentSelection:()=>({edition:S.boot?.editions?.find(e=>e.race_key===S.race?.race_key),race:S.race,ids:[...S.mapDuel]})});parseQuery();if(!S.year)S.year=Math.max(...S.boot.editions.filter(e=>e.family===S.family).map(e=>e.year));ensureMapDuelControls();bind();await loadRace();const initialHash=new URLSearchParams(location.hash.slice(1)),requestedRunner=initialHash.get('runner')||new URLSearchParams(location.search).get('runner');if(requestedRunner){const runner=findRecord(requestedRunner)||records().find(row=>String(row.bib)===String(requestedRunner));if(runner)openProfile(runner.id)}else if(!restoreMapDuelFromUrl(initialHash))restoreComparisonFromUrl(initialHash);const nextHash=initialHash.get('section');if(nextHash)document.getElementById(nextHash)?.scrollIntoView();else if(!location.hash)scrollTo(0,0);}catch(err){$('#race-title').textContent='Källmaterialet kunde inte laddas';$('#race-subtitle').textContent=err.message;console.error(err);}}
 async function loadRace(historyMode='replace'){window.SatilaMultiYearComparison?.captureCurrentSelection?.();let id=++S.loading;let ed=S.boot.editions.find(e=>e.family===S.family&&e.year===S.year);if(!ed)return;$('#race-title').textContent=`${famLabel(S.family)} · ${S.year}`;$('#race-subtitle').textContent=ed.label+' · '+ed.date;$('#source-indicator').textContent='Hämtar publicerade EQ-data…';let race;try{let req=await fetch(`data/races/${encodeURIComponent(ed.race_key)}.json`);if(!req.ok)throw Error('Detta lopp saknar datafil ('+req.status+')');race=await req.json();}catch(err){if(id!==S.loading)return;S.race=null;S.route=null;$('#source-indicator').textContent='Kunde inte hämta tävlingsdata: '+err.message;$('#source-indicator').setAttribute('role','alert');$('#race-subtitle').textContent='Upplagan kan inte visas just nu. Välj ett annat år eller försök igen.';$('#segment-table tbody').innerHTML='';$('#results-table tbody').innerHTML='';return;}if(id!==S.loading)return;$('#source-indicator').removeAttribute('role');S.race=race;S._splits=null;S._distanceCapability=null;buildSplitIndex();S.page=0;S.selectedSegment=0;S.podiumStart=0;S.podiumEnd=1;S.placementZoom=0;S.placementWindow=null;S.segmentSeriesMode='all';S.courseD=null;S.courseFromSegment=false;S.sex='all';S.status='all';S.className='all';S.club='';S.clubExact=false;S.compare=[];S.mapDuel=[];S.duelClock=0;S.compareSegment=null;S.duelCamera='both';S.duelManualZoom=false;S.selectedClubs=null;S.extraClassSelection=null;document.querySelectorAll('[data-family]').forEach(b=>{b.classList.toggle('selected',b.dataset.family===S.family);b.setAttribute('aria-pressed',String(b.dataset.family===S.family))});$('#year-select').innerHTML=S.boot.editions.filter(e=>e.family===S.family).map(e=>`<option value="${e.year}" ${e.year===S.year?'selected':''}>${e.year} · ${html(advertisedKm(e))} km</option>`).join('');$('#source-indicator').textContent='Verifierat EQ Timing · '+race.stations.length+' stationer';$('#official-source').href=ed.source_url;$('#scope-status').textContent=`${format(ed.results)} resultat · ${format(ed.finishers)} målgångar · ${format(ed.split_observations)} tidspassager`;
 $('#sex-filter').value='all';$('#status-filter').value='all';$('#club-filter').value='';prepareClubOptions();$('#class-filter').innerHTML='<option value="all">Alla klasser</option>'+Array.from(new Set(records().map(r=>r.class_name).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'sv')).map(k=>`<option value="${html(k)}">${html(k)}</option>`).join('');S.route=null;const source=ed.route_file;if(source){try{S.route=await fetch('data/'+source).then(r=>r.ok?r.json():null)}catch{S.route=null}}if(id!==S.loading)return;$('#course-source').textContent=S.route?(S.route.type==='VERIFIED_PARTICIPANT'?(S.route.normalized_source_group?`Normaliserad deltagarbaserad bana för ${S.race.year} · ${fmtKm(S.route.geometry_length_km)} km. Korrigerad visningsgeometri, inte officiell arrangörsbana eller löparens uppmätta positioner. Beräkningarna använder endast registrerade EQ Timing-passager.`:`Verifierat deltagar-GPX för ${S.race.year} · ${fmtKm(S.route.geometry_length_km)} km. Banans GPS-geometri är separat från EQ Timings kontrollavstånd; beräkningar använder endast registrerade TIME-passager.`):`Arrangörsrutt ${S.route.edition_references.join('–')} · GPX-displaylängd ${fmtKm(S.route.geometry_length_km)} km · 2025/2026 återanvändning som arbetsantagande.`):'Ingen publicerbar GPX-geometri kopplad till denna upplaga ännu. Kontrolltiderna påverkas inte.';if(S.route?.elevation_provenance?.type==='SPATIALLY_TRANSFERRED_PARTICIPANT_GPX')$('#course-source').textContent+=' Höjdprofil: geografiskt överförd från 2024 års deltagar-GPX, inte uppmätt 2023-höjd eller officiella höjdmeter.';const editionFinishTimes=records().filter(finish).map(r=>r.finish_seconds),target=median(editionFinishTimes);$('#target-time').value=num(target)?time(target):'';$('#target-time').dataset.defaultSource='edition-median';$('#target-time').dataset.defaultN=String(editionFinishTimes.length);$('#target-time').dataset.defaultSeconds=num(target)?String(target):'';const goalPlacement=$('#goal-placement-time');if(goalPlacement)goalPlacement.value='';updateQuery(historyMode);renderAll();window.SatilaMultiYearComparison?.setContext?.(S.family,S.year);}
 function renderAll(){subset();renderKpis();renderOverview();renderCumulativeFinish();renderClassDetails();renderDynamics();renderSegments();renderCourse();renderHistory();renderResults();renderFavorites();renderCompareChips();renderMapDuelChips();renderSearchSuggestions();const version=S.loading;clearTimeout(S._extraTimer);S._extraTimer=setTimeout(()=>{if(version!==S.loading)return;try{window.SatilaExtras?.renderAll?.()}catch(err){console.error('Sätila analytics extension:',err)}},100);}
@@ -836,9 +836,9 @@ function drawSimpleRoute(host,pts,d,markers=null,cameraDistance=d){
 }
 
 function comparisonParams(){return new URLSearchParams(location.hash.includes('=')?location.hash.slice(1):'')}
-function clearComparisonStateFromUrl(){const hash=comparisonParams();let changed=false;for(const key of ['compareA','compareB','compareTime','compareSegment']){if(hash.has(key)){hash.delete(key);changed=true}}if(changed)history.replaceState(null,'','#'+hash.toString())}
+function clearComparisonStateFromUrl(){const hash=comparisonParams();let changed=false;for(const key of ['compareA','compareB','compareTime','compareSegment','mapDuel','mapDuelTime']){if(hash.has(key)){hash.delete(key);changed=true}}if(changed)history.replaceState(null,'','#'+hash.toString())}
 function writeComparisonState(x,y,mode='replace'){
-  const hash=comparisonParams();hash.set('family',S.family);hash.set('year',S.year);hash.set('compareA',x.id);hash.set('compareB',y.id);
+  const hash=comparisonParams();hash.delete('mapDuel');hash.delete('mapDuelTime');hash.set('family',S.family);hash.set('year',S.year);hash.set('compareA',x.id);hash.set('compareB',y.id);
   if(num(S.duelClock)&&S.duelClock>0)hash.set('compareTime',String(Math.round(S.duelClock)));else hash.delete('compareTime');
   if(Number.isInteger(S.compareSegment))hash.set('compareSegment',String(S.compareSegment));else hash.delete('compareSegment');
   const target='#'+hash.toString();if(location.hash!==target)history[mode==='push'?'pushState':'replaceState'](null,'',target);
@@ -1021,10 +1021,50 @@ function renderClassDetails(){
     S.className=selected;$('#class-filter').value=selected;rerenderFilter();
   }));
 }
+/* Share only opaque identifiers from already published race bundles.
+   The URL restores the actual selected 2–5 runners and the paused map clock,
+   never inferred GPS, private identities or unsanitized source data. */
+function mapDuelShareUrl(clock=0){
+  const url=new URL(location.href);
+  for(const key of ['myFamily','myA','myB','myResult','runner'])url.searchParams.delete(key);
+  const hash=new URLSearchParams(url.hash.includes('=')?url.hash.slice(1):'');
+  for(const key of ['runner','compareA','compareB','compareTime','compareSegment','mapDuel','mapDuelTime'])hash.delete(key);
+  hash.set('family',S.family);hash.set('year',String(S.year));
+  S.mapDuel.forEach(id=>hash.append('mapDuel',id));
+  if(num(clock)&&clock>0)hash.set('mapDuelTime',String(Math.round(clock)));
+  url.hash=hash.toString();
+  return url.href;
+}
+async function shareMapDuel(clock=0,statusSelector='#map-duel-share-status'){
+  if(S.mapDuel.length<2||S.mapDuel.length>5)return;
+  const url=mapDuelShareUrl(clock),status=$(statusSelector);
+  history.replaceState(null,'',url);
+  try{
+    await navigator.clipboard.writeText(url);
+    if(status)status.textContent='Länken är kopierad.';
+  }catch{
+    if(status)status.textContent='Kopiera länken från dialogen eller adressfältet.';
+    if(typeof window.prompt==='function')window.prompt('Kopiera länken:',url);
+  }
+}
+function restoreMapDuelFromUrl(params=comparisonParams()){
+  const ids=params.getAll('mapDuel');
+  if(ids.length<2||ids.length>5||new Set(ids).size!==ids.length||!ids.every(findRecord))return false;
+  S.mapDuel=[...ids];S.compare=ids.length===2?[...ids]:[];
+  renderMapDuelChips();openMapDuel();
+  const clock=Number(params.get('mapDuelTime')),slider=$('#map-duel-clock');
+  if(slider&&params.has('mapDuelTime')&&Number.isFinite(clock)&&clock>=0){
+    slider.value=String(clock);
+    slider.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  return true;
+}
 function ensureMapDuelControls(){
   if(!$('#map-duel-builder'))return;
   $('#open-map-duel').addEventListener('click',openMapDuel);
-  $('#clear-map-duel').addEventListener('click',()=>{S.mapDuel=[];S.compare=[];S.duelClock=0;S.compareSegment=null;S.duelCamera='both';S.duelManualZoom=false;clearComparisonStateFromUrl();$('#map-duel-search').value='';$('#map-duel-suggestions').innerHTML='';$('#map-duel-feedback').textContent='Välj minst två deltagare.';renderMapDuelChips()});
+  $('#share-map-duel-selection')?.addEventListener('click',()=>shareMapDuel(0,'#map-duel-share-status'));
+  $('#map-duel-share')?.addEventListener('click',()=>shareMapDuel(Number($('#map-duel-clock')?.value)||0,'#map-duel-modal-share-status'));
+  $('#clear-map-duel').addEventListener('click',()=>{S.mapDuel=[];S.compare=[];S.duelClock=0;S.compareSegment=null;S.duelCamera='both';S.duelManualZoom=false;clearComparisonStateFromUrl();$('#map-duel-search').value='';$('#map-duel-suggestions').innerHTML='';$('#map-duel-feedback').textContent='Välj minst två deltagare.';$('#map-duel-share-status').textContent='';renderMapDuelChips()});
 }
 function addMapDuel(id){
   if(!findRecord(id))return;
@@ -1034,12 +1074,14 @@ function addMapDuel(id){
   else{$('#map-duel-feedback').textContent='Max fem deltagare kan väljas.';return}
   S.compare=S.mapDuel.length<=2?[...S.mapDuel]:[];
   $('#map-duel-search').value='';$('#map-duel-suggestions').innerHTML='';$('#map-duel-feedback').textContent=S.mapDuel.length<2?'Välj minst två deltagare.':S.mapDuel.length===2?'Två deltagare valda: direktjämförelse och Kartduell är redo.':`${S.mapDuel.length} deltagare valda för Kartduell.`;
+  $('#map-duel-share-status').textContent='';
   renderMapDuelChips();
 }
 function renderMapDuelChips(){
   if(!$('#map-duel-chips'))return;
   $('#map-duel-counter').textContent=String(S.mapDuel.length);
   $('#open-map-duel').disabled=S.mapDuel.length<2;
+  $('#share-map-duel-selection').disabled=S.mapDuel.length<2;
   $('#open-compare').disabled=S.mapDuel.length!==2;
   $('#compare-counter').textContent=`(${S.mapDuel.length}/2)`;
   $('#map-duel-chips').innerHTML=S.mapDuel.map(id=>{const runner=findRecord(id);return `<span class="chip">${html(runner?.name||id)} <button type="button" data-remove-map-duel="${html(id)}" aria-label="Ta bort ${html(runner?.name||'')} från kartduellen">×</button></span>`}).join('')||'<p class="small muted">Ingen löpare vald för kartduell.</p>';
@@ -1066,6 +1108,7 @@ function openMapDuel(){
   const dialog=$('#map-duel-dialog'),host=$('#map-duel-content'),runners=S.mapDuel.map(findRecord).filter(Boolean);
   if(runners.length<2||runners.length>5)return;
   cancelAnimationFrame(S._mapDuelFrame);
+  $('#map-duel-modal-share-status').textContent='';
   if(!validRouteComparison()){
     host.innerHTML=empty('Kartduell kräver en godkänd lokal rutt för exakt denna tävlingsupplaga. Resultaten kan fortfarande jämföras två och två utan karta.');
     dialog.showModal();return;
