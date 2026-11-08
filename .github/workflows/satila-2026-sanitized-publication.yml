@@ -137,6 +137,8 @@ jobs:
           if ! python tools/run_release_candidate_checks.py --browser \
                > "$RUNNER_TEMP/satila-2026-browser-qa.log" 2>&1; then
             echo 'BLOCKED: independent browser QA failed; no result PR or commit created'
+            grep '^>>> ' "$RUNNER_TEMP/satila-2026-browser-qa.log" | tail -n 1 |
+              grep -E '^>>> (python|python3) tests/browser_' || true
             exit 2
           fi
           echo 'Browser QA PASS'
