@@ -5,6 +5,7 @@ on:
       - "docs/data/**"
       - "docs/assets/**"
       - "tests/browser_grind_exclusion_acceptance.py"
+      - "tests/browser_all_editions_acceptance.py"
       - "tests/browser_evidence_acceptance.py"
       - "tests/test_grind_exclusion_contract.py"
       - "tools/build_satila.py"
@@ -31,7 +32,7 @@ jobs:
         run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Test all 27 dashboard renderings, two screen sizes
+      - name: Test all published editions, default 2026, and Grind exclusion in two viewport sizes
         env:
           SATILA_SITE: docs
         run: |
