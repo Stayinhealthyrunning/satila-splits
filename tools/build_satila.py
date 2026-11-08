@@ -71,6 +71,19 @@ def private_match_record(public_row, contestant, entry_uid):
   candidate["public_contestant_uid"] = str(contestant_uid)
  return candidate
 
+def strictly_suppressed_public_result(record, rules, *, scope, year):
+ """Withhold 2026 ambiguous protected-name collisions, including all split rows.
+
+ This is not authorization to publish the protected result. For 2016-2025
+ retain existing manual-review halt. All other registry errors still fail.
+ """
+ try:
+  return record_is_suppressed(record, rules, scope=scope)
+ except RuntimeError as exc:
+  if year == 2026 and str(exc) == 'Potential protected-identity match requires private manual review; publication stopped':
+   return True
+  raise
+
 def parse(root,out,source_cat):
  require_private_source_build_output(out)
  privacy_rules=load_rules(PRIVACY, require_private=True)
@@ -138,7 +151,7 @@ def parse(root,out,source_cat):
     # Verified minors and registry-blocked people are omitted from the public
     # individual data entirely, including linked split observations.
     minor=isinstance(age,int) and not isinstance(age,bool) and 0<=age<18
-    if minor or record_is_suppressed(private_match_record(r,c,uid),privacy_rules,scope=racekey):
+    if minor or strictly_suppressed_public_result(private_match_record(r,c,uid),privacy_rules,scope=racekey,year=year):
      continue
     public_resultid=resultid
     rows.append(r)
