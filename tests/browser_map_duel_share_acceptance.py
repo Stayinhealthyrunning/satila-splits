@@ -73,8 +73,9 @@ async def main():
             await page.locator("#map-duel-clock").evaluate("""el=>{
                el.value='3600';el.dispatchEvent(new Event('input',{bubbles:true}));
             }""")
+            await page.evaluate("window.__copiedMapDuel=null")
             await page.locator("#map-duel-share").click()
-            await page.wait_for_function("window.__copiedMapDuel!==null")
+            await page.wait_for_function("window.__copiedMapDuel?.includes('mapDuelTime=')")
             link5=await page.evaluate("window.__copiedMapDuel")
             state5=parse_qs(urlsplit(link5).fragment)
             assert state5["mapDuel"]==[x["id"] for x in candidates]
