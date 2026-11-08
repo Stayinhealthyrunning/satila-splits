@@ -50,7 +50,7 @@ async def main():
               };
             }""",fixtures)
             await page.add_script_tag(content=js)
-            await page.wait_for_selector('#year-select option[value="2025"]')
+            await page.wait_for_selector('#year-select option[value="2025"]',state="attached")
             await page.locator("#year-select").select_option("2025")
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             # Case 1: metadata-only Tostared must not create two artificial 0-data segments.
