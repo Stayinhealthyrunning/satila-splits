@@ -475,15 +475,14 @@ function routeProjectedXY(pts,path,km){
   return [path[idx-1][0]+(path[idx][0]-path[idx-1][0])*f,path[idx-1][1]+(path[idx][1]-path[idx-1][1])*f];
 }
 function officialAidSvg(pts,path,W,H,pad){
-  // Five stops are pinned by the FIT lap markers and one by the user's
-  // explicit WGS84 depot coordinate. Personal FIT points are never published.
+  // The map uses only the public organizer GPX. Five aid pins were checked
+  // against private manual laps; Ramhultafallet is near a named landmark,
+  // not an exact sixth private FIT observation.
   return ultraAidStations().map(a=>{
-    const exact=num(a.gps_lat)&&num(a.gps_lon);
-    const [x,y]=exact
-      ?mapProjection(pts,W,H,pad).projectCoord(a.gps_lat,a.gps_lon)
-      :routeProjectedXY(pts,path,a.route_km);
-    const source=exact?'verifierad WGS84-depåpunkt'
-      :'manuellt FIT-varv, matchat mot officiell rutt';
+    const [x,y]=routeProjectedXY(pts,path,a.route_km);
+    const source=a.position_basis==='fit_lap_snapped_to_official_route'
+      ?'FIT-varv verifierat mot arrangörens rutt'
+      :'ungefärlig plats vid Ramhultafallet, ej verifierad depå-GPS';
     return `<circle class="aid-route-point" data-aid="${html(a.name)}" data-route-km="${a.route_km}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="5" fill="#fff" stroke="#a45c12" stroke-width="2"><title>${html(a.name)} · officiellt ${fmtKm(a.official_km)} km · ${source}</title></circle>`;
   }).join('');
 }
