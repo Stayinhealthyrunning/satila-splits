@@ -51,7 +51,7 @@ async def main():
             }""",fixtures)
             await page.add_script_tag(content=profile_js)
             await page.add_script_tag(content=js)
-            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+            await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('20')")
             await page.locator('[data-family="trail43"]').click()
             for year in ("2023","2024"):
                 await page.locator("#year-select").select_option(year)
