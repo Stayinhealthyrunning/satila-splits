@@ -100,7 +100,7 @@ jobs:
           import json
           from pathlib import Path
           b=json.loads(Path("docs/data/bootstrap.json").read_text())
-          races=sorted(e for e in b["editions"] if e["year"]==2026)
+          races=[e for e in b["editions"] if e["year"]==2026]
           assert len(races)==3 and {e["family"] for e in races}=={"ultra85","trail43","trail22"}
           assert all(e["unknown"]==0 for e in races)
           print("Three adult-only, opt-out-screened 2026 race bundles staged")
