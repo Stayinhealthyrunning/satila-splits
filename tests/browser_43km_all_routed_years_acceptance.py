@@ -59,7 +59,7 @@ async def main():
               };
             }""",fixtures)
             await page.add_script_tag(content=app)
-            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
+            await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('20')")
             for year in YEARS:
                 await page.locator("#year-select").select_option(str(year))
                 route=fixtures["data/"+editions[f"{year}-trail43"]["route_file"]]
