@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Desktop and mobile: excluded Grind may never appear in a live Sätila view.
 
-Iterates ALL 27 editions with actual curated real-data fixture fetches and
+Iterates ALL 27 historical or 30 with 2026 editions with curated real-data fixtures and
 proves each selected first 2025 segment starts from the race clock origin,
 without using the owner's rejected nonofficial early checkpoint.
 """
@@ -18,7 +18,7 @@ EXPECTED_FIRST={
 
 async def main():
     boot=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
-    assert len(boot["editions"])==27
+    assert len(boot["editions"]) in (27,30)
     fixtures={"data/bootstrap.json":boot}
     for p in (ROOT/"data").glob("*.json"):
         fixtures["data/"+p.name]=json.loads(p.read_text(encoding="utf-8"))
@@ -81,10 +81,10 @@ async def main():
                             assert first in labels[0] and second in labels[0],(width,ed["race_key"],labels[0])
                             assert not any(re.search(r"\bGrind\b",x,re.IGNORECASE) for x in labels),ed["race_key"]
                         visited.append(ed["race_key"])
-                assert len(visited)==len(set(visited))==27,(width,len(visited))
+                assert len(visited)==len(set(visited))==len(boot["editions"]),(width,len(visited))
                 assert not errors,(width,errors)
                 assert not await page.evaluate("window.__missing"),(width,await page.evaluate("window.__missing"))
-                print("PASS no nonofficial Grind in 27 editions and six/four accepted 2025 segments",width,flush=True)
+                print("PASS no nonofficial Grind in",len(visited),"editions and accepted 2025 segments",width,flush=True)
                 await page.close()
         finally:await browser.close()
 if __name__=="__main__":asyncio.run(main())
