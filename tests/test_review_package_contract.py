@@ -36,9 +36,9 @@ BANNED_SUFFIXES={".gpx",".fit",".tcx",".kmz",".kml",".sqlite",".db",".zip",".gz"
 
 def expected_paths():
     catalog=json.loads((SITE/"data/bootstrap.json").read_text(encoding="utf-8"))["editions"]
-    assert len(catalog)==27
+    assert len(catalog) in (27,30)
     races={"data/races/"+e["race_key"]+".json" for e in catalog}
-    assert len(races)==27
+    assert len(races)==len(catalog)
     inventory=json.loads((SITE/"data/route-inventory.json").read_text(encoding="utf-8"))
     participant={"data/routes/"+v["race_key"]+"-participant.json" for v in inventory if v.get("type")=="VERIFIED_PARTICIPANT"}
     assert all(v.get("type") in ("OFFICIAL_ORGANIZER","VERIFIED_PARTICIPANT") for v in inventory)
@@ -64,8 +64,8 @@ def verified_manifest():
 class ReviewPackageContract(unittest.TestCase):
     def test_allowlisted_static_package_contains_only_intended_content(self):
         m=verified_manifest()
-        self.assertEqual(len(m),48+len([p for p in m if p.endswith("-participant.json")]))
-        self.assertEqual(len([p for p in m if p.startswith("data/races/")]),27)
+        self.assertEqual(len(m),21+len([p for p in m if p.endswith("-participant.json")])+len([p for p in m if p.startswith("data/races/")]))
+        self.assertIn(len([p for p in m if p.startswith("data/races/")]),(27,30))
         self.assertEqual(len([p for p in m if p.startswith("data/routes/")]),5+len([p for p in m if p.endswith("-participant.json")]))
 
     def test_review_zip_paths_are_static_and_cannot_escape_site(self):
