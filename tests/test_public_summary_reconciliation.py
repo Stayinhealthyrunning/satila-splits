@@ -89,15 +89,19 @@ class PublicSummaryReconciliation(unittest.TestCase):
 
     def test_measured_geometry_is_only_attached_to_authorized_editions(self):
         routed=[ed for ed in self.catalog if ed.get("route_file")]
-        baseline={"2025-trail22","2025-trail43"}
-        self.assertTrue(baseline.issubset({ed["race_key"] for ed in routed}))
-        for ed in routed:
-            if ed["race_key"] not in baseline:
-                self.assertEqual(ed["route_status"],"participant_track_display_only")
-                self.assertEqual(ed["route_file"],f"routes/{ed['race_key']}-participant.json")
+        organizer={"2025-trail22","2025-trail43"}
+        if any(ed["year"]==2026 for ed in self.catalog):
+            organizer.update(("2026-ultra85","2026-trail43","2026-trail22"))
+        self.assertTrue(organizer.issubset({ed["race_key"] for ed in routed}))
         for ed in routed:
             route=load(DATA/ed["route_file"])
-            if ed["race_key"] not in baseline:
+            if ed["race_key"] in organizer:
+                self.assertEqual(route["type"],"OFFICIAL_ORGANIZER")
+                self.assertIn(ed["year"],route["edition_references"])
+                self.assertEqual(route["source_sha256"],ed["route_source_sha256"])
+            else:
+                self.assertEqual(ed["route_status"],"participant_track_display_only")
+                self.assertEqual(ed["route_file"],f"routes/{ed['race_key']}-participant.json")
                 self.assertEqual(route["type"],"VERIFIED_PARTICIPANT")
                 self.assertEqual(route["edition_references"],[ed["year"]])
                 self.assertEqual(route["source_sha256"],ed["route_source_sha256"])
@@ -129,7 +133,8 @@ class PublicSummaryReconciliation(unittest.TestCase):
                     pct=len(finishes)/len(starts)*100
                     self.assertGreaterEqual(pct,0)
                     self.assertLessEqual(pct,100)
-                total_known+=len(starts);total_finished+=len(finishes)
+                if ed["year"]<=2025:
+                    total_known+=len(starts);total_finished+=len(finishes)
             # Preserve possible missing/other sex categories without miscasting.
             self.assertEqual(sum(r["sex"] in ("F","M") for r in result)+
                              sum(r["sex"] not in ("F","M") for r in result),len(result))
@@ -157,12 +162,13 @@ class PublicSummaryReconciliation(unittest.TestCase):
             for k in ("results","finishers","dnf","dns","dsq","unknown","split_observations"):
                 by_year[year][k]+=ed[k]
                 by_family[family][k]+=ed[k]
-        self.assertEqual(len(by_year),9)
+        historical={2016,2017,2018,2019,2021,2022,2023,2024,2025}
+        self.assertIn(set(by_year),(historical,historical|{2026}))
         self.assertEqual(len(by_family),3)
+        # Freeze the verified historical privacy-safe total; 2026 must add only
+        # independently checked, privacy-cleared participant records.
+        self.assertEqual(sum(by_year[y]["results"] for y in historical),3255)
         for dimension in (by_year,by_family):
-            # Public totals may be lower than the immutable source total when
-            # complete individual rows are withheld for child/privacy protection.
-            self.assertLessEqual(sum(row["results"] for row in dimension.values()),3272)
             for group,row in dimension.items():
                 self.assertEqual(row["results"],sum(row[k] for k in
                                  ("finishers","dnf","dns","dsq","unknown")),group)
