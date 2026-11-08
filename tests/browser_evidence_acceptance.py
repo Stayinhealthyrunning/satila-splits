@@ -55,7 +55,8 @@ async def main():
             await page.wait_for_function("document.querySelector('#race-title').textContent.includes('2025')")
             # Case 1: metadata-only Tostared must not create two artificial 0-data segments.
             await page.locator('[data-family="trail43"]').click()
-            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km')")
+            await page.locator("#year-select").select_option("2025")
+            await page.wait_for_function("document.querySelector('#race-title').textContent.includes('43 km · 2025')")
             seg=page.locator("#segment-table tbody tr")
             count=await seg.count()
             assert count==6,("2025 43 km: expected six REAL analysis segments after removal of the nonofficial early station",count)
