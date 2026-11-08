@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - "docs/assets/app.js"
+      - "docs/data/routes/ultra85-2026.json"
+      - "tests/test_ultra85_2026_aid_positions.py"
+      - "tests/browser_ultra85_2026_aid_map.py"
       - "docs/assets/multi-year-comparison.js"
       - "docs/assets/multi-year-map.js"
       - "docs/index.html"
@@ -48,6 +51,8 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_comparison_v2_contract.py -v
           python -m unittest discover -s tests -p test_multi_year_comparison_contract.py -v
+          python -m unittest discover -s tests -p test_ultra85_2026_aid_positions.py -v
+          python tests/browser_ultra85_2026_aid_map.py
           python tests/browser_map_duel_share_acceptance.py
           python tests/browser_synced_scrub_acceptance.py
           python tests/browser_comparison_v2_evidence_acceptance.py
