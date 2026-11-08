@@ -212,6 +212,11 @@ function segmentTable(ctx,record,segments){
   }).join('');
   return '<section class="profile-split-section" id="profile-splits"><div class="profile-section-head"><div><p class="eyebrow">MELLANTIDER · ANALYTISKA DELSTRÄCKOR</p><h3>Från analysgräns till analysgräns</h3></div><span class="profile-pill">exakta ackumulerade tider</span></div><div class="table-scroll"><table class="profile-split-table"><thead><tr><th>Delsträcka</th><th>Ack. tid</th><th>Delsträckstid</th><th>Tempo</th><th>Plats</th><th>Förändring</th><th>Fältmedian*</th><th>Mot median</th><th>n</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="muted small">* Fältmedianen använder endast fullföljare med två verkliga passager på samma segment och kräver minst fem observationer. Tempo döljs där timingdistansen inte kan användas som fysisk distans.</p></section>';
 }
+function replayRouteKm(ctx,km,routeEnd,nominal){
+  return typeof ctx.timingToRouteKm==='function'
+    ?ctx.timingToRouteKm(Number(km))
+    :Math.min(routeEnd,Number(km)/nominal*routeEnd);
+}
 function referenceAnchors(ctx,record,rows){
   const routeEnd=ctx.routePoints().at(-1)?.[0]||Number(ctx.S.race.nominal_km)||1;
   const nominal=Number(ctx.S.race.nominal_km)||routeEnd;
@@ -219,7 +224,7 @@ function referenceAnchors(ctx,record,rows){
   ctx.boundaries().filter(point=>finite(point.km)&&Number(point.km)>0).forEach(point=>{
     const values=rows.map(row=>ctx.observed(row,point)?.elapsed_seconds).filter(finite);
     if(values.length<5)return;
-    const km=Math.min(routeEnd,Number(point.km)/nominal*routeEnd),t=median(values),last=points.at(-1);
+    const km=replayRouteKm(ctx,point.km,routeEnd,nominal),t=median(values),last=points.at(-1);
     if(km>last.km+.0001&&finite(t)&&t>last.t)points.push({km,t,name:point.name,n:values.length});
   });
   if(points.length===1)return null;
@@ -241,7 +246,7 @@ function replayState(ctx,record,groupSet){
   const routeEnd=ctx.routePoints().at(-1)?.[0]||Number(ctx.S.race.nominal_km)||1;
   const nominal=Number(ctx.S.race.nominal_km)||routeEnd;
   const places=ctx.boundaries().filter(point=>finite(point.km)&&Number(point.km)>0).map(point=>({
-    km:Number(point.km)/nominal*routeEnd,
+    km:replayRouteKm(ctx,point.km,routeEnd,nominal),
     name:point.name,
     observation:ctx.observed(record,point)
   })).filter(item=>item.observation);
