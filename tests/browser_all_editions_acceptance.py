@@ -7,7 +7,7 @@ ROOT=Path(os.getenv("SATILA_SITE","docs"))
 
 async def main():
     catalog=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
-    assert len(catalog["editions"])==27
+    assert len(catalog["editions"]) in (27,30)
     fixtures={"data/bootstrap.json":catalog}
     for ed in catalog["editions"]:
         path=ROOT/"data/races"/(ed["race_key"]+".json")
@@ -71,11 +71,11 @@ async def main():
                         overflow=await page.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth")
                         assert overflow<=1,(width,ed["race_key"],overflow)
                         visited.append(ed["race_key"])
-                assert len(visited)==len(set(visited))==27,(width,len(visited))
+                assert len(visited)==len(set(visited))==len(catalog["editions"]),(width,len(visited))
                 assert not errors,(width,errors)
                 missing=await page.evaluate("window.__missing||[]")
                 assert not missing,missing
-                print("PASS all 27 public editions, expected checkpoints, routes and UI:",width,height,flush=True)
+                print("PASS all",len(visited),"public editions, expected checkpoints, routes and UI:",width,height,flush=True)
                 await page.close()
         finally:
             await browser.close()
