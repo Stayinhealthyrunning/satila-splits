@@ -67,7 +67,8 @@ async def main():
                     assert await node.count()==1,(w,"missing depot",name)
                     assert km>0
                     assert await page.locator('#course-elevation [data-aid-elevation="'+name+'"]').count()==1
-                await page.evaluate("(id)=>openProfile(id)",runner["id"])
+                await page.locator("#runner-search").fill(runner["name"])
+                await page.locator("#runner-suggestions .suggestion").first.click()
                 dialog=page.locator("#profile-dialog")
                 await dialog.wait_for(state="visible")
                 assert await dialog.locator("#profile-mini-map [data-aid]").count()==6
