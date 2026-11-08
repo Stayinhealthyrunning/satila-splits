@@ -1,0 +1,191 @@
+name: Publish privacy-cleared Sätila Trail 2026 (sanitized PR only)
+
+# One-shot 2026 release. The old raw import-eqtiming.yml remains disabled.
+# This workflow never commits EQ source JSON, private registry, SQLite, or raw GPX.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/satila-2026-sanitized-publication.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: satila-2026-one-shot-publication
+  cancel-in-progress: false
+
+jobs:
+  sanitized-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      LOPPANALYS_PRIVACY_REGISTRY_B64: ${{ secrets.LOPPANALYS_PRIVACY_REGISTRY_B64 }}
+      LOPPANALYS_REQUIRE_PRIVATE_REGISTRY: '1'
+      # Owner approved 2026 registry review in the existing PRIVATE repo.
+      # Its source/registry-gated run 42466283836 attempt 2 passed on 2026-11-08.
+      SATILA_2026_REGISTRY_REVIEWED: '2026-11-08:approved'
+    steps:
+      - name: Checkout public code only (without any raw source)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Require protected registry and exactly 27 historical editions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${LOPPANALYS_PRIVACY_REGISTRY_B64:-}" ||
+            { echo 'BLOCKED: previously approved private registry missing'; exit 2; }
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.privacy import load_rules
+          rules=load_rules("config/privacy-suppressions.json",require_private=True)
+          assert rules.get("_registry_loaded"), "Reviewed registry not loaded"
+          boot=json.loads(Path("docs/data/bootstrap.json").read_text(encoding="utf-8"))
+          assert len(boot["editions"])==27 and not any(e["year"]==2026 for e in boot["editions"]), "2026 already public; requires explicit revision workflow"
+          print("Verified historical baseline and nonempty reviewed private GDPR source")
+          PY
+
+      - name: Create short-lived read-only token for the private processing CODE
+        id: source-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LOPPANALYS_SOURCE_APP_ID }}
+          private-key: ${{ secrets.LOPPANALYS_SOURCE_APP_PRIVATE_KEY }}
+          owner: Stayinhealthyrunning
+          repositories: loppanalys-private-data
+
+      - name: Checkout only private processing CODE, never historical private originals
+        uses: actions/checkout@v4
+        with:
+          repository: Stayinhealthyrunning/loppanalys-private-data
+          ref: main
+          token: ${{ steps.source-token.outputs.token }}
+          persist-credentials: false
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            satila/2026
+          sparse-checkout-cone-mode: true
+          path: .private-2026-tooling
+
+      - name: Fetch EQ 82600 twice, filter with actual registry and stage sanitized-only candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B .private-2026-tooling/satila/2026/release_candidate.py \
+            --public-repo "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/satila-2026-sanitized-candidate"
+          python -B .private-2026-tooling/satila/2026/verify_candidate.py \
+            "$GITHUB_WORKSPACE" "$RUNNER_TEMP/satila-2026-sanitized-candidate"
+
+      - name: Stage exactly seven allowlisted, privacy-checked public JSON files
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/satila-2026-sanitized-candidate"
+          for f in bootstrap.json coverage.json source-fingerprints.json; do
+            cp "$candidate/docs/data/$f" "docs/data/$f"
+          done
+          for fam in ultra85 trail43 trail22; do
+            cp "$candidate/docs/data/races/2026-$fam.json" "docs/data/races/2026-$fam.json"
+          done
+          cp "$candidate/config/eqtiming-events.json" "config/eqtiming-events.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          b=json.loads(Path("docs/data/bootstrap.json").read_text())
+          races=sorted(e for e in b["editions"] if e["year"]==2026)
+          assert len(races)==3 and {e["family"] for e in races}=={"ultra85","trail43","trail22"}
+          assert all(e["unknown"]==0 for e in races)
+          print("Three adult-only, opt-out-screened 2026 race bundles staged")
+          PY
+
+      - name: Run complete source, statistics, GDPR, geometry and historical release QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! python tools/run_release_candidate_checks.py --source \
+               > "$RUNNER_TEMP/satila-2026-source-qa.log" 2>&1; then
+            echo 'BLOCKED: release source/portal QA failed; individual result details withheld from public logs'
+            exit 2
+          fi
+          echo 'Source and privacy QA PASS'
+
+      - name: Install browser acceptance dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check numpy scipy playwright
+          python -m playwright install --with-deps chromium \
+            > "$RUNNER_TEMP/satila-2026-browser-install.log" 2>&1
+          echo 'Chromium browser test dependencies installed'
+
+      - name: Full real-browser regression on all published years, including 2026
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! python tools/run_release_candidate_checks.py --browser \
+               > "$RUNNER_TEMP/satila-2026-browser-qa.log" 2>&1; then
+            echo 'BLOCKED: independent browser QA failed; no result PR or commit created'
+            exit 2
+          fi
+          echo 'Browser QA PASS'
+
+      - name: Commit only the seven approved sanitized JSON files to a separate branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="data/satila-2026-reviewed-${GITHUB_RUN_ID}"
+          git switch -c "$branch"
+          git add -- docs/data/bootstrap.json docs/data/coverage.json \
+            docs/data/source-fingerprints.json docs/data/races/2026-ultra85.json \
+            docs/data/races/2026-trail43.json docs/data/races/2026-trail22.json \
+            config/eqtiming-events.json
+          git diff --cached --check
+          python - <<'PY'
+          import subprocess
+          actual=set(subprocess.check_output(
+            ["git","diff","--cached","--name-only"],text=True).splitlines())
+          allow={
+            "docs/data/bootstrap.json","docs/data/coverage.json",
+            "docs/data/source-fingerprints.json",
+            "docs/data/races/2026-ultra85.json","docs/data/races/2026-trail43.json",
+            "docs/data/races/2026-trail22.json","config/eqtiming-events.json"}
+          assert actual==allow, "Sanitized-only seven-file allowlist mismatch"
+          print("Only seven approved JSON paths in Git staging")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sätila 2026: official EQ results, privacy-filtered, full QA"
+          git push origin "$branch"
+          echo "SANITIZED_BRANCH=$branch" >> "$GITHUB_ENV"
+          echo 'Sanitized results pushed only to a separate review branch'
+
+      - name: Open sanitized-only pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr create --repo Stayinhealthyrunning/satila-splits \
+            --base main --head "$SANITIZED_BRANCH" \
+            --title 'Sätila Trail 2026: official privacy-cleared 85/43/22 km results' \
+            --body 'Official EQ Timing event 82600. Two exact source snapshots matched. Original protected registry loaded and reviewed; seven confirmed minors and one ambiguous protected-name entry withheld. 463 adult public result rows (381 finished). Independent sanitized source, structure, historical and Chromium browser QA passed in the generating workflow. Only seven allowlisted JSON files committed; no private raw data or artifacts. Review and merge after verifying public diff and QA.'
+
+      - name: Remove all temporary 2026 source, registry-checkout and candidate data
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          rm -rf -- "$RUNNER_TEMP"/satila-2026-* .private-2026-tooling
+          echo 'Ephemeral source/candidate/QA and private-code checkout cleanup complete'
+
+# Never reactivate the disabled legacy public raw importer.
+# Do not upload artifacts, archive EQ bodies, write raw data into the public repo,
+# publish raw contents in logs, or auto-merge before human-level validation.
