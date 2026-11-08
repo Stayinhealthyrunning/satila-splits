@@ -29,7 +29,9 @@ class SourceChainOfCustody(unittest.TestCase):
     def test_frozen_event_catalog_and_fingerprints_agree(self):
         events=self.catalog["events"]
         self.assertEqual(len(events),9)
-        self.assertEqual(set(self.fingerprints),{str(e["year"]) for e in events})
+        self.assertEqual(set(self.fingerprints)-{"2026"},{str(e["year"]) for e in events})
+        if "2026" in self.fingerprints:
+            self.assertEqual(len([e for e in self.catalog.get("published_events",[]) if e.get("year")==2026 and e.get("event_id")==82600]),1)
         self.assertEqual(len({e["year"] for e in events}),9)
         self.assertEqual(len({e["event_id"] for e in events}),9)
         for ev in events:
@@ -40,8 +42,10 @@ class SourceChainOfCustody(unittest.TestCase):
             self.assertRegex(ev["date"],r"^20\d{2}-\d{2}-\d{2}$")
 
     def test_public_edition_lineage_matches_catalog_and_source_url(self):
-        events={e["year"]:e for e in self.catalog["events"]}
-        self.assertEqual(len(self.meta["editions"]),27)
+        events={e["year"]:e for e in self.catalog["events"]+self.catalog.get("published_events",[])}
+        has_2026=any(e["year"]==2026 for e in self.meta["editions"])
+        self.assertEqual(len(self.meta["editions"]),30 if has_2026 else 27)
+        self.assertEqual(has_2026,"2026" in self.fingerprints)
         for ed in self.meta["editions"]:
             source=events[ed["year"]]
             self.assertEqual(ed["event_id"],source["event_id"])
@@ -71,7 +75,7 @@ class SourceChainOfCustody(unittest.TestCase):
 
     def test_source_bytes_are_not_leaked_with_published_fingerprint(self):
         fingerprints=read(DATA/"source-fingerprints.json")
-        self.assertEqual(set(fingerprints),{"2016","2017","2018","2019","2021","2022","2023","2024","2025"})
+        self.assertEqual(set(fingerprints)-{"2026"},{"2016","2017","2018","2019","2021","2022","2023","2024","2025"})
         for fp in fingerprints.values():
             self.assertEqual(set(fp),{"event_id","event_json_sha256"})
             self.assertIsInstance(fp["event_id"],int)

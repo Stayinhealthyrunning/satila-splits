@@ -47,12 +47,14 @@ def audit(root):
     details = []
     boot = read(root / "bootstrap.json")
     editions = boot.get("editions") or []
-    if len(editions) != 27:
-        failures.append(f"Expected 27 editions; got {len(editions)}")
-    expected_years = {2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025}
+    historical_years = {2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025}
+    has_2026 = any(ed.get("year") == 2026 for ed in editions)
+    expected_years = historical_years | ({2026} if has_2026 else set())
+    if len(editions) != (30 if has_2026 else 27):
+        failures.append(f"Expected 27 historic or 30 including 2026; got {len(editions)}")
     seen_keys = set()
     catalog_status = collections.Counter()
-    total_results = total_splits = finished_total = 0
+    total_results = total_splits = finished_total = historical_results = 0
 
     for ed in editions:
         key = ed["race_key"]
@@ -105,6 +107,12 @@ def audit(root):
                 failures.append(f"{key}: zero/invalid public TIME split for {uid}/{sid}")
             observations[uid].append(sp)
         counter = collections.Counter(r["status"] for r in results)
+        if year == 2026:
+            for r in results:
+                if type(r.get("age")) is not int or r["age"] < 18:
+                    failures.append(f"{key}: minor or unverified-age individual in published 2026 data")
+                if r.get("name") == "Anonym löpare":
+                    failures.append(f"{key}: protected individual must be removed entirely")
         for status in counter:
             if status not in STATUS:
                 failures.append(f"{key}: undocumented status {status}")
@@ -140,7 +148,10 @@ def audit(root):
         if finish_without_obs or finish_discrepancy:
             failures.append(f"{key}: FINISHED / public finish disagreement: missing={finish_without_obs}, mismatched={finish_discrepancy}")
         if anomalous_monotone:
-            warnings.append(f"{key}: {anomalous_monotone} source time order anomalies; preserve raw, exclude invalid segment pairs")
+            if year == 2026:
+                failures.append(f"{key}: {anomalous_monotone} 2026 time-order anomalies; release requires review")
+            else:
+                warnings.append(f"{key}: {anomalous_monotone} source time order anomalies; preserve raw, exclude invalid segment pairs")
         if dns_observations:
             warnings.append(f"{key}: {dns_observations} DNS entrants nevertheless have public TIME observation(s); preserve source flags, inspect")
         if ed.get("route_file"):
@@ -150,12 +161,15 @@ def audit(root):
             else:
                 route = read(route_path)
                 if route.get("type") == "OFFICIAL_ORGANIZER":
-                    if year != 2025 or family not in ("trail22", "trail43"):
-                        failures.append(f"{key}: organizer route reuse not authorized for edition")
+                    approved = (year == 2025 and family in ("trail22", "trail43")) or (
+                        year == 2026 and family in FAMILIES)
+                    if not approved:
+                        failures.append(f"{key}: organizer route provenance not authorized for edition")
                     if route.get("source_sha256") != COURSE_SHA[family]:
                         failures.append(f"{key}: official route checksum does not match source registry")
-                    if route.get("edition_references") != [2025, 2026]:
-                        failures.append(f"{key}: unrecorded organizer reuse references")
+                    expected_refs = [2026] if family == "ultra85" else [2025, 2026]
+                    if route.get("edition_references") != expected_refs:
+                        failures.append(f"{key}: unrecorded organizer route edition references")
                 elif route.get("type") == "VERIFIED_PARTICIPANT":
                     if ed.get("route_status") != "participant_track_display_only":
                         failures.append(f"{key}: participant course must remain display-only")
@@ -165,8 +179,8 @@ def audit(root):
                         failures.append(f"{key}: participant GPX digest is not linked to edition")
                 else:
                     failures.append(f"{key}: unknown route provenance")
-        elif year == 2025 and family in ("trail22", "trail43"):
-            failures.append(f"{key}: agreed 2025/2026 organizer route is not linked")
+        elif (year == 2025 and family in ("trail22", "trail43")) or year == 2026:
+            failures.append(f"{key}: verified 2025/2026 organizer route is not linked")
         details.append({
             "race_key": key, "results": len(results), "statuses": dict(counter),
             "splits": len(splits), "stations": len(stations),
@@ -176,6 +190,8 @@ def audit(root):
         })
         catalog_status.update(counter)
         total_results += len(results)
+        if year in historical_years:
+            historical_results += len(results)
         total_splits += len(splits)
         finished_total += counter["FINISHED"]
 
@@ -184,8 +200,8 @@ def audit(root):
     for year in expected_years:
         if {ed["family"] for ed in editions if ed["year"] == year} != set(FAMILIES):
             failures.append(f"{year}: one or more core race families missing")
-    if total_results != 3255:
-        failures.append(f"Unexpected privacy-safe results total: {total_results} vs baseline 3255")
+    if historical_results != 3255:
+        failures.append(f"Historical privacy-safe results changed: {historical_results} vs baseline 3255")
 
     inventory_file = root / "route-inventory.json"
     inventory = read(inventory_file) if inventory_file.exists() else []
@@ -215,7 +231,7 @@ def audit(root):
 
     report = {
         "schema": "satila-source-audit-v1", "subject": "current static published bundles",
-        "scope": "9 historical years; all three primary race families; five organizer GPX",
+        "scope": f"{len(expected_years)} editions' years; three primary race families; five organizer GPX",
         "summary": {
             "editions": len(details), "results": total_results,
             "splits": total_splits, "finishers": finished_total,

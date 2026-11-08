@@ -71,7 +71,7 @@ def main():
                        "dual_sex_median_segments":sum(x["women_median"] and x["men_median"] for x in available),
                        "pooled_goal_plan_complete":bool(available) and len(available)==pooled,
                        "segment_capabilities":available})
-    result={"schema":"satila-exact-pair-capability-v1","scope":"27 editions; FINISHED only; exact positive TIME segment pairs",
+    result={"schema":"satila-exact-pair-capability-v1","scope":f"{len(report)} editions; FINISHED only; exact positive TIME segment pairs",
             "thresholds":{"median":5,"q25_q75":10,"q10_q90":20,
                           "sex_specific_median_each":5,"sex_podium_each":3,"goal_fraction":5},
             "editions":report}
@@ -82,8 +82,8 @@ def main():
     print("race_key | finishers | observed TIME | analysis segments | median-ready | Q25/Q75 | Q10/Q90 | both-sex median | all pooled plan")
     for r in report:
         print(f"{r['race_key']} | {r['finishers']} | {r['observed_source_splits']} | {r['analysable_segments']} | {r['median_ready_segments']} | {r['q25_q75_ready_segments']} | {r['q10_q90_ready_segments']} | {r['dual_sex_median_segments']} | {r['pooled_goal_plan_complete']}")
-    assert len(report)==27
-    assert sum(r["finishers"] for r in report)==2633
+    assert len(report) in (27,30)
+    assert sum(r["finishers"] for r in report if r["year"]<=2025)==2633
     assert all(s["valid_finishers"]<=r["finishers"] for r in report for s in r["segment_capabilities"])
     assert all(s["q10_q90"]<=s["q25_q75"]<=s["field_median"] for r in report for s in r["segment_capabilities"])
     assert all(s["women"]+s["men"]<=s["valid_finishers"] for r in report for s in r["segment_capabilities"])

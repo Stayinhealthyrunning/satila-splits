@@ -56,7 +56,7 @@ class RestoredOriginals(unittest.TestCase):
   self.assertEqual(read(DATA/"routes/2024-trail43-participant.json")["normalized_source_group"],"trail43-2023-2025-normalized")
   self.assertEqual(editions["2025-trail43"]["route_file"],"routes/trail43-2025-2026.json")
  def test_no_source_timing_rows_changed(self):
-  allr=[read(p) for p in (DATA/"races").glob("*.json")]
+  allr=[read(p) for p in (DATA/"races").glob("*.json") if not p.name.startswith("2026-")]
   self.assertEqual(sum(len(r["results"]) for r in allr),3255)
   self.assertEqual(sum(len(r["splits"]) for r in allr),14372)
 

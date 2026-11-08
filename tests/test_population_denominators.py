@@ -22,10 +22,12 @@ class PopulationContract(unittest.TestCase):
     def setUpClass(cls):
         cls.catalog=load(DATA/"bootstrap.json")["editions"]
         cls.races=[load(DATA/"races"/f"{ed['race_key']}.json") for ed in cls.catalog]
+        cls.historical=[r for r in cls.races if r["year"]<=2025]
+        assert len(cls.historical)==27
 
-    def test_exhaustive_status_partitions_over_27_editions(self):
+    def test_exhaustive_status_partitions_over_historical_editions(self):
         totals=collections.Counter()
-        for race in self.races:
+        for race in self.historical:
             c=collections.Counter(row["status"] for row in race["results"])
             self.assertEqual(set(c)-{"FINISHED","DNF","DNS","DSQ","UNKNOWN"},set())
             self.assertEqual(sum(c.values()),len(race["results"]))
@@ -74,7 +76,7 @@ class PopulationContract(unittest.TestCase):
 
     def test_dnf_is_attached_only_to_last_real_observation(self):
         total_dnf=0;source_attached=0;unknown_last=0
-        for race in self.races:
+        for race in self.historical:
             station_order={s["uid"]:i for i,s in enumerate(race["stations"])}
             by_runner=collections.defaultdict(list)
             for sp in race["splits"]:
@@ -101,7 +103,7 @@ class PopulationContract(unittest.TestCase):
 
     def test_result_id_namespace_does_not_merge_different_editions(self):
         ids=[r["id"] for race in self.races for r in race["results"]]
-        self.assertEqual(len(ids),3255)
+        self.assertEqual(sum(len(r["results"]) for r in self.historical),3255)
         self.assertEqual(len(ids),len(set(ids)),
                          "Result/runner comparison must retain edition identity")
 

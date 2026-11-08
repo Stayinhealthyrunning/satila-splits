@@ -49,7 +49,7 @@ def test_budget():
     boot=ROOT/"data/bootstrap.json"
     assert gz_size(boot)<=10_240,f"Bootstrap >10KiB: {gz_size(boot)}"
     races=sorted((ROOT/"data/races").glob("*.json"))
-    assert len(races)==27,f"Expected 27 editions, got {len(races)}"
+    assert len(races) in (27,30),f"Expected 27 or 30 editions, got {len(races)}"
     for p in races:
         assert p.stat().st_size<=600_000,f"Race >600kB raw: {p}"
         assert gz_size(p)<=75*1024,f"Race >75KiB gzip: {p}"
@@ -73,7 +73,7 @@ def test_coverage():
     boot=json.loads((ROOT/"data/bootstrap.json").read_text(encoding="utf-8"))
     coverage=json.loads((ROOT/"data/coverage.json").read_text(encoding="utf-8"))
     editions={e["race_key"]:e for e in boot["editions"]}
-    assert len(coverage)==len(editions)==27
+    assert len(coverage)==len(editions) and len(editions) in (27,30)
     for row in coverage:
         source=editions[row["race_key"]]
         assert row["results"]==source["results"]
@@ -91,7 +91,7 @@ def test_coverage():
                 display=json.loads((ROOT/"data"/row["route_file"]).read_text(encoding="utf-8"))
                 assert display["edition_references"]==[row["year"]],row["race_key"]
                 assert display["source_sha256"]==row["route_sha256"],row["race_key"]
-    print("PASS coverage: 27 current editions, source fields and route status agree")
+    print(f"PASS coverage: {len(editions)} current editions, source fields and route status agree")
 
 if __name__=="__main__":
     test_page_structure()
