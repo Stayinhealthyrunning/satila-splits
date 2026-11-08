@@ -44,7 +44,21 @@ def normalized_sex(athlete, race_class):
   elif re.match(r'^(man|män|herr)(\b|\s|$)',label):class_sex='M'
  return None if athlete_sex and class_sex and athlete_sex != class_sex else athlete_sex or class_sex
 
+def require_private_source_build_output(out):
+ """Fail closed: raw participant SQLite must never be written inside a Git repository.
+
+ build_satila.parse stores unsanitized contestant JSON in satila.sqlite, including
+ suppressed/minor records. Build into an external access-controlled private
+ directory, then separately review/copy only sanitized public JSON outputs.
+ """
+ target=Path(out).resolve()
+ repository=ROOT.resolve()
+ if target==repository or repository in target.parents:
+  raise RuntimeError('Private source build required: --out must be outside the public Git repository (raw satila.sqlite contains participant information)')
+ return target
+
 def parse(root,out,source_cat):
+ require_private_source_build_output(out)
  privacy_rules=load_rules(PRIVACY, require_private=True)
  events=load(source_cat)['events'];catalog=[];history=[];samples=[];coverage=[];archive_hashes={};(out/'satila.sqlite').unlink(missing_ok=True);db=sqlite3.connect(str(out/'satila.sqlite'));db.executescript('''
  CREATE TABLE IF NOT EXISTS editions(race_key TEXT PRIMARY KEY,year INT,leg_uid INT,event_id INT,family TEXT,name TEXT,source_distance REAL,source TEXT);
