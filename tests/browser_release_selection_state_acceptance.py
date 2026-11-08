@@ -75,7 +75,7 @@ async def main():
                    };
                 }""",data)
                 await page.add_script_tag(content=script)
-                await page.wait_for_selector('#year-select option[value="2025"]')
+                await page.wait_for_selector('#year-select option[value="2025"]',state="attached")
                 await page.locator("#year-select").select_option("2025")
                 await page.wait_for_function("document.querySelector('#race-title')?.textContent.includes('43 km · 2025')")
                 original=await assert_default_goal(page,data,"2025-trail43",(width,"trail43-default"))
