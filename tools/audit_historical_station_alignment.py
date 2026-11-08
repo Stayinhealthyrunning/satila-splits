@@ -78,7 +78,11 @@ def main():
                 "candidate_comparison_groups":candidate_groups,
                 "whole_course_comparison_approved":bool(accepted)
             })
-    assert len(out)==3*8
+    historical=[x for x in out if x["to_year"]<=2025]
+    assert len(historical)==3*8
+    assert len(out) in (3*8,3*9)
+    if len(out)==3*9:
+        assert {x["family"] for x in out if x["to_year"]==2026}==set(FAMILIES)
     critical=next(x for x in out if x["family"]=="trail43" and
                   x["from_year"]==2024 and x["to_year"]==2025)
     torras=next(x for x in critical["all_shared"] if x["name"]=="Torrås")
@@ -91,7 +95,7 @@ def main():
                x["from_year"]==2022 and x["to_year"]==2023)
     assert other["candidate_comparison_groups"]==["trail43-2021-2022","trail43-2023-2025"]
     assert not other["whole_course_comparison_approved"]
-    assert all(not x["whole_course_comparison_approved"] for x in out), "Do not automatically approve historic course comparisons"
+    assert all(not x["whole_course_comparison_approved"] for x in historical), "Do not automatically approve unverified historical course comparisons"
     result={"schema":"satila-historical-checkpoint-alignment-v1",
             "warning":"Matching checkpoint labels or km do not prove an equivalent route or transferable historical pacing.",
             "pair_count":len(out),"pairs":out}
@@ -99,7 +103,7 @@ def main():
         file=Path(args.output)
         file.parent.mkdir(parents=True,exist_ok=True)
         file.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    print("family | from -> to | shared names | changed km >=0.5 | any historic whole-course comparison approved")
+    print("family | from -> to | shared names | changed km >=0.5 | explicitly verified whole-course comparison")
     for x in out:
         print(f"{x['family']} | {x['from_year']} -> {x['to_year']} | {x['matching_station_names']} | {len(x['large_timing_axis_shifts'])} | {x['whole_course_comparison_approved']}")
     print(f"CRITICAL: 2022 -> 2023 43-km Torrås timing-label shift: +{prior_torras['timing_km_delta']:.1f} km; 2023–2025 Torrås labels align at 16.2 km. Historic route comparison remains separately gated.")
