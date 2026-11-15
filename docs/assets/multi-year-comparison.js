@@ -116,6 +116,19 @@ function create(){
     for(const token of tokens){const parsed=parseToken(token),ed=editions().find(x=>x.race_key===parsed?.raceKey);if(!ed)return;const loaded=await loadEdition(ed),record=(loaded.race.results||[]).find(x=>String(x.id)===parsed.id);if(!record)return;rows.push({...loaded,record,token})}
     selected=rows;restoredFamily=family;renderSelected();await openComparison();
   }
+  // The runner search and same-edition comparison both expose the historical
+  // picker without duplicating or merging participant identities.
+  document.addEventListener('click',event=>{
+    if(!event.target.closest('[data-compare-all-years]'))return;
+    event.preventDefault();
+    const currentDialog=document.getElementById('compare-dialog');
+    if(currentDialog?.open)currentDialog.close();
+    const query=document.getElementById('runner-search')?.value?.trim()||'';
+    year.value='all';
+    year.dispatchEvent(new Event('change',{bubbles:true}));
+    if(query){search.value=query;void runSearch();}
+    document.getElementById('map-duel-builder')?.scrollIntoView?.({behavior:'smooth',block:'start'});
+  });
   root.addEventListener('click',event=>{const add=event.target.closest('[data-multi-year-add]'),remove=event.target.closest('[data-multi-year-remove]');if(add){const item=suggestionMap.get(add.dataset.multiYearAdd);if(item&&!selected.some(x=>x.token===item.token)&&selected.length<5){selected=[...selected,item];renderSelected();search.value='';hide();search.focus()}return}if(remove){selected=selected.filter(x=>x.token!==remove.dataset.multiYearRemove);renderSelected()}});
   function captureCurrentSelection(){
     if(!root.hidden||typeof getCurrentSelection!=='function')return;
@@ -148,7 +161,7 @@ function create(){
   return{
     init(payload){boot=payload.boot;getCurrentSelection=payload.getCurrentSelection||null;},
     captureCurrentSelection,
-    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML='<option value="all">Alla år</option>'+editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('');const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
