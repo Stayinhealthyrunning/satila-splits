@@ -231,6 +231,17 @@ async def main():
         assert all(str(year) in legends for year in (2023, 2024, 2025)), legends
         assert await page.locator("#multi-year-dialog-body .multi-year-section tbody tr").count() == 3
 
+        # New Ultravasan-style shortcut: a runner search can immediately
+        # switch to all years and retain existing selected historical results.
+        await page.locator("#close-multi-year-dialog").click()
+        await page.locator("#runner-search").fill("Petra Klevmar")
+        await page.locator("#runner-tools [data-compare-all-years]").click()
+        assert await page.locator("#multi-year-year").input_value() == "all"
+        assert await page.locator("#multi-year-comparison").is_visible()
+        assert await page.locator("#multi-year-search").input_value() == "Petra Klevmar"
+        labels = await page.locator("#multi-year-selected button span").all_text_contents()
+        assert labels == ["Petra Klevmar · 2025", "Petra Klevmar · 2024", "Petra Klevmar · 2023"], labels
+
         assert not errors, errors
         await browser.close()
         print("PASS Sätila multi-year comparison", flush=True)
